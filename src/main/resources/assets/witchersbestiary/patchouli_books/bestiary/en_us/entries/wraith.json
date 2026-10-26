@@ -1,0 +1,29 @@
+{
+  "name": "Wraith",
+  "category": "witchersbestiary:specters",
+  "icon": "witchersbestiary:wraith_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:wraith",
+      "name": "Wraith",
+      "scale": 0.8,
+      "text": "45 HP; 6 damage. A dead woman in a ragged, drifting dress."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Behavior",
+      "text": "Night: dark woods, swamps and caves. Warns before blinking every 14–20 seconds; pauses after arrival. Whisper warns before 1.5 seconds of blindness every 20–25 seconds. Up to two copies deal 2.4 HP, last twenty seconds and give no loot or XP. Use specter oil."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "Essence 65%, remains 40%, head 7% on a player or tamed ally kill. Essence can craft the bestiary."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ethereal phase",
+      "text": "Dissolves over 12 ticks, moves invisibly through ordinary blocks, then warns and reappears over 10 ticks. Cannot cross bedrock or world boundaries. Wraith: 1.8 sec, 14–20 sec interval, no healing."
+    }
+  ]
+}

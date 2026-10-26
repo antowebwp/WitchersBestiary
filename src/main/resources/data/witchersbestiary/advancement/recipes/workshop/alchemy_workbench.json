@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:glass_bottle"
+            ]
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "witchersbestiary:alchemy_workbench"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "material",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchersbestiary:alchemy_workbench"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#witchersbestiary:forests",
+    "#witchersbestiary:wetlands",
+    "#witchersbestiary:fields",
+    "minecraft:dripstone_caves",
+    "minecraft:lush_caves",
+    "minecraft:deep_dark"
+  ]
+}

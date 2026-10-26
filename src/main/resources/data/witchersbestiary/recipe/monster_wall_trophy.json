@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "witchersbestiary:monster_teeth"
+    },
+    {
+      "item": "witchersbestiary:ghoul_claw"
+    },
+    {
+      "item": "minecraft:bone"
+    },
+    {
+      "item": "minecraft:oak_planks"
+    },
+    {
+      "item": "minecraft:oak_planks"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:monster_wall_trophy",
+    "count": 1
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:griffin_feather"
+    },
+    {
+      "item": "witchersbestiary:griffin_claw"
+    },
+    {
+      "item": "witchersbestiary:hybrid_essence"
+    },
+    {
+      "item": "minecraft:gold_nugget"
+    },
+    {
+      "item": "minecraft:string"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:griffin_charm",
+    "count": 1
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Останки и ремесло",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:monster_organ_jar",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:bone_dust",
+      "text": "Изготовьте на верстаке. Две порции из кости или подходящих останков. Используется в обычных эликсирах."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bone_dust"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:tooth_necklace",
+      "text": "Изготовьте на верстаке. Декор для стены, без боевых эффектов. Снимается с возвратом предмета."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:tooth_necklace"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:monster_organ_jar",
+      "text": "Изготовьте на верстаке. Декор на твёрдой поверхности. Содержимое не даёт эффектов; при снятии возвращается целая банка."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:monster_organ_jar"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:monster_wall_trophy",
+      "text": "Изготовьте на верстаке. Отдельный настенный декор из костей и клыков. Не заменяет головы-трофеи монстров."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:monster_wall_trophy"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Тег monster_essences объединяет 11 существующих эссенций. Обычные эликсиры трупоедов, проклятых и вампиров принимают любую из них, но сохраняют особые останки. Редкие рецепты не обобщены."
+    }
+  ]
+}

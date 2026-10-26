@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:drowner_essence"
+    },
+    {
+      "item": "witchersbestiary:drowner_claw"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:necrophage_oil",
+    "count": 1
+  }
+}

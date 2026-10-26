@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:ogroid_essence"
+    },
+    {
+      "item": "witchersbestiary:ogroid_essence"
+    },
+    [
+      {
+        "item": "witchersbestiary:ogroid_fang"
+      },
+      {
+        "item": "witchersbestiary:nekker_claw"
+      }
+    ],
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:ogroid_oil",
+    "count": 1
+  }
+}

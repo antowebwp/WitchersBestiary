@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC",
+    " I ",
+    "SSS"
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:candle"
+    },
+    "I": {
+      "item": "minecraft:iron_nugget"
+    },
+    "S": {
+      "item": "minecraft:stone_slab"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:ritual_candles",
+    "count": 1
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:stick"
+            ]
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "witchersbestiary:weapon_stand"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "material",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchersbestiary:weapon_stand"
+    ]
+  }
+}

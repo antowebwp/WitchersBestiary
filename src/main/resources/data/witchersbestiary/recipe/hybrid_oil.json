@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:hybrid_essence"
+    },
+    {
+      "item": "witchersbestiary:griffin_feather"
+    },
+    {
+      "item": "witchersbestiary:griffin_claw"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:hybrid_oil",
+    "count": 1
+  }
+}

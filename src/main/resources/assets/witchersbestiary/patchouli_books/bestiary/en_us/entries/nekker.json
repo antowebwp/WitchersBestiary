@@ -1,0 +1,29 @@
+{
+  "name": "Nekker",
+  "category": "witchersbestiary:ogroids",
+  "icon": "witchersbestiary:nekker_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:nekker",
+      "name": "Nekker",
+      "scale": 1.1,
+      "text": "OGROID: 26 HP, 5 damage. A small, hunched pack predator."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Pack hunting",
+      "text": "Forests, hills and caves; surface at night, underground by day. Groups of 3–5; at most five nearby within 48 blocks. Share a target and flank from different angles. Claws alternate with a quick bite. Leaps have a short windup, 8–12 second cooldown and recovery after missing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weaknesses",
+      "text": "An ally death grants eight seconds of faster pursuit and more frequent leaps; the bonus never stacks. Split the pack, retreat and sidestep the warned leap. Ogroid oil adds 25 percent damage. Nekkers do not stun."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:nekker_claw",
+      "text": "Ogroid essence: 55 percent, claw: 45, head: 4 on a player or tamed ally kill. The claw can replace an ogroid fang in the existing oil recipe."
+    }
+  ]
+}

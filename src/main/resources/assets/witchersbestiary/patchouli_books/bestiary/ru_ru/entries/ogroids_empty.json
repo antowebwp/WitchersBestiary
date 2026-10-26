@@ -1,0 +1,11 @@
+{
+  "name": "Огроиды",
+  "category": "witchersbestiary:ogroids",
+  "icon": "witchersbestiary:ogroid_fang",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Массивные наземные чудовища. Изучите их замахи и используйте масло против огроидов."
+    }
+  ]
+}

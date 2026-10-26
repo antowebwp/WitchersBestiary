@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "I I",
+    "PPP",
+    "I I"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_nugget"
+    },
+    "P": {
+      "item": "minecraft:dark_oak_slab"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:wall_sword_rack",
+    "count": 1
+  }
+}

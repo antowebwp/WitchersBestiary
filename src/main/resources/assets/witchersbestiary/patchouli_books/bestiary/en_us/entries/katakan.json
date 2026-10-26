@@ -1,0 +1,53 @@
+{
+  "name": "Katakan",
+  "category": "witchersbestiary:vampires",
+  "icon": "witchersbestiary:katakan_spawn_egg",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:katakan",
+      "title": "Katakan",
+      "text": "Predatory vampire: 80 HP, base damage 8, high speed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Night surface or dark caves. Direct daytime sun without shelter or rain ignites it. No custom dungeons are added."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Claws and bite",
+      "text": "Claws strike twice for 8. Bite deals 10 and heals 4 only on a successful hit. Charge prepares for half a second and stops at walls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Bat form",
+      "text": "Below 32 HP it uses a controlled bat form once in its lifetime, for up to 8 seconds. The bat has 8 HP and flees within 8 blocks; the original entity persists."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stop its healing",
+      "text": "During flight it heals 1 HP per second, up to 8 before returning. Kill the bat to stop healing and stun the returned Katakan for 12 ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weaknesses",
+      "text": "Sunlight, vampire oil (20 percent, 30 hits), vampire elixir (25 percent, 180 seconds)."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "Essence: 75 percent, 1–2. Claw: 40 percent. Head: 10 percent after a player/tamed kill. Vampire fang: 5 percent."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunter advice",
+      "text": "Sidestep its charge. Pursue the bat and counterattack after killing it. An equipped Trinkets fang heals only from real hostile enemies."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Unique equipment",
+      "text": "See $(l:hunter_equipment)Hunter Equipment$(/l) for the hammer and vampire fangs."
+    }
+  ]
+}

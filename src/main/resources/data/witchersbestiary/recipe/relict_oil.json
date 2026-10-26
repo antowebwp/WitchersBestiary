@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:forest_essence"
+    },
+    {
+      "item": "witchersbestiary:ancient_leshen_heart"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:relict_oil",
+    "count": 1
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "name": "Hunting lures",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:leshen_lure",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "title": "Start the hunt",
+      "text": "Craft one of the three offerings (recipes below). Right-click the top of solid ground with two clear blocks above it. Placement activates it immediately and consumes one item in survival. Invalid placement consumes nothing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Patience",
+      "text": "Wait about120–180 seconds of running game time. Weak particles appear first. After a minute, branches, footsteps or wings become audible; signals intensify in the final20 seconds. There is no permanent screen timer."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Leshen",
+      "text": "Use a dense forest in the Overworld, at night or in deep shade. Keep clear ground and space around the crown: branches, trunks and leaves can prevent a safe encounter."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Fiend",
+      "text": "Use forest habitat or fiend wilderness in the Overworld. A broad clearing and firm ground are important: this large beast cannot appear safely among tightly packed trees or over lava."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Griffin",
+      "text": "Use open mountain habitat at Y80 or higher, with clear sky and room for wings and landing. Roofs, narrow ledges and obstructed flight space can prevent the encounter."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Stay nearby",
+      "text": "Stay alive, in the same dimension and within64 blocks of the offering. If you leave, die, log out or unload its chunk, completion waits. Returning allows it to finish; the saved deadline is not rerolled. Whole-world shutdown does not advance game time."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "A safe approach",
+      "text": "The search checks loaded positions32–48 blocks from the lure, no more than8 blocks above/below it. A new boss stays at least24 blocks from every player and avoids their immediate view. No chunks are forced to load, no terrain is destroyed."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Existing monsters",
+      "text": "A suitable nearby beast within96 blocks can be attracted instead of creating a clone. Busy beasts keep their combat target; a ground beast must have a usable path. Flight/landing for a flying Griffin uses its existing controller."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Cancellation and return",
+      "text": "If habitat/support becomes invalid or no safe approach is found, the hunt is cancelled and one offering is dropped at the lure. Pick it up and try a better site. This is final cancellation, not an ongoing search. Breaking a pending lure also returns it once."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Success and saved state",
+      "text": "Success consumes the offering permanently. Saved reservation IDs prevent duplicate bosses or refunds after reload. A later naturally spawned monster is not proof that a cancelled offering remained active."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "One hunting ground",
+      "text": "One active offering per hunter. Other active or recently successful hunts reserve a horizontal192-block area. A successful hunt starts a24000-game-tick cooldown (about20 running minutes) for owner and area. Cancellation does not start this success cooldown."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:leshen_lure",
+      "title": "Leshen Lure"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:fiend_lure",
+      "title": "Fiend Lure"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_lure",
+      "title": "Griffin Lure"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Vampire Hunter Elixir",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:vampire_elixir",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:vampire_elixir",
+      "text": "Drink for 1.6 seconds: +25% damage against the matching monster category for 180 seconds. Multiplies with matching oil. Drinking again refreshes the effect, rather than stacking a second multiplier. Returns an empty bottle."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:vampire_elixir"
+    }
+  ]
+}

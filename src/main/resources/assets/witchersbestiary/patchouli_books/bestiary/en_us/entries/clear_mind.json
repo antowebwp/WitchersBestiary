@@ -1,0 +1,16 @@
+{
+  "name": "Clear Mind Elixir",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:clear_mind_elixir",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:clear_mind_elixir",
+      "text": "Drink for 1.6 seconds. Clear Mind lasts 180 seconds: Fiend hypnosis nausea drops from 60 to 15 ticks and slowness from 50 to 12 ticks. Not complete immunity. Drinking returns an empty bottle."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:clear_mind_elixir"
+    }
+  ]
+}

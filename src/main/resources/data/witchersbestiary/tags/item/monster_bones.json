@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:bone",
+    "witchersbestiary:ogroid_fang",
+    "witchersbestiary:ghoul_claw",
+    "witchersbestiary:nekker_claw",
+    "witchersbestiary:muddy_claw"
+  ]
+}

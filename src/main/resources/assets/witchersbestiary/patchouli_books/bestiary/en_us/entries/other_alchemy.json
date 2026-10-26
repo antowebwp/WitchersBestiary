@@ -1,0 +1,11 @@
+{
+  "name": "Oils and elixirs",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:relict_oil",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Hunter elixirs grant +25% against their category for 180 seconds. All oils work automatically from the main inventory: +15%, 40 successful melee weapon hits. Bonuses multiply. /wboils shows your saved mode. No manual coating required."
+    }
+  ]
+}

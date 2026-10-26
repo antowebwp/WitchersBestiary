@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:wraith_remains"
+    },
+    {
+      "item": "witchersbestiary:bone_dust"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:wraith_essence",
+    "count": 1
+  }
+}

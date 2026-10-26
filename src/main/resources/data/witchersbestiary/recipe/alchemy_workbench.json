@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BGB",
+    "PPP",
+    "I I"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:glass_bottle"
+    },
+    "G": {
+      "item": "witchersbestiary:graveyard_essence"
+    },
+    "P": {
+      "item": "minecraft:dark_oak_planks"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:alchemy_workbench",
+    "count": 1
+  }
+}

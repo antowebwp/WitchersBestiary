@@ -1,0 +1,18 @@
+{
+  "name": "Making a Bestiary",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:bestiary",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:bestiary",
+      "title": "Bestiary",
+      "text": "A book and any essence from the shared essences tag. All five monster entries are unlocked immediately."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bestiary",
+      "title": "Recipe"
+    }
+  ]
+}

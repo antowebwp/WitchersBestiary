@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "#witchersbestiary:wetlands",
+    "minecraft:dark_forest",
+    "minecraft:old_growth_birch_forest",
+    "minecraft:dripstone_caves",
+    "minecraft:lush_caves",
+    {
+      "id": "biomesoplenty:ominous_woods",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:dead_forest",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:bog",
+      "required": false
+    }
+  ]
+}

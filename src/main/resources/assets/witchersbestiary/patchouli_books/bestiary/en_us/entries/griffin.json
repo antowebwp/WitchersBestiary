@@ -1,0 +1,44 @@
+{
+  "name": "Griffin",
+  "category": "witchersbestiary:hybrids",
+  "icon": "witchersbestiary:griffin_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:griffin",
+      "scale": 0.65,
+      "name": "Griffin",
+      "text": "HYBRID. 180 HP, base damage 11. Four legs, a deep chest and articulated feathered wings spanning about 8.5 blocks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "A rare solitary predator of open peaks, rocks and high meadows above Y=80, including BOP crag, highland and rocky shrubland. Needs open sky, wing clearance and firm support. Does not spawn in cramped caves."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ground combat",
+      "text": "Claws: 11 damage; beak: 13; broad wing strike: 9 with strong knockback. Sidestep after its windup. Below 30 percent health it pursues and dives faster."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Air",
+      "text": "Takeoff, a bounded circuit and a warning before its 16-damage dive. The dive commits before launch: dodge late rather than retreating in a straight line. Every aerial cycle ends; grounded cooldowns keep the beast accessible."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Force it down",
+      "text": "Deal 18 cumulative actual damage during one flight to interrupt it and force a landing. It then takes 30 percent extra damage for 3 seconds. Walls and low roofs obstruct flight. Hybrid oil boosts weapon damage by 20 percent for 30 hits."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "1–2 hybrid essences; 80 percent feather chance (1–3), claw 40, trophy 3. Trophy requires a player or tamed ally kill. Essence, feather and claw craft hybrid oil."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunting lures",
+      "text": "$(l:hunting_lures)Hunting lures$(/l) can call this creature. Read the placement, waiting and cooldown rules before setting an offering."
+    }
+  ]
+}

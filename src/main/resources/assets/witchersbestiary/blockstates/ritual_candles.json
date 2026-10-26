@@ -1,0 +1,36 @@
+{
+  "variants": {
+    "facing=north,lit=true": {
+      "model": "witchersbestiary:block/ritual_candles",
+      "y": 0
+    },
+    "facing=north,lit=false": {
+      "model": "witchersbestiary:block/ritual_candles_off",
+      "y": 0
+    },
+    "facing=east,lit=true": {
+      "model": "witchersbestiary:block/ritual_candles",
+      "y": 90
+    },
+    "facing=east,lit=false": {
+      "model": "witchersbestiary:block/ritual_candles_off",
+      "y": 90
+    },
+    "facing=south,lit=true": {
+      "model": "witchersbestiary:block/ritual_candles",
+      "y": 180
+    },
+    "facing=south,lit=false": {
+      "model": "witchersbestiary:block/ritual_candles_off",
+      "y": 180
+    },
+    "facing=west,lit=true": {
+      "model": "witchersbestiary:block/ritual_candles",
+      "y": 270
+    },
+    "facing=west,lit=false": {
+      "model": "witchersbestiary:block/ritual_candles_off",
+      "y": 270
+    }
+  }
+}

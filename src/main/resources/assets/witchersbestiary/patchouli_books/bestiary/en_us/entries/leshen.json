@@ -1,0 +1,44 @@
+{
+  "name": "Leshen",
+  "category": "witchersbestiary:relicts",
+  "icon": "witchersbestiary:leshen_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:leshen",
+      "name": "Leshen",
+      "text": "Леший — Leshen. An ancient forest keeper with a beast skull and a body of timber.",
+      "scale": 0.6
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Natural spawning is not configured in this version. Use its spawn egg or summon command."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Behavior",
+      "text": "Claws, a warned directional root strike and up to four wolves. Roots immobilize for 30 ticks, while attacks remain available. Below 40 percent health its attacks accelerate."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weaknesses",
+      "text": "Relict elixir: +25 percent. Relict oil: +15 percent for 40 successful hits."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "Forest essence, ancient heart and trophy head. The trophy requires a player or tamed ally’s killing blow."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunter’s advice",
+      "text": "Move during the root wind-up. Watch the wolves and coat your weapon before battle."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunting lures",
+      "text": "$(l:hunting_lures)Hunting lures$(/l) can call this creature. Read the placement, waiting and cooldown rules before setting an offering."
+    }
+  ]
+}

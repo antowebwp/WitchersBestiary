@@ -1,0 +1,45 @@
+{
+  "multipart": [
+    {
+      "apply": {
+        "model": "witchersbestiary:block/graveyard_fence"
+      }
+    },
+    {
+      "when": {
+        "north": "true"
+      },
+      "apply": {
+        "model": "witchersbestiary:block/graveyard_fence_arm",
+        "y": 0
+      }
+    },
+    {
+      "when": {
+        "east": "true"
+      },
+      "apply": {
+        "model": "witchersbestiary:block/graveyard_fence_arm",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "south": "true"
+      },
+      "apply": {
+        "model": "witchersbestiary:block/graveyard_fence_arm",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "west": "true"
+      },
+      "apply": {
+        "model": "witchersbestiary:block/graveyard_fence_arm",
+        "y": 270
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Каталог рецептов",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:ogroid_oil",
+  "sortnum": -100,
+  "pages": [
+    {
+      "type": "witchersbestiary:alchemy_catalog_list"
+    },
+    {
+      "type": "witchersbestiary:alchemy_catalog_detail"
+    }
+  ]
+}

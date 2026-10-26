@@ -1,0 +1,20 @@
+{
+  "name": "Масло против инсектоидов",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:insectoid_oil",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:insectoid_oil",
+      "text": "Положите масло в обычный инвентарь. Успешный удар оружием ближнего боя по подходящей категории получает +15% урона и тратит один из 40 зарядов. Вторая рука свободной не требуется. Бонус перемножается с эликсиром."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:insectoid_oil"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Выбор по порядку слотов; несколько масел не складываются. Промах/блок/нулевая потеря HP не тратят заряд. /wboils показывает режим; on/off/toggle переключают его. Пустая порция расходуется без возврата бутылки, как раньше."
+    }
+  ]
+}

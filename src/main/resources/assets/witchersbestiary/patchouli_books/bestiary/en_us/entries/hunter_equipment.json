@@ -1,0 +1,27 @@
+{
+  "name": "Hunter Equipment",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:bonecrusher_club",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:bonecrusher_club",
+      "text": "The Ogroid Hammer is a slow, heavy two-handed weapon. Hold Use for half a second with an empty offhand: 9 damage and knockback within 3 blocks. The 12-second cooldown is saved on the item. Walls block the wave; oils and fangs apply to ordinary hits only."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bonecrusher_club",
+      "text": "Griffin claws reinforce the striking head; an ogroid fang secures the core. Also drops from Bonecrushers."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:vampire_fang",
+      "text": "Katakan fangs occupy the Trinkets necklace slot. Restore 10% of actual hostile HP loss: at most 2 HP per second and 4 HP over one victim’s lifetime. That reserve is shared across hunters and persists through reload. Copies, PvP, animals, ranged hits and Crushing Blow do not heal."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:hunter_medallion",
+      "text": "An alternative in the same slot: senses monsters within 16 blocks and reduces their damage by 5%. Forest and wraith essences stabilize its sensitive frame. It does not replace armor."
+    }
+  ]
+}

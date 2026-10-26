@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "PPP",
+    "BGB",
+    " I "
+  ],
+  "key": {
+    "P": {
+      "item": "minecraft:dark_oak_slab"
+    },
+    "B": {
+      "item": "minecraft:glass_bottle"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "I": {
+      "item": "minecraft:iron_nugget"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:alchemy_shelf",
+    "count": 1
+  }
+}

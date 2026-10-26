@@ -1,0 +1,594 @@
+{
+  "textures": {
+    "atlas": "witchersbestiary:item/foglet_claw",
+    "particle": "witchersbestiary:item/foglet_claw"
+  },
+  "elements": [
+    {
+      "name": "root",
+      "from": [
+        6,
+        2,
+        6
+      ],
+      "to": [
+        10,
+        5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15.0,
+            13.0,
+            15.75,
+            13.5625
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            14.875,
+            12.125,
+            15.625,
+            12.6875
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            15.0625,
+            12.625,
+            15.8125,
+            13.1875
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            14.9375,
+            12.9375,
+            15.6875,
+            13.5
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            14.5,
+            12.9375,
+            15.25,
+            13.6875
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            14.125,
+            12.3125,
+            14.875,
+            13.0625
+          ],
+          "texture": "#atlas"
+        }
+      }
+    },
+    {
+      "name": "curved_claw",
+      "from": [
+        6.5,
+        4,
+        6.5
+      ],
+      "to": [
+        9.5,
+        12,
+        9.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            13.8125,
+            1.25,
+            14.375,
+            2.75
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            8.8125,
+            3.5625,
+            9.375,
+            5.0625
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            10.625,
+            2.25,
+            11.1875,
+            3.75
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            14.25,
+            4.9375,
+            14.8125,
+            6.4375
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            11.3125,
+            5.125,
+            11.875,
+            5.6875
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            9.8125,
+            4.0,
+            10.375,
+            4.5625
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.0,
+          8.0,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "name": "black_tip",
+      "from": [
+        7,
+        10,
+        6.5
+      ],
+      "to": [
+        9,
+        14,
+        8.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15.5,
+            9.0,
+            15.875,
+            9.75
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            13.0,
+            10.25,
+            13.375,
+            11.0
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            14.3125,
+            10.1875,
+            14.6875,
+            10.9375
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            13.375,
+            8.9375,
+            13.75,
+            9.6875
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            14.0,
+            11.375,
+            14.375,
+            11.75
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            14.125,
+            8.875,
+            14.5,
+            9.25
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.0,
+          12.0,
+          7.5
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "name": "groove_0",
+      "from": [
+        6.6,
+        5.0,
+        6.25
+      ],
+      "to": [
+        7.8,
+        5.5,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6.5,
+            12.375,
+            6.75,
+            12.5
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            2.1875,
+            6.125,
+            2.4375,
+            6.25
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            6.1875,
+            3.3125,
+            6.875,
+            3.4375
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            5.6875,
+            2.5,
+            6.375,
+            2.625
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            7.0625,
+            12.0625,
+            7.3125,
+            12.75
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            6.0625,
+            7.4375,
+            6.3125,
+            8.125
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          7.2,
+          5.25,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "name": "groove_1",
+      "from": [
+        7.1499999999999995,
+        5.6,
+        6.25
+      ],
+      "to": [
+        8.35,
+        6.1,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0.25,
+            0.4375,
+            0.5,
+            0.5625
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            4.8125,
+            14.875,
+            5.0625,
+            15.0
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            5.6875,
+            7.75,
+            6.375,
+            7.875
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            5.375,
+            12.8125,
+            6.0625,
+            12.9375
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            6.4375,
+            12.1875,
+            6.6875,
+            12.875
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            1.9375,
+            11.375,
+            2.1875,
+            12.0625
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          7.75,
+          5.85,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "name": "groove_2",
+      "from": [
+        7.699999999999999,
+        6.2,
+        6.25
+      ],
+      "to": [
+        8.9,
+        6.7,
+        9.75
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.25,
+            15.0625,
+            1.5,
+            15.1875
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            7.0,
+            0.1875,
+            7.25,
+            0.3125
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            0.3125,
+            6.75,
+            1.0,
+            6.875
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            6.9375,
+            6.5,
+            7.625,
+            6.625
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            2.9375,
+            2.0,
+            3.1875,
+            2.6875
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            0.5625,
+            9.5,
+            0.8125,
+            10.1875
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.3,
+          6.45,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        15,
+        30,
+        0
+      ],
+      "translation": [
+        0,
+        -1,
+        0
+      ],
+      "scale": [
+        0.58,
+        0.58,
+        0.58
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.32,
+        0.32,
+        0.32
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -35,
+        0
+      ],
+      "translation": [
+        1,
+        1,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        35,
+        0
+      ],
+      "translation": [
+        1,
+        1,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    }
+  },
+  "ambientocclusion": false
+}

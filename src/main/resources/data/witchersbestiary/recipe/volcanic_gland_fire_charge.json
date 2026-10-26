@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:volcanic_gland"
+    },
+    {
+      "item": "minecraft:coal"
+    },
+    {
+      "item": "minecraft:gunpowder"
+    }
+  ],
+  "result": {
+    "id": "minecraft:fire_charge",
+    "count": 6
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "name": "Werewolf",
+  "category": "witchersbestiary:cursed",
+  "icon": "witchersbestiary:werewolf_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:werewolf",
+      "name": "Werewolf",
+      "text": "Werewolf. A cursed hunter with a wolf’s jaws and a human’s cruelty.",
+      "scale": 0.8
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Forests and taiga. By day it resembles a peaceful villager without trading. At night it becomes a Werewolf; dawn restores human form. Health preserves its fraction (20/120 HP). In skyless dimensions it stays a beast."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Claws and bite",
+      "text": "Two claw hits deal 9 and 11 damage. Below 60 percent health a third strike joins the combo. Bite deals 13 damage and briefly slows the target."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Three phases",
+      "text": "Hunt: 120–72 HP. Below 72 HP it gains leaps and charges. Below 30 HP it howls once and enters rage: speed, 20 percent extra damage, up to four 1-HP heals at three-second intervals."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Leap and charge",
+      "text": "Leap prepares for 0.7 seconds; charge for 0.5. The direction is fixed. Step aside. A miss leaves a counterattack window: 25 percent extra incoming damage for one second."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Interruption",
+      "text": "During leap or charge preparation, a player hit removing at least 6 HP has a 35 percent chance to interrupt. Stun lasts 0.9 seconds; repeat interruption is blocked for eight seconds."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Alchemy and loot",
+      "text": "Cursed oil: 20 percent extra damage for 30 hits. Elixir: 25 percent for 180 seconds. Essence: 100 percent, 1–2. Claw: 40 percent. Head: 15 percent with a player or tamed ally’s killing blow."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunter’s advice",
+      "text": "Keep away from the jaws. During preparation either strike hard or sidestep. Punish a missed rush. Use oil in rage and do not let healing prolong the fight."
+    }
+  ]
+}

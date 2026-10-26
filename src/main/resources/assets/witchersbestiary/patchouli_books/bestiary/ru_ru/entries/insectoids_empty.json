@@ -1,0 +1,11 @@
+{
+  "name": "Пока нет записей",
+  "category": "witchersbestiary:insectoids",
+  "icon": "minecraft:spider_eye",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Пока нет записей"
+    }
+  ]
+}

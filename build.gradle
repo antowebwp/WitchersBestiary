@@ -1,0 +1,795 @@
+plugins {
+ id 'fabric-loom' version '1.7.4'
+ id 'maven-publish'
+}
+base { archivesName = 'witchersbestiary' }
+repositories { maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' } }
+repositories { maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } } }
+repositories { maven { url = 'https://maven.modmuss50.me/'; content { includeGroup 'me.zeroeightsix' } } }
+loom {
+ splitEnvironmentSourceSets()
+ mods { witchersbestiary { sourceSet sourceSets.main; sourceSet sourceSets.client } }
+}
+repositories { maven { url = 'https://maven.terraformersmc.com/releases/' } }
+dependencies {
+ modCompileOnly 'com.terraformersmc:modmenu:11.0.3'
+ if(project.hasProperty('stage18WithMenu')) modRuntimeOnly 'com.terraformersmc:modmenu:11.0.3'
+ if(project.hasProperty('stage19fProfile')) modCompileOnly 'maven.modrinth:5aaWibi9:JagCscwi'
+ else modImplementation 'maven.modrinth:5aaWibi9:JagCscwi'
+ if(project.hasProperty('stage19fProfile')) modCompileOnly('org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.0') { transitive = false }
+ else modImplementation('org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.0') { transitive = false }
+ if(project.hasProperty('stage19fProfile')) modCompileOnly('org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.0') { transitive = false }
+ else modImplementation('org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.0') { transitive = false }
+ minecraft "com.mojang:minecraft:${minecraft_version}"
+ mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
+ modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+ modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+ modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+ modImplementation 'maven.modrinth:nU0bVIaL:XIjNwQkI'
+ // Loom's development classpath excludes Patchouli's nested Fiber jar.
+ // The distributed Patchouli jar already contains it.
+ modRuntimeOnly 'me.zeroeightsix:fiber:0.23.0-2'
+}
+processResources { inputs.property 'version', project.version; filesMatching('fabric.mod.json') { expand 'version': project.version } }
+tasks.withType(JavaCompile).configureEach { options.release = 21; options.encoding = 'UTF-8' }
+java { withSourcesJar(); sourceCompatibility = JavaVersion.VERSION_21; targetCompatibility = JavaVersion.VERSION_21 }
+
+// Тестовый мод не включается в распространяемый JAR.
+sourceSets {
+ gametest {
+  compileClasspath += sourceSets.main.compileClasspath + sourceSets.main.output
+  runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.main.output
+ }
+ clientSmoke {
+  compileClasspath += sourceSets.client.compileClasspath + sourceSets.main.output + sourceSets.client.output
+  runtimeClasspath += sourceSets.client.runtimeClasspath + sourceSets.main.output + sourceSets.client.output
+ }
+}
+loom {
+ mods {
+  'witchersbestiary-tests' { sourceSet sourceSets.gametest }
+  'witchersbestiary-client-tests' { sourceSet sourceSets.clientSmoke }
+ }
+ runs {
+  stage16Heads {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Heads=true'
+   vmArg "-Dwitchersbestiary.stage16Phase=${project.findProperty('stage16HeadPhase') ?: 'head-anatomy-native'}"
+   vmArg "-Dwitchersbestiary.stage16Names=${project.findProperty('stage16HeadNames') ?: 'drowner,ghoul,nekker,werewolf,katakan,foglet,noonwraith,wraith,bonecrusher'}"
+   vmArg '-Dwitchersbestiary.stage16Final=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-heads'
+  }
+  stage16HeadsReload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=head-anatomy-native'
+   vmArg '-Dwitchersbestiary.stage16Reload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-heads'
+  }
+  stage16Before {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=before'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage16Batch1 {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=batch1'
+   vmArg '-Dwitchersbestiary.stage16Names=drowner,ghoul,nekker'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage16Batch2 {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=batch2'
+   vmArg '-Dwitchersbestiary.stage16Names=werewolf,katakan,foglet'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage16Batch3 {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=batch3'
+   vmArg '-Dwitchersbestiary.stage16Names=noonwraith,wraith,bonecrusher'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage16Final {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=final'
+   vmArg '-Dwitchersbestiary.stage16Final=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage16GhostTrophies {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=ghost-trophies'
+   vmArg '-Dwitchersbestiary.stage16Names=noonwraith,wraith'
+   vmArg '-Dwitchersbestiary.stage16Final=true'
+   vmArg '-Dwitchersbestiary.stage16TrophiesOnly=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage16Reload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage16Visual=true'
+   vmArg '-Dwitchersbestiary.stage16Phase=final'
+   vmArg '-Dwitchersbestiary.stage16Final=true'
+   vmArg '-Dwitchersbestiary.stage16Reload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage16-visual'
+  }
+  stage15Griffin {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Griffin=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-griffin'
+  }
+  stage15GriffinVisual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Griffin=true'
+   vmArg '-Dwitchersbestiary.stage15GriffinVisualOnly=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-griffin'
+  }
+  stage15GriffinReload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Griffin=true'
+   vmArg '-Dwitchersbestiary.stage15GriffinReload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-griffin'
+  }
+  stage15GriffinNatural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Griffin=true'
+   vmArg '-Dwitchersbestiary.stage15GriffinNatural=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-griffin'
+  }
+  stage17Combat {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Combat=true'
+   vmArg '-Dwitchersbestiary.stage17Combat=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage17-combat'
+  }
+  volumeItems {
+   client()
+   source sourceSets.clientSmoke
+   vmArg "-Dwitchersbestiary.volumeItems=true"
+   if(project.hasProperty("volumeNames")) vmArg "-Dwitchersbestiary.volumeNames=${project.property('volumeNames')}"
+   if(project.hasProperty("volumePhase")) vmArg "-Dwitchersbestiary.volumePhase=${project.property('volumePhase')}"
+   programArgs "--username", "VolumeCheck", "--width", "1280", "--height", "900"
+   runDir "build/volume-items"
+  }
+  stage17Lures {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage17Lures=true'
+   if(project.hasProperty('stage18Retention')) vmArg '-Dwitchersbestiary.stage18Retention=true'
+   if(project.hasProperty('stage18Refund')) vmArg '-Dwitchersbestiary.stage18Refund=true'
+   if(project.hasProperty('stage17LuresReload')) vmArg '-Dwitchersbestiary.stage17LuresReload=true'
+   programArgs '--username', 'LureKeeper', '--width', '1280', '--height', '900'
+   runDir 'build/stage17-lures'
+  }
+  stage17Natural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage17Natural=true'
+   if(project.hasProperty('stage17NaturalPhase')) vmArg "-Dwitchersbestiary.stage17NaturalPhase=${project.property('stage17NaturalPhase')}"
+   if(project.hasProperty('stage10Bop')) vmArg '-Dwitchersbestiary.stage10Bop=true'
+   programArgs '--username', 'SpawnObserver', '--width', '960', '--height', '640'
+   runDir project.hasProperty('stage17NaturalPhase') ? "build/stage17-natural-${project.property('stage17NaturalPhase')}" : 'build/stage17-natural'
+  }
+  stage17Basilisk {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage17Basilisk=true'
+   if(project.hasProperty('stage18Config')) vmArg '-Dwitchersbestiary.stage18Config=true'
+   if(project.hasProperty('stage18C6')) vmArg '-Dwitchersbestiary.stage18C6=true'
+   if(project.hasProperty('stage18WithMenu')) vmArg '-Dwitchersbestiary.stage18ExpectMenu=true'
+   if(project.hasProperty('stage18C3')) vmArg '-Dwitchersbestiary.stage18C3=true'
+   if(project.hasProperty('hotfix181')) vmArg '-Dwitchersbestiary.hotfix181=true'
+   if(project.hasProperty('stage17BasiliskReload')) vmArg '-Dwitchersbestiary.stage17BasiliskReload=true'
+   programArgs '--username', 'BasiliskKeeper', '--width', '1280', '--height', '900'
+   runDir 'build/stage17-basilisk'
+  }
+  stage17Gear {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage17Gear=true'
+   vmArg "-Dwitchersbestiary.stage17GearPhase=${project.findProperty('stage17GearPhase') ?: 'base'}"
+   if(project.hasProperty('stage17GearReload')) vmArg '-Dwitchersbestiary.stage17GearReload=true'
+   if(project.hasProperty('stage17WithSS')) vmArg '-Dwitchersbestiary.stage17ExpectSS=true'
+   if(project.hasProperty('stage17WithBC') || project.hasProperty('stage17WithSS')) vmArg '-Dwitchersbestiary.stage17ExpectBC=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage17-gear'
+  }
+  stage15Combat {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Combat=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-combat'
+  }
+  stage15Visual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Visual=true'
+   vmArg '-Dwitchersbestiary.stage15Phase=' + (project.hasProperty('stage15Before') ? 'before' : 'after')
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-visual'
+  }
+  stage15Reload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage15Visual=true'
+   vmArg '-Dwitchersbestiary.stage15Reload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage15-visual'
+  }
+  stage14Visual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage14Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage14-visual'
+  }
+  stage14Natural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Natural=true'
+   vmArg '-Dwitchersbestiary.stage14Natural=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage14-natural'
+  }
+  recipeSyncSmoke {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.recipeSyncSmoke=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/recipe-sync-smoke'
+  }
+  gametest {
+   server()
+   source sourceSets.gametest
+   name 'Witcher’s Bestiary server GameTests'
+   vmArg '-Dfabric-api.gametest'
+   if(project.hasProperty('testBatchPrefix')) vmArg "-Dwitchersbestiary.testBatchPrefix=${project.property('testBatchPrefix')}"
+   vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/gametest-results.xml"
+   runDir 'build/gametest'
+  }
+  stage19Review {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage19A=true'
+   programArgs '--username', 'GraveHagReview', '--width', '1280', '--height', '900'
+   runDir 'build/stage19-review'
+  }
+  clientSmoke {
+   client()
+   source sourceSets.clientSmoke
+   name 'Bestiary client asset smoke test'
+   runDir 'build/client-smoke'
+  }
+  visualReloadTest {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage three saved-world reload test'
+   vmArg '-Dwitchersbestiary.visualTest=true'
+   vmArg '-Dwitchersbestiary.visualReload=true'
+   runDir 'build/visual-test'
+  }
+  visualTest {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage three real-world visual test'
+   vmArg '-Dwitchersbestiary.visualTest=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/visual-test'
+  }
+  visualStage5 {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage five anatomy and animation captures'
+   vmArg '-Dwitchersbestiary.stage5Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/visual-stage5'
+  }
+  visualStage6 {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage six Noonwraith and bilingual book verification'
+   vmArg '-Dwitchersbestiary.stage6Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/visual-stage6'
+  }
+  visualStage6Reload {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage six saved-world reload'
+   vmArg '-Dwitchersbestiary.stage6Reload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/visual-stage6'
+  }
+  geometryAiVisual {
+   client()
+   source sourceSets.clientSmoke
+   name 'Geometry and combat illusion verification'
+   vmArg '-Dwitchersbestiary.geometryAiVisual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/geometry-ai-visual'
+  }
+
+  stage13Visual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage13Visual=true'
+   programArgs '--width', '1440', '--height', '1000'
+   runDir 'build/stage13-visual'
+  }
+  stage13Reload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage13Visual=true'
+   vmArg '-Dwitchersbestiary.stage13Reload=true'
+   programArgs '--width', '1440', '--height', '1000'
+   runDir 'build/stage13-visual'
+  }
+  stage13Natural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Natural=true'
+   vmArg '-Dwitchersbestiary.stage13Natural=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage13-natural'
+  }
+  stage12Textures {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage12Visual=true'
+   vmArg '-Dwitchersbestiary.stage12TexturesOnly=true'
+   programArgs '--width', '1440', '--height', '1000'
+   runDir 'build/stage12-visual'
+  }
+  stage12Visual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage12Visual=true'
+   programArgs '--width', '1440', '--height', '1000'
+   runDir 'build/stage12-visual'
+  }
+  stage12Reload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage12Visual=true'
+   vmArg '-Dwitchersbestiary.stage12Reload=true'
+   programArgs '--width', '1440', '--height', '1000'
+   runDir 'build/stage12-visual'
+  }
+  stage12Natural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Natural=true'
+   vmArg '-Dwitchersbestiary.stage12Natural=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage12-natural'
+  }
+  stage11RecipeReload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage11Reload=true'
+   vmArg '-Dwitchersbestiary.stage11RecipeOnly=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage11-visual'
+  }
+  stage11Diagnostics {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage11Reload=true'
+   vmArg '-Dwitchersbestiary.stage11Diagnostics=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage11-visual'
+  }
+  stage11Natural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Natural=true'
+   vmArg '-Dwitchersbestiary.stage11Natural=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage11-natural'
+  }
+  stage11Visual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage11Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage11-visual'
+  }
+  stage11Reload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage11Reload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage11-visual'
+  }
+  stage10Arena {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage9Visual=true'
+   vmArg '-Dwitchersbestiary.stage9ArenaOnly=true'
+   vmArg '-Dwitchersbestiary.stage10Arena=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage10-arena'
+  }
+  stage10NaturalFields {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Natural=true'
+   vmArg '-Dwitchersbestiary.stage10NaturalFieldsOnly=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage10-natural-fields'
+  }
+  stage10Natural {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Natural=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage10-natural'
+  }
+  stage10Visual {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage10-visual'
+  }
+  stage10Refresh {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Reload=true'
+   vmArg '-Dwitchersbestiary.stage10Refresh=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage10-visual'
+  }
+  stage10Reload {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage10Reload=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage10-visual'
+  }
+  stage9Arena {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage nine focused live combat arena'
+   vmArg '-Dwitchersbestiary.stage9Visual=true'
+   vmArg '-Dwitchersbestiary.stage9ArenaOnly=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage9-arena'
+  }
+  stage9Recheck {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage nine visual corrections and combat arena'
+   vmArg '-Dwitchersbestiary.stage9Visual=true'
+   vmArg '-Dwitchersbestiary.stage9Recheck=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage9-visual'
+  }
+  stage9Visual {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage nine combat and models verification'
+   vmArg '-Dwitchersbestiary.stage9Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage9-visual'
+  }
+  stage8Visual {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage eight gameplay, Trinkets and assets'
+   vmArg '-Dwitchersbestiary.stage8Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage8-visual'
+  }
+  stage7Visual {
+   client()
+   source sourceSets.clientSmoke
+   name 'Stage seven Werewolf and Drowner verification'
+   vmArg '-Dwitchersbestiary.stage7Visual=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/stage7-visual'
+  }
+  geometryAiRecheck {
+   client()
+   source sourceSets.clientSmoke
+   name 'Focused Foglet joint recheck'
+   vmArg '-Dwitchersbestiary.geometryAiVisual=true'
+   vmArg '-Dwitchersbestiary.focusFoglet=true'
+   programArgs '--width', '1280', '--height', '900'
+   runDir 'build/geometry-ai-visual'
+  }
+
+ }
+}
+
+repositories { maven { url = 'https://maven.ladysnake.org/releases' } }
+
+// Optional development-only compatibility run; never bundled or required by the mod.
+if (project.hasProperty('stage10Bop')) {
+ dependencies {
+  modRuntimeOnly fileTree(dir: 'build/stage10-bop-mods', include: '*.jar')
+  runtimeOnly fileTree(dir: 'build/stage10-bop-libraries', include: '*.jar')
+ }
+ loom.runs.stage10Natural.vmArg '-Dwitchersbestiary.stage10Bop=true'
+ loom.runs.stage11Natural.vmArg '-Dwitchersbestiary.stage10Bop=true'
+ loom.runs.stage13Natural.vmArg '-Dwitchersbestiary.stage10Bop=true'
+ loom.runs.stage14Natural.vmArg '-Dwitchersbestiary.stage10Bop=true'
+}
+
+// Audit the distributed jar, not only the named development environment.
+tasks.register('verifyReleaseMixins') {
+ dependsOn tasks.named('remapJar')
+ inputs.file(tasks.named('remapJar').flatMap { it.archiveFile })
+ doLast {
+  def jarFile = tasks.named('remapJar').get().archiveFile.get().asFile
+  def json = new groovy.json.JsonSlurper()
+  new java.util.zip.ZipFile(jarFile).withCloseable { zip ->
+   def readJson = { name ->
+    def entry = zip.getEntry(name)
+    if (entry == null) throw new GradleException("Missing release resource: ${name}")
+    json.parse(zip.getInputStream(entry))
+   }
+   def mod = readJson('fabric.mod.json')
+   def configs = mod.mixins.collect { it instanceof String ? it : it.config }
+   def covered = [] as Set
+   configs.each { name ->
+    def config = readJson(name)
+    if (!config.refmap) throw new GradleException("Missing refmap in ${name}")
+    def refs = readJson(config.refmap).mappings
+    ((config.mixins ?: []) + (config.client ?: [])).each { shortName ->
+     def key = config.package.replace('.', '/') + '/' + shortName
+     if (!zip.getEntry(key + '.class') || !refs[key]) throw new GradleException("Missing class/refmap mapping for ${key} in ${name}")
+     refs[key].each { selector, target ->
+      if (!(target =~ /(?:method|field)_\d+/)) throw new GradleException("Unmapped release selector ${key}: ${selector} -> ${target}")
+     }
+     covered.add(shortName)
+    }
+   }
+   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
+   def client = readJson('witchersbestiary.client.mixins.json')
+   def mappings = readJson(client.refmap).mappings['com/witchersbestiary/combat/mixin/RecipeCatalogReloadMixin']
+   def selector = 'onSynchronizeRecipes(Lnet/minecraft/network/packet/s2c/play/SynchronizeRecipesS2CPacket;)V'
+   if (mappings[selector] != 'Lnet/minecraft/class_634;method_11106(Lnet/minecraft/class_2788;)V')
+    throw new GradleException("Recipe sync does not map to the Minecraft 1.21.1 target: ${mappings}")
+   logger.lifecycle("Verified all ${covered.size()} release mixins and recipe-sync client refmap")
+  }
+ }
+}
+tasks.named('check') { dependsOn tasks.named('verifyReleaseMixins') }
+
+// Separate test-only intermediary jar for checking the real distributed mod in production.
+tasks.register('recipeSyncTestJar', Jar) {
+ dependsOn tasks.named('clientSmokeClasses')
+ archiveClassifier = 'recipe-sync-test-dev'
+ from(sourceSets.clientSmoke.output) { include 'com/witchersbestiary/test/RecipeSyncSmokeClient*.class' }
+ from('src/clientSmoke/resources/recipe-sync-test.fabric.json') { rename { 'fabric.mod.json' } }
+}
+tasks.register('remapRecipeSyncTestJar', net.fabricmc.loom.task.RemapJarTask) {
+ dependsOn tasks.named('recipeSyncTestJar')
+ inputFile = tasks.named('recipeSyncTestJar').flatMap { it.archiveFile }
+ archiveClassifier = 'recipe-sync-test'
+ classpath.from(sourceSets.clientSmoke.compileClasspath)
+}
+tasks.register('recipeSyncRuntimePaths') {
+ doLast {
+  def file = layout.buildDirectory.file('recipe-sync-runtime-paths.json').get().asFile
+  file.parentFile.mkdirs()
+  file.text = groovy.json.JsonOutput.toJson(sourceSets.clientSmoke.runtimeClasspath.files.collect { it.absolutePath })
+ }
+}
+
+// Test-only copies prepared by tools/prepare-stage17-compat.py; never bundled or required.
+if (project.hasProperty('stage17WithBC') || project.hasProperty('stage17WithSS')) {
+ dependencies {
+  modRuntimeOnly fileTree(dir: 'build/stage17-compat/bc/mods', include: '*.jar')
+  runtimeOnly fileTree(dir: 'build/stage17-compat/bc/libraries', include: '*.jar')
+ }
+}
+if (project.hasProperty('stage17WithSS')) {
+ dependencies {
+  modRuntimeOnly fileTree(dir: 'build/stage17-compat/ss/mods', include: '*.jar')
+  runtimeOnly fileTree(dir: 'build/stage17-compat/ss/libraries', include: '*.jar')
+ }
+}
+
+// Exact installed DTN compatibility profile, copied read-only into build/; no production dependency.
+if(project.hasProperty('stage18WithDTN')) {
+ dependencies {
+  modRuntimeOnly fileTree(dir:'build/stage18-compat/dtn',include:'*.jar',exclude:['core-*','toml-*'])
+  runtimeOnly fileTree(dir:'build/stage18-compat/dtn',include:['core-*.jar','toml-*.jar'])
+ }
+}
+
+
+tasks.register('hotfix181TestJar', Jar) {
+ dependsOn tasks.named('clientSmokeClasses')
+ archiveClassifier = 'hotfix181-test-dev'
+ from(sourceSets.clientSmoke.output) { include 'com/witchersbestiary/test/BasiliskInteractionClient*.class', 'com/witchersbestiary/test/C6ReviewClient*.class', 'com/witchersbestiary/test/Hotfix181SmokeClient.class', 'com/witchersbestiary/test/mixin/Hotfix181FrameMixin.class', 'clientSmoke-witchersbestiary-refmap.json' }
+ from('src/clientSmoke/resources/hotfix181-test.fabric.json') { rename { 'fabric.mod.json' } }
+ from('src/clientSmoke/resources/hotfix181-test.mixins.json')
+}
+tasks.register('remapHotfix181TestJar', net.fabricmc.loom.task.RemapJarTask) {
+ dependsOn tasks.named('hotfix181TestJar')
+ inputFile = tasks.named('hotfix181TestJar').flatMap { it.archiveFile }
+ archiveClassifier = 'hotfix181-test'
+ classpath.from(sourceSets.clientSmoke.compileClasspath)
+}
+
+loom.runs {
+ stage19Graveyards {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19B=true'
+  programArgs '--username', 'GraveyardReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-graveyards'
+ }
+}
+
+// Bounded ordinary-world diagnostic; test sources never enter the release JAR.
+loom.runs {
+ stage19Locate {
+  server()
+  source sourceSets.gametest
+  vmArg '-Dwitchersbestiary.stage19Locate=true'
+  if(project.hasProperty('stage19LocateResume')) vmArg '-Dwitchersbestiary.stage19LocateResume=true'
+  programArgs '--nogui'
+  runDir 'build/stage19-locate-hotfix'
+ }
+}
+
+
+loom.runs {
+ stage19B1 {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19B1=true'
+  programArgs '--username', 'TrophyReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-b1'
+ }
+}
+
+loom.runs {
+ stage19C {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19C=true'
+  programArgs '--username', 'HauntedReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-c'
+ }
+}
+
+if(project.hasProperty('stage19dCompat')) {
+ dependencies {
+  modRuntimeOnly fileTree(dir:'build/stage19d-compat/mods',include:'*.jar')
+  runtimeOnly fileTree(dir:'build/stage19d-compat/libraries',include:'*.jar')
+ }
+}
+loom.runs {
+ stage19D {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19D=true'
+  if(project.hasProperty('stage19dRenderOnly')) {
+   vmArg '-Dwitchersbestiary.stage19dRenderOnly=true'
+   vmArg "-Dwitchersbestiary.stage19dWorld=${project.property('stage19dWorld')}"
+  }
+  if(project.hasProperty('stage19dCompat')) vmArg '-Dwitchersbestiary.stage19dCompat=true'
+  programArgs '--username', 'WorkshopReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-d'
+ }
+}
+
+loom.runs {
+ stage19D1 {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19D=true'
+  vmArg '-Dwitchersbestiary.stage19D1=true'
+  if(project.hasProperty('stage19d1ChestReview')) {
+   vmArg '-Dwitchersbestiary.stage19dRenderOnly=true'
+   vmArg "-Dwitchersbestiary.stage19dWorld=${project.property('stage19dWorld')}"
+  }
+  programArgs '--username', 'WorkshopReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-d1'
+ }
+}
+
+loom.runs {
+ stage19D2 {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19D=true'
+  vmArg '-Dwitchersbestiary.stage19D2=true'
+  if(project.hasProperty('stage19d2AiOnly')) vmArg '-Dwitchersbestiary.stage19d2AiOnly=true'
+  programArgs '--username', 'WorkshopReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-d2'
+ }
+}
+
+loom.runs {
+ stage19E {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19E=true'
+  if(project.hasProperty('stage19eHandsReview')||project.hasProperty('stage19eFinalReview')) {
+   if(project.hasProperty('stage19eFinalReview')) vmArg '-Dwitchersbestiary.stage19eFinalReview=true'
+   vmArg '-Dwitchersbestiary.stage19eHandsReview=true'
+   vmArg "-Dwitchersbestiary.stage19eWorld=${project.property('stage19eWorld')}"
+  }
+  programArgs '--username', 'ArmoryReview', '--width', '1280', '--height', '900'
+  runDir 'build/stage19-e'
+ }
+}
+
+loom.runs {
+ stage19E1 {
+  client()
+  source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage19E1=true'
+  if(project.hasProperty('stage19e1AnimationWorld')) vmArg "-Dwitchersbestiary.stage19e1AnimationWorld=${project.property('stage19e1AnimationWorld')}"
+  programArgs '--username', 'HandReview', '--width', '1280', '--height', '900'
+  runDir project.hasProperty('stage17WithBC') ? 'build/stage19-e1-bc' : 'build/stage19-e1-vanilla'
+ }
+}
+
+loom.runs { swordVanillaReference { client(); source sourceSets.clientSmoke; vmArg '-Dwitchersbestiary.swordVanillaReference=true'; if(project.hasProperty('thirdHandReview')) vmArg '-Dwitchersbestiary.thirdHandReview=true'; if(project.hasProperty('stage19e1AnimationWorld')) vmArg "-Dwitchersbestiary.stage19e1AnimationWorld=${project.property('stage19e1AnimationWorld')}"; programArgs '--username','HandReference','--width','1280','--height','900'; runDir project.hasProperty('stage17WithBC') ? 'build/sword-reference-bc' : 'build/sword-reference-vanilla' } }
+
+// Four independent release verification profiles; optional mods never enter the release JAR.
+if(project.hasProperty('stage19fProfile')) {
+ def profile=project.property('stage19fProfile')
+ if(!(profile in ['A','B','C','D'])) throw new GradleException('stage19fProfile must be A, B, C or D')
+ dependencies {
+  if(profile in ['B','D']) modRuntimeOnly fileTree(dir:'build/stage17-compat/bc/mods',include:'*.jar')
+  if(profile in ['C','D']) modRuntimeOnly fileTree(dir:'build/stage17-compat/ss/mods',include:'*.jar')
+ }
+ loom.runs {
+  stage19F {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage19F=true'
+   vmArg "-Dwitchersbestiary.stage19fProfile=${profile}"
+   programArgs '--username','ReleaseReview','--width','1280','--height','900'
+   runDir "build/stage19-f-${profile}"
+  }
+ }
+}
+
+// Deterministic release archives (no filesystem timestamps/order).
+tasks.withType(AbstractArchiveTask).configureEach {
+ preserveFileTimestamps = false
+ reproducibleFileOrder = true
+}

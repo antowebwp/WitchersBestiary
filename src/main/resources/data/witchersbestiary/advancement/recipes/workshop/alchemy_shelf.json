@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:dark_oak_slab"
+            ]
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "witchersbestiary:alchemy_shelf"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "material",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchersbestiary:alchemy_shelf"
+    ]
+  }
+}

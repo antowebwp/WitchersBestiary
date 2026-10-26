@@ -1,0 +1,357 @@
+{
+  "textures": {
+    "atlas": "witchersbestiary:item/katakan_claw",
+    "particle": "witchersbestiary:item/katakan_claw"
+  },
+  "elements": [
+    {
+      "name": "root",
+      "from": [
+        6,
+        4,
+        7
+      ],
+      "to": [
+        9,
+        9,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            10.9375,
+            4.75,
+            11.5,
+            5.6875
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            8.9375,
+            2.4375,
+            9.5,
+            3.375
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            11.8125,
+            1.0,
+            12.1875,
+            1.9375
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            11.0,
+            4.9375,
+            11.375,
+            5.875
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            11.875,
+            7.375,
+            12.4375,
+            7.75
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            15.25,
+            4.9375,
+            15.8125,
+            5.3125
+          ],
+          "texture": "#atlas"
+        }
+      }
+    },
+    {
+      "name": "curve",
+      "from": [
+        7.2,
+        8,
+        7
+      ],
+      "to": [
+        9.5,
+        12,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12.25,
+            6.25,
+            12.6875,
+            7.0
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            13.6875,
+            2.4375,
+            14.125,
+            3.1875
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            10.625,
+            6.875,
+            11.0,
+            7.625
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            11.5625,
+            4.875,
+            11.9375,
+            5.625
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            14.9375,
+            2.375,
+            15.375,
+            2.75
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            10.0,
+            3.25,
+            10.4375,
+            3.625
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8.35,
+          10.0,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -22.5,
+        "rescale": false
+      }
+    },
+    {
+      "name": "tip",
+      "from": [
+        8.8,
+        11,
+        7.2
+      ],
+      "to": [
+        9.8,
+        14,
+        8.8
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            14.125,
+            8.625,
+            14.3125,
+            9.1875
+          ],
+          "texture": "#atlas"
+        },
+        "south": {
+          "uv": [
+            13.1875,
+            11.125,
+            13.375,
+            11.6875
+          ],
+          "texture": "#atlas"
+        },
+        "east": {
+          "uv": [
+            13.375,
+            9.5625,
+            13.6875,
+            10.125
+          ],
+          "texture": "#atlas"
+        },
+        "west": {
+          "uv": [
+            14.8125,
+            8.4375,
+            15.125,
+            9.0
+          ],
+          "texture": "#atlas"
+        },
+        "up": {
+          "uv": [
+            14.375,
+            8.4375,
+            14.5625,
+            8.75
+          ],
+          "texture": "#atlas"
+        },
+        "down": {
+          "uv": [
+            13.75,
+            10.875,
+            13.9375,
+            11.1875
+          ],
+          "texture": "#atlas"
+        }
+      },
+      "rotation": {
+        "origin": [
+          9.3,
+          12.5,
+          8.0
+        ],
+        "axis": "z",
+        "angle": -45,
+        "rescale": false
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        15,
+        30,
+        0
+      ],
+      "translation": [
+        0,
+        -1,
+        0
+      ],
+      "scale": [
+        0.75,
+        0.75,
+        0.75
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.4,
+        0.4,
+        0.4
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        180,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.7,
+        0.7,
+        0.7
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        0,
+        -90,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0,
+        1,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        -35,
+        0
+      ],
+      "translation": [
+        1,
+        1,
+        0
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        35,
+        0
+      ],
+      "translation": [
+        1,
+        1,
+        0
+      ],
+      "scale": [
+        0.65,
+        0.65,
+        0.65
+      ]
+    }
+  },
+  "ambientocclusion": false
+}

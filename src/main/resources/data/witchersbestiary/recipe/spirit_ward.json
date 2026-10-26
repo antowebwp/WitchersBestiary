@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "ISI",
+    "BEB",
+    "DBD"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "S": {
+      "item": "minecraft:soul_lantern"
+    },
+    "B": {
+      "item": "witchersbestiary:bone_dust"
+    },
+    "E": {
+      "tag": "witchersbestiary:monster_essences"
+    },
+    "D": {
+      "item": "minecraft:deepslate_bricks"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:spirit_ward",
+    "count": 1
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "Witcher artifacts",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:leshen_ring",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:leshen_ring",
+      "text": "Melee hit on a hostile: 12% chance of roots for 3s; bosses receive Slowness II. Cooldown 20s."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:leshen_ring"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:werewolf_ring",
+      "text": "Melee hit on a hostile: 10% chance to heal 2 HP. Cooldown 15s."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:werewolf_ring"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:drowner_charm",
+      "text": "Water movement efficiency +0.2; halves underwater air consumption. Does not grant Water Breathing."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:drowner_charm"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:griffin_charm",
+      "text": "Fall damage −35%."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_charm"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Requires equipped Trinkets slots: rings hand/ring/offhand/ring; charms feet/aglet. Without Trinkets items remain available but inactive. Duplicates do not stack; ring swapping cannot reset saved player cooldowns. Secondary damage cannot trigger rings."
+    }
+  ]
+}

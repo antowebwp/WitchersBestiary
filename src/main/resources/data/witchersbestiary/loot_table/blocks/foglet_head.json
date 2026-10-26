@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:block",
+  "pools": [{
+    "rolls": 1,
+    "entries": [{"type": "minecraft:item", "name": "witchersbestiary:foglet_head"}],
+    "conditions": [{"condition": "minecraft:survives_explosion"}]
+  }]
+}

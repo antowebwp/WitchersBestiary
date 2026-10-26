@@ -1,0 +1,49 @@
+{
+  "variants": {
+    "face=floor,facing=north": {
+      "model": "witchersbestiary:block/werewolf_head"
+    },
+    "face=floor,facing=east": {
+      "model": "witchersbestiary:block/werewolf_head",
+      "y": 90
+    },
+    "face=floor,facing=south": {
+      "model": "witchersbestiary:block/werewolf_head",
+      "y": 180
+    },
+    "face=floor,facing=west": {
+      "model": "witchersbestiary:block/werewolf_head",
+      "y": 270
+    },
+    "face=wall,facing=north": {
+      "model": "witchersbestiary:block/werewolf_head_wall"
+    },
+    "face=wall,facing=east": {
+      "model": "witchersbestiary:block/werewolf_head_wall",
+      "y": 90
+    },
+    "face=wall,facing=south": {
+      "model": "witchersbestiary:block/werewolf_head_wall",
+      "y": 180
+    },
+    "face=wall,facing=west": {
+      "model": "witchersbestiary:block/werewolf_head_wall",
+      "y": 270
+    },
+    "face=ceiling,facing=north": {
+      "model": "witchersbestiary:block/werewolf_head"
+    },
+    "face=ceiling,facing=east": {
+      "model": "witchersbestiary:block/werewolf_head",
+      "y": 90
+    },
+    "face=ceiling,facing=south": {
+      "model": "witchersbestiary:block/werewolf_head",
+      "y": 180
+    },
+    "face=ceiling,facing=west": {
+      "model": "witchersbestiary:block/werewolf_head",
+      "y": 270
+    }
+  }
+}

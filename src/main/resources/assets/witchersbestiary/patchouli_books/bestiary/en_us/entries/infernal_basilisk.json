@@ -1,0 +1,47 @@
+{
+  "name": "Infernal Basilisk",
+  "category": "witchersbestiary:hybrids",
+  "icon": "witchersbestiary:infernal_basilisk_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:infernal_basilisk",
+      "scale": 0.45,
+      "offset": 0.5
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Volcanic hybrid",
+      "text": "A rare solitary reptile beside open Nether lava lakes. 100 HP, fire immunity, heavy bite and rear tail attack. Hybrid oil helps; dodge sideways after its windup."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Molten Heart",
+      "text": "Reduce health to 25 HP. During its eight-second exhaustion, use a Molten Heart. A tamed basilisk recovers to 60 HP. An ordinary click cannot tame it."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Controls and feeding",
+      "text": "Use empty-handed to ride; a saddle is optional. Sneak dismounts. Sneak+Use empty-handed: Follow → Stay → Wander. Owner only."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Feeding",
+      "text": "Food in either hand takes priority over riding and commands. Raw meat heals 4 HP, cooked meat 6, blaze powder 8, blaze rod 12. Full health consumes nothing; creative feeding is free."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Crossing lava",
+      "text": "The basilisk floats on lava and travels faster there than on land. Its passenger is protected from contact lava only while riding over lava; dismounting ends protection. Enemy attacks remain dangerous. Owner, saddle, health and mode persist."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "Combine scales and slime for magma cream; a volcanic gland, coal and gunpowder yield fire charges. Also drops hybrid essence and a rare head trophy."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:molten_heart"
+    }
+  ]
+}

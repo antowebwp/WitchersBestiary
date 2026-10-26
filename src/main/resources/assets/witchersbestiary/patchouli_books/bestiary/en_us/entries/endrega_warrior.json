@@ -1,0 +1,39 @@
+{
+  "name": "Endrega Warrior",
+  "category": "witchersbestiary:insectoids",
+  "icon": "witchersbestiary:endrega_warrior_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:endrega_warrior",
+      "scale": 0.7,
+      "name": "Endrega Warrior",
+      "text": "INSECTOID. 76 HP. Low-slung predator with six walking legs and two grasping arms."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Forests, dark woods and swamps, including suitable optional BOP biomes. Night groups of 1–3, at most three within 48 blocks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunting",
+      "text": "Circles its target and changes direction. Slash: 6 damage. Bite: 8 damage and 3 seconds of poison. Combo: left claw 5, right claw 5, then mandible lunge 10. Sidestep after the lunge windup."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Guard and rage",
+      "text": "Guard reduces frontal damage by 60 percent and halts movement. Flank it. Below 35 percent health it pursues faster, uses more combos and lunges for 12 damage. A missed bite or lunge leaves it taking 30 percent more damage for about a second."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weakness and loot",
+      "text": "Insectoid oil works from inventory: +15 percent for 40 successful melee hits. Drops 1–2 essences; chitin chance 70 percent, gland 35, trophy 4. Trophy requires a player or tamed ally kill. These materials craft insectoid oil."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Intercept",
+      "text": "Faster than a Fiend, it can briefly intercept a retreating target. It tracks for six ticks, then commits. A late sidestep escapes; walls and gaps stop the rush. A successful slash or intercept may chain into its combo."
+    }
+  ]
+}

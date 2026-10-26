@@ -1,0 +1,39 @@
+{
+  "name": "Утопец",
+  "category": "witchersbestiary:necrophages",
+  "icon": "witchersbestiary:drowner_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:drowner",
+      "name": "Утопец",
+      "text": "Утопец — Drowner. Труп, которому вода подарила вторую, ненасытную жизнь.",
+      "scale": 0.85
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Места обитания",
+      "text": "Реки, замёрзшие реки, болота и мангровые болота. Появляется в воде при слабом освещении."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Поведение",
+      "text": "Преследует игрока и атакует вблизи. Хорошо перемещается в воде."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Слабости",
+      "text": "Некрофагский эликсир и масло усиливают урон против утопца."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Добыча",
+      "text": "Эссенция утопца, коготь и трофейная голова."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Советы охотнику",
+      "text": "На берегу проще контролировать дистанцию. Не вступайте в бой посреди глубокой воды."
+    }
+  ]
+}

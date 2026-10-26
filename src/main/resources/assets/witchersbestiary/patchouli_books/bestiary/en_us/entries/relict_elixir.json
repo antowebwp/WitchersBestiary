@@ -1,0 +1,16 @@
+{
+  "name": "Relict Hunter Elixir",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:relict_elixir",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:relict_elixir",
+      "text": "Drink for 1.6 seconds: +25% damage against the matching monster category for 180 seconds. Multiplies with matching oil. Drinking again refreshes the effect, rather than stacking a second multiplier. Returns an empty bottle."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:relict_elixir"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Insectoid Oil",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:insectoid_oil",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:insectoid_oil",
+      "text": "Keep oil in the main inventory. A successful melee weapon hit against its category gains +15% damage and uses one of 40 charges. No free offhand required. Multiplies with matching elixir."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:insectoid_oil"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Lowest slot wins; oils do not stack. Misses, blocked hits and no HP loss use no charge. /wboils shows your saved mode; on/off/toggle changes it. The exhausted portion is consumed without returning a bottle, as before."
+    }
+  ]
+}

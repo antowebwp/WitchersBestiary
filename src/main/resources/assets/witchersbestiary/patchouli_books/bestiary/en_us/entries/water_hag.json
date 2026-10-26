@@ -1,0 +1,34 @@
+{
+  "name": "Water Hag",
+  "category": "witchersbestiary:necrophages",
+  "icon": "witchersbestiary:swamp_gland",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:water_hag",
+      "name": "Water Hag",
+      "scale": 0.9,
+      "text": "A hunched swamp necrophage with long arms, curved claws and algae-matted hair. Base health: 60 HP."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Swamps and mangrove swamps, including compatible c:is_swamp biomes. Dark shores and shallow water, usually alone; occasionally a pair."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Abilities",
+      "text": "Mud throw: up to12 blocks,4 base damage, Slowness I for4 seconds and Darkness for1.5 seconds; cooldown10–14 seconds. Claws:8 base damage, sometimes two strikes. Swamp ambush starts near water or mud."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Tactics",
+      "text": "Watch the raised arm and dodge sideways before contact. Use solid cover against mud, avoid shallow-water ambushes. Necrophage oil:15% bonus; existing elixir also applies. World-day progression increases danger."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Remains",
+      "text": "Swamp gland45%: universal monster-essence ingredient in existing alchemy. Muddy claw65%: monster-bone ingredient for bone dust and a material for future recipes. No new elixirs."
+    }
+  ]
+}

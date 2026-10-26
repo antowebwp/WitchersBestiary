@@ -1,0 +1,49 @@
+{
+  "name": "Fiend",
+  "category": "witchersbestiary:relicts",
+  "icon": "witchersbestiary:fiend_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:fiend",
+      "name": "Fiend",
+      "scale": 0.55,
+      "text": "RELICT. 220 HP, 14 claw damage. A massive quadruped with branching antlers and a third eye."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Wilderness",
+      "text": "Very rare in dense old woods and remote valleys; one within 128 blocks. Requires broad firm ground and full clearance. Avoids leaves/logs, village POIs and the first 96 blocks around world spawn. Supports suitable optional BOP biomes."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hypnosis",
+      "text": "Stops, raises its head and lights the third eye. After 1.2 seconds checks your gaze and line of sight within 14 blocks. Look away or take cover. Up to 3 seconds of nausea and 2.5 seconds of mild slowness; 18–25 second cooldown. Clear Mind reduces these to 15/12 ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Charge and horns",
+      "text": "A roar warns of a straight charge after 1.1 seconds. Sidestep: one charge contact deals 22 damage. A solid wall stops the charge and truly stuns the Fiend for two seconds. Horns deal 18 damage with strong knockback. Attacks never pass through walls."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Rage and weaknesses",
+      "text": "Below 35 percent health enters rage once: 20 percent more speed, faster attacks and more frequent charges. Existing relict oil and hunter elixir work normally. Use walls, the stun opening and Clear Mind."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:fiend_eye",
+      "text": "1–3 existing forest essences; horn 25 percent, third eye 8, trophy 4. Eye and trophy require a player or tamed ally kill. The existing relict essence is reused."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Turning sweep",
+      "text": "A sustained flank or rear approach queues a distinct sweep after the current attack. Read the windup and dodge after its aim locks. Charge predicts a short lead before launch and stops steering after its first six moving ticks."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunting lures",
+      "text": "$(l:hunting_lures)Hunting lures$(/l) can call this creature. Read the placement, waiting and cooldown rules before setting an offering."
+    }
+  ]
+}

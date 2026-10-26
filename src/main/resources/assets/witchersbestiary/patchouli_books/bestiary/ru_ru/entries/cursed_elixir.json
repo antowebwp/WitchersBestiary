@@ -1,0 +1,16 @@
+{
+  "name": "Эликсир против проклятых",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:cursed_elixir",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:cursed_elixir",
+      "text": "Выпейте за 1,6 секунды: +25% урона по соответствующей категории чудовищ на 180 секунд. Бонус перемножается с подходящим маслом. Повторное питьё обновляет эффект, не добавляет второй множитель. Возвращается пустая бутылочка."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:cursed_elixir"
+    }
+  ]
+}

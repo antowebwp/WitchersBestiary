@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BMB",
+    "GHG",
+    " B "
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:blaze_powder"
+    },
+    "M": {
+      "item": "minecraft:magma_cream"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "H": {
+      "item": "witchersbestiary:fiend_eye"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:molten_heart",
+    "count": 1
+  }
+}

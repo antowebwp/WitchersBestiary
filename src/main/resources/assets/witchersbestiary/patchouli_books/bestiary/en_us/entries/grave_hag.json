@@ -1,0 +1,30 @@
+{
+  "name": "Grave Hag",
+  "category": "witchersbestiary:necrophages",
+  "icon": "witchersbestiary:grave_hag_tongue",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:grave_hag",
+      "name": "Grave Hag",
+      "scale": 0.9,
+      "text": "A burial-ground necrophage miniboss: 120 base HP, 9 claw damage. Its wasted body wears a ragged shroud and bone ornaments."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "One Grave Hag guards each rare burial ground: an abandoned village graveyard on open land, a forgotten forest graveyard, or an ancient necropolis. Explore new lands. A slain guardian never respawns. Spirit Ward does not prevent this encounter. There is no global natural spawn."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Claws: a 12-tick windup, then one strike. Tongue: a locked straight shot up to6 blocks, followed by a short physical pull. Dodge sideways or use cover; it cannot pass through walls."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Curse: Weakness4 seconds and Slowness3 seconds, up to8 blocks with line of sight. One lifetime wave of at most two fragile ghosts; they expire within20 seconds or when combat ends. Spirit Ward does not block this special summon."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Use necrophage oil, interrupt with existing stun tools, dodge the tongue and punish recovery. Guaranteed tongue and remains; graveyard essence75%. All three are materials reserved for future Stage19 recipes."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "book.witchersbestiary.title",
+  "landing_text": "book.witchersbestiary.landing",
+  "version": "0",
+  "subtitle": "item.witchersbestiary.bestiary",
+  "use_resource_pack": true,
+  "i18n": true,
+  "dont_generate_book": true,
+  "custom_book_item": "witchersbestiary:bestiary",
+  "model": "witchersbestiary:bestiary",
+  "book_texture": "patchouli:textures/gui/book_brown.png",
+  "text_color": "352c21",
+  "header_color": "47351e",
+  "nameplate_color": "9a7a3b",
+  "show_progress": false,
+  "show_toasts": false,
+  "text_overflow_mode": "resize"
+}

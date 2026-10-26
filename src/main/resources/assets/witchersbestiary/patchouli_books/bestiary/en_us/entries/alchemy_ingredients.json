@@ -1,0 +1,161 @@
+{
+  "name": "Alchemy materials",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:drowner_essence",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:forest_essence",
+      "text": "Loot: Fiend, Leshen. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ancient_leshen_heart",
+      "text": "Loot: Leshen. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:drowner_essence",
+      "text": "Loot: Drowner. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:drowner_claw",
+      "text": "Loot: Drowner. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ghoul_essence",
+      "text": "Loot: Ghoul. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ghoul_claw",
+      "text": "Loot: Ghoul. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:foglet_essence",
+      "text": "Loot: Foglet. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:foglet_claw",
+      "text": "Loot: Foglet. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:noonwraith_essence",
+      "text": "Loot: Noonwraith. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:noonwraith_remains",
+      "text": "Loot: Noonwraith. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:werewolf_essence",
+      "text": "Loot: Werewolf. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:werewolf_claw",
+      "text": "Loot: Werewolf. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:katakan_essence",
+      "text": "Loot: Katakan. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:katakan_claw",
+      "text": "Loot: Katakan. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:wraith_essence",
+      "text": "Loot: Wraith. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:wraith_remains",
+      "text": "Loot: Wraith. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ogroid_essence",
+      "text": "Loot: Bonecrusher, Nekker. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ogroid_fang",
+      "text": "Loot: Bonecrusher. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:nekker_claw",
+      "text": "Loot: Nekker. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:fiend_horn",
+      "text": "Loot: Fiend. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:endrega_essence",
+      "text": "Loot: Endrega Warrior. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:chitin_plate",
+      "text": "Loot: Endrega Warrior. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:venom_gland",
+      "text": "Loot: Endrega Warrior. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:fiend_eye",
+      "text": "Loot: Fiend. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:hybrid_essence",
+      "text": "Loot: Griffin, Infernal Basilisk. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:griffin_feather",
+      "text": "Loot: Griffin. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:griffin_claw",
+      "text": "Loot: Griffin. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:basilisk_scale",
+      "text": "Loot: Infernal Basilisk. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:volcanic_gland",
+      "text": "Loot: Infernal Basilisk. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:molten_heart",
+      "text": "Obtained using the recipe on the next page. Crafting material; grants no effect by itself. Check the live recipe catalog for its uses."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:molten_heart"
+    }
+  ]
+}

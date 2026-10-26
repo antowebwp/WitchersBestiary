@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " C ",
+    "IFI",
+    " W "
+  ],
+  "key": {
+    "C": {
+      "item": "minecraft:chain"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "F": {
+      "item": "witchersbestiary:forest_essence"
+    },
+    "W": {
+      "item": "witchersbestiary:wraith_essence"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:hunter_medallion",
+    "count": 1
+  }
+}

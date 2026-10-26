@@ -1,0 +1,34 @@
+{
+  "name": "Bonecrusher",
+  "category": "witchersbestiary:ogroids",
+  "icon": "witchersbestiary:bonecrusher_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:bonecrusher",
+      "name": "Bonecrusher",
+      "scale": 0.65,
+      "text": "OGROID. 120 HP; 12 damage. A massive mountain scavenger wielding a stone club."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Combat",
+      "text": "Dodge the long swing and ground smash (12–16 sec). At medium range a roar warns of a charge (15–20 sec), stopped by walls. A missed heavy attack opens a counter window: +25 percent incoming damage for 1.4 seconds."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weaknesses and habitat",
+      "text": "Below 35 percent HP enters rage once: +20 percent speed, faster attacks and charge; damage stays unchanged. Ogroid oil: +15 percent for 40 successful melee hits from inventory. Rare singleton in mountains, rocky shores and large dripstone/deep caves; supports suitable BOP biomes."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ogroid_essence",
+      "text": "Essence 85 percent, fang 25 percent, head 3 percent, club 6 percent. Head and club require a player or tamed ally kill."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Unique equipment",
+      "text": "See $(l:hunter_equipment)Hunter Equipment$(/l) for the hammer and vampire fangs."
+    }
+  ]
+}

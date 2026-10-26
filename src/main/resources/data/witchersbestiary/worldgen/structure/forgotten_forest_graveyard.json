@@ -1,0 +1,8 @@
+{
+  "type": "witchersbestiary:graveyard",
+  "kind": 1,
+  "biomes": "#witchersbestiary:has_structure/forgotten_forest_graveyard",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

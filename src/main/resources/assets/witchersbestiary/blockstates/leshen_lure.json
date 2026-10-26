@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "witchersbestiary:block/leshen_lure",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "witchersbestiary:block/leshen_lure",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "witchersbestiary:block/leshen_lure",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "witchersbestiary:block/leshen_lure",
+      "y": 270
+    }
+  }
+}

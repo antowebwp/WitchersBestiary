@@ -1,0 +1,11 @@
+{
+  "components": [
+    {
+      "type": "patchouli:custom",
+      "class": "com.witchersbestiary.client.book.AlchemyCatalogComponent",
+      "list": false,
+      "x": 0,
+      "y": 0
+    }
+  ]
+}

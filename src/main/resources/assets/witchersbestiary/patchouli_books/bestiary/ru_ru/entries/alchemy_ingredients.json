@@ -1,0 +1,161 @@
+{
+  "name": "Материалы алхимика",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:drowner_essence",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:forest_essence",
+      "text": "Добыча: Чёрт, Леший. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ancient_leshen_heart",
+      "text": "Добыча: Леший. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:drowner_essence",
+      "text": "Добыча: Утопец. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:drowner_claw",
+      "text": "Добыча: Утопец. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ghoul_essence",
+      "text": "Добыча: Гуль. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ghoul_claw",
+      "text": "Добыча: Гуль. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:foglet_essence",
+      "text": "Добыча: Туманник. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:foglet_claw",
+      "text": "Добыча: Туманник. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:noonwraith_essence",
+      "text": "Добыча: Полуденница. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:noonwraith_remains",
+      "text": "Добыча: Полуденница. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:werewolf_essence",
+      "text": "Добыча: Волколак. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:werewolf_claw",
+      "text": "Добыча: Волколак. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:katakan_essence",
+      "text": "Добыча: Катакан. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:katakan_claw",
+      "text": "Добыча: Катакан. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:wraith_essence",
+      "text": "Добыча: Призрак. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:wraith_remains",
+      "text": "Добыча: Призрак. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ogroid_essence",
+      "text": "Добыча: Костолом, Накер. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:ogroid_fang",
+      "text": "Добыча: Костолом. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:nekker_claw",
+      "text": "Добыча: Накер. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:fiend_horn",
+      "text": "Добыча: Чёрт. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:endrega_essence",
+      "text": "Добыча: Эндриага-воин. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:chitin_plate",
+      "text": "Добыча: Эндриага-воин. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:venom_gland",
+      "text": "Добыча: Эндриага-воин. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:fiend_eye",
+      "text": "Добыча: Чёрт. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:hybrid_essence",
+      "text": "Добыча: Грифон, Адский василиск. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:griffin_feather",
+      "text": "Добыча: Грифон. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:griffin_claw",
+      "text": "Добыча: Грифон. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:basilisk_scale",
+      "text": "Добыча: Адский василиск. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:volcanic_gland",
+      "text": "Добыча: Адский василиск. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:molten_heart",
+      "text": "Получение: рецепт на следующей странице. Алхимический материал; сам по себе не даёт эффектов. Применение смотрите в живом каталоге рецептов."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:molten_heart"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:wither",
+    "minecraft:ender_dragon",
+    "witchersbestiary:leshen",
+    "witchersbestiary:fiend",
+    "witchersbestiary:griffin",
+    "witchersbestiary:infernal_basilisk",
+    {
+      "id": "#c:bosses",
+      "required": false
+    }
+  ]
+}

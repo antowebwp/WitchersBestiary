@@ -1,0 +1,18 @@
+{
+  "structures": [
+    {
+      "structure": "witchersbestiary:forgotten_forest_graveyard",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 26,
+    "separation": 10,
+    "salt": 190191,
+    "exclusion_zone": {
+      "other_set": "minecraft:villages",
+      "chunk_count": 8
+    }
+  }
+}

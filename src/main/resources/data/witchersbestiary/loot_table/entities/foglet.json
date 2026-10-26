@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:entity",
+  "pools": [
+    {
+      "rolls": 1,
+      "conditions": [{"condition": "minecraft:random_chance", "chance": 0.65}],
+      "entries": [{
+        "type": "minecraft:item",
+        "name": "witchersbestiary:foglet_essence",
+        "functions": [{"function": "minecraft:set_count", "count": {"type": "minecraft:uniform", "min": 1, "max": 2}}]
+      }]
+    },
+    {
+      "rolls": 1,
+      "conditions": [{"condition": "minecraft:random_chance", "chance": 0.35}],
+      "entries": [{"type": "minecraft:item", "name": "witchersbestiary:foglet_claw"}]
+    },
+    {
+      "rolls": 1,
+      "conditions": [
+        {"condition": "witchersbestiary:player_or_tamed_kill"},
+        {"condition": "minecraft:random_chance", "chance": 0.1}
+      ],
+      "entries": [{"type": "minecraft:item", "name": "witchersbestiary:foglet_head"}]
+    }
+  ]
+}

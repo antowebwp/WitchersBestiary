@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:endrega_essence"
+    },
+    {
+      "item": "witchersbestiary:chitin_plate"
+    },
+    {
+      "item": "witchersbestiary:venom_gland"
+    },
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:insectoid_oil",
+    "count": 1
+  }
+}

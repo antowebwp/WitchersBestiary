@@ -1,0 +1,8 @@
+{
+  "type": "witchersbestiary:graveyard",
+  "kind": 0,
+  "biomes": "#witchersbestiary:has_structure/abandoned_village_graveyard",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.witchersbestiary.combat.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "client-witchersbestiary-refmap.json",
+  "client": [
+    "RecipeCatalogReloadMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

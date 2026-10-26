@@ -1,0 +1,34 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "material": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:iron_nugget"
+            ]
+          }
+        ]
+      }
+    },
+    "has_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "witchersbestiary:witcher_chest"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "material",
+      "has_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "witchersbestiary:witcher_chest"
+    ]
+  }
+}

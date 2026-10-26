@@ -1,0 +1,23 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:stony_peaks",
+    "minecraft:jagged_peaks",
+    "minecraft:frozen_peaks",
+    "minecraft:windswept_hills",
+    "minecraft:windswept_gravelly_hills",
+    "minecraft:meadow",
+    {
+      "id": "biomesoplenty:crag",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:highland",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:rocky_shrubland",
+      "required": false
+    }
+  ]
+}

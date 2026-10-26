@@ -1,0 +1,20 @@
+{
+  "name": "Relict Oil",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:relict_oil",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:relict_oil",
+      "text": "Keep oil in the main inventory. A successful melee weapon hit against its category gains +15% damage and uses one of 40 charges. No free offhand required. Multiplies with matching elixir."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:relict_oil"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Lowest slot wins; oils do not stack. Misses, blocked hits and no HP loss use no charge. /wboils shows your saved mode; on/off/toggle changes it. The exhausted portion is consumed without returning a bottle, as before."
+    }
+  ]
+}

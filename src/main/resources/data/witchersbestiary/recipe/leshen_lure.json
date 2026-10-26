@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "minecraft:rotten_flesh"
+    },
+    {
+      "item": "minecraft:brown_mushroom"
+    },
+    {
+      "item": "minecraft:red_mushroom"
+    },
+    {
+      "item": "minecraft:vine"
+    },
+    {
+      "item": "minecraft:oak_leaves"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:leshen_lure",
+    "count": 1
+  }
+}

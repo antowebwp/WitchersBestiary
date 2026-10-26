@@ -1,0 +1,11 @@
+{
+  "name": "Ogroids",
+  "category": "witchersbestiary:ogroids",
+  "icon": "witchersbestiary:ogroid_fang",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Massive terrestrial monsters. Learn their windups and use ogroid oil."
+    }
+  ]
+}

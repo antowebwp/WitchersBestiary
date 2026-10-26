@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " I ",
+    "GSG",
+    " I "
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "S": {
+      "item": "witchersbestiary:graveyard_essence"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:ghost_lantern",
+    "count": 1
+  }
+}

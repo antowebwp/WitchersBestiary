@@ -1,0 +1,49 @@
+{
+  "name": "Noonwraith",
+  "category": "witchersbestiary:specters",
+  "icon": "witchersbestiary:noonwraith_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:noonwraith",
+      "name": "Noonwraith",
+      "text": "Полуденница — Noonwraith. A torn bridal shroud drifts above the field even after the wind has fallen silent.",
+      "scale": 0.85
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Plains, sunflower plains and meadows. Rare bright daylight spawns beneath open sky; at most one nearby."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Behavior",
+      "text": "Hovers above support, claws its prey, screams to cause weakness and slowness, and creates up to four combat copies. After two or three hits it briefly retreats, heals and returns. Sometimes dodges."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weaknesses",
+      "text": "Ordinary attacks by living creatures deal 55 percent damage. Specter oil bypasses this resistance and adds 20 percent; the elixir adds 25 percent."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "Essence: 65 percent, 1–2. Remains: 40 percent, 1. Head: 10 percent with a player or tamed ally’s killing blow."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunter’s advice",
+      "text": "Prepare oil. Retreat before its scream and fight the original: copies attack for 20 seconds and give no loot."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Miniboss",
+      "text": "140 HP, 10 damage. Up to four copies deal 6 damage. Blinks every 9–12 seconds. After 2–3 hits retreats and heals up to 7 HP: at most three times per lifetime, at least twenty seconds apart; budget persists across saves. Very rare in bright open fields."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Ethereal phase",
+      "text": "Dissolves over 12 ticks, moves invisibly through ordinary blocks, then warns and reappears over 10 ticks. Cannot cross bedrock or world boundaries. Noonwraith: 2.4 sec, 9–12 sec interval; healing separately limited to 7 HP, 20 sec cooldown and three per lifetime."
+    }
+  ]
+}

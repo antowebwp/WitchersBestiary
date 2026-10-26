@@ -1,0 +1,47 @@
+{
+  "name": "Ведьмачьи артефакты",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:leshen_ring",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:leshen_ring",
+      "text": "Ближний удар по врагу: 12% шанс корней на 3 сек. Боссам — замедление II. Откат 20 сек."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:leshen_ring"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:werewolf_ring",
+      "text": "Ближний удар по врагу: 10% шанс лечения 2 HP. Откат 15 сек."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:werewolf_ring"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:drowner_charm",
+      "text": "Подвижность в воде +0,2; расход воздуха под водой вдвое меньше. Не даёт водного дыхания."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:drowner_charm"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:griffin_charm",
+      "text": "Урон от падения −35%."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_charm"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Эффекты работают только в слотах Trinkets: кольца hand/ring/offhand/ring, обереги feet/aglet. Без Trinkets предметы остаются, но не дают эффектов. Копии не складываются; смена кольца не сбрасывает сохранённый откат. Вторичный урон не вызывает кольца."
+    }
+  ]
+}

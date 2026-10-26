@@ -1,0 +1,16 @@
+{
+  "name": "Эликсир ясного разума",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:clear_mind_elixir",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:clear_mind_elixir",
+      "text": "Выпейте за 1,6 секунды: Ясный разум на 180 секунд сокращает гипноз Чёрта — тошнота с 60 до 15 тиков, замедление с 50 до 12. Не даёт полной невосприимчивости. После питья остаётся пустая бутылочка."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:clear_mind_elixir"
+    }
+  ]
+}

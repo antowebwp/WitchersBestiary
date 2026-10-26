@@ -1,0 +1,8 @@
+{
+  "type": "witchersbestiary:graveyard",
+  "kind": 2,
+  "biomes": "#witchersbestiary:has_structure/ancient_necropolis",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

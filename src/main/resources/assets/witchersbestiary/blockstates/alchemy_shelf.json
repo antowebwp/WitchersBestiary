@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "witchersbestiary:block/alchemy_shelf",
+      "y": 0
+    },
+    "facing=east": {
+      "model": "witchersbestiary:block/alchemy_shelf",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "witchersbestiary:block/alchemy_shelf",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "witchersbestiary:block/alchemy_shelf",
+      "y": 270
+    }
+  }
+}

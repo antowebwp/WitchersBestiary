@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "witchersbestiary:monster_essences"
+    },
+    {
+      "tag": "witchersbestiary:monster_essences"
+    },
+    {
+      "item": "witchersbestiary:katakan_claw"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    },
+    {
+      "item": "witchersbestiary:bone_dust"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:vampire_elixir",
+    "count": 1
+  }
+}

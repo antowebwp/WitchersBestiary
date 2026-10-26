@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "witchersbestiary",
+  "version": "${version}",
+  "name": "Witcher's Bestiary",
+  "description": "Witcher-inspired monsters, haunted graveyards, workshop, 3D weapons, trophies, alchemy and an in-game bestiary.",
+  "license": "CC0-1.0",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.witchersbestiary.WitchersBestiary"
+    ],
+    "client": [
+      "com.witchersbestiary.client.WitchersBestiaryClient"
+    ],
+    "modmenu": [
+      "com.witchersbestiary.client.config.BestiaryModMenu"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.17",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*",
+    "patchouli": "1.21.1-93-FABRIC",
+    "geckolib": ">=4.8.4 <5"
+  },
+  "mixins": [
+    "witchersbestiary.mixins.json",
+    {
+      "config": "witchersbestiary.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "suggests": {
+    "trinkets": "3.10.0",
+    "modmenu": "11.x"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "GFG",
+    "BIB",
+    " S "
+  ],
+  "key": {
+    "G": {
+      "item": "witchersbestiary:griffin_claw"
+    },
+    "F": {
+      "item": "witchersbestiary:ogroid_fang"
+    },
+    "B": {
+      "item": "minecraft:bone_block"
+    },
+    "I": {
+      "item": "minecraft:iron_block"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:bonecrusher_club",
+    "count": 1
+  }
+}

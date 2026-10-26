@@ -1,0 +1,47 @@
+{
+  "name": "Remains and crafting",
+  "category": "witchersbestiary:alchemy",
+  "icon": "witchersbestiary:monster_organ_jar",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:bone_dust",
+      "text": "Craft at a workbench. Two portions from a bone or suitable remains. Used in common elixirs."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bone_dust"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:tooth_necklace",
+      "text": "Craft at a workbench. Wall decoration, with no combat effect. Breaking returns the item."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:tooth_necklace"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:monster_organ_jar",
+      "text": "Craft at a workbench. Place on a solid surface. The contents have no effect; breaking returns the intact jar."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:monster_organ_jar"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:monster_wall_trophy",
+      "text": "Craft at a workbench. A separate wall decoration made of bones and fangs. Does not replace existing monster head trophies."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:monster_wall_trophy"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The monster_essences tag accepts all 11 existing essences. Common necrophage, cursed and vampire elixirs accept any of them, but retain their specific remains. Rare recipes are unchanged."
+    }
+  ]
+}

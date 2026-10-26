@@ -1,0 +1,39 @@
+{
+  "name": "Drowner",
+  "category": "witchersbestiary:necrophages",
+  "icon": "witchersbestiary:drowner_head",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:drowner",
+      "name": "Drowner",
+      "text": "Утопец — Drowner. A corpse granted a second, hungry life by the water.",
+      "scale": 0.85
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Habitat",
+      "text": "Rivers, frozen rivers, swamps and mangrove swamps. Spawns in water at low light."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Behavior",
+      "text": "Pursues players and attacks at close range. Moves well in water."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Weaknesses",
+      "text": "Necrophage elixir and oil increase damage against drowners."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Loot",
+      "text": "Drowner essence, claw and trophy head."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Hunter’s advice",
+      "text": "Distance is easier to manage on shore. Avoid fighting in deep water."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:fiend_eye"
+    },
+    {
+      "item": "witchersbestiary:forest_essence"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:clear_mind_elixir",
+    "count": 1
+  }
+}

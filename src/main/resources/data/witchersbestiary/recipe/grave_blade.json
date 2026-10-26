@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    " F ",
+    "EIF",
+    " L "
+  ],
+  "key": {
+    "F": {
+      "item": "witchersbestiary:gravebound_steel_fragment"
+    },
+    "E": {
+      "item": "witchersbestiary:graveyard_essence"
+    },
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "L": {
+      "item": "minecraft:leather"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:grave_blade",
+    "count": 1
+  }
+}

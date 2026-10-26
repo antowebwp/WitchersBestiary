@@ -1,0 +1,15 @@
+{
+  "name": "Spirit Ward",
+  "icon": "witchersbestiary:spirit_ward",
+  "category": "witchersbestiary:alchemy",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "A placed ward blocks only natural Noonwraith and Wraith spawns in a 128-block sphere. Existing spirits, commands, eggs and scripted events are unaffected. Protection persists while its chunk is unloaded, without chunk tickets; breaking the ward removes its protection."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:spirit_ward"
+    }
+  ]
+}

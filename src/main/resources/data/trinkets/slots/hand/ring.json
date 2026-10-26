@@ -1,0 +1,7 @@
+{
+  "amount": 1,
+  "validator_predicates": [
+    "trinkets:tag"
+  ],
+  "drop_rule": "DEFAULT"
+}

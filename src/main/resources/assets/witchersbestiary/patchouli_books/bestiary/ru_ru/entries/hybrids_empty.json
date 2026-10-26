@@ -1,0 +1,11 @@
+{
+  "name": "Пока нет записей",
+  "category": "witchersbestiary:hybrids",
+  "icon": "minecraft:feather",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Пока нет записей"
+    }
+  ]
+}
