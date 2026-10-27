@@ -1,0 +1,21 @@
+{
+  "id": "witchersbestiary:drowner_cleanup",
+  "name": "contract.witchersbestiary.drowner_cleanup",
+  "description": "contract.witchersbestiary.drowner_cleanup.description",
+  "target": "witchersbestiary:drowner",
+  "required": 3,
+  "difficulty": 1,
+  "reward": {
+    "experience": 30,
+    "emeralds": 2,
+    "items": [
+      {
+        "item": "witchersbestiary:drowner_essence",
+        "count": 1
+      }
+    ]
+  },
+  "eligibility": {
+    "minimum_level": 0
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "witchersbestiary:foglet_hunt",
+  "name": "contract.witchersbestiary.foglet_hunt",
+  "description": "contract.witchersbestiary.foglet_hunt.description",
+  "target": "witchersbestiary:foglet",
+  "required": 2,
+  "difficulty": 3,
+  "reward": {
+    "experience": 90,
+    "emeralds": 6,
+    "items": [
+      {
+        "item": "witchersbestiary:foglet_essence",
+        "count": 1
+      }
+    ]
+  },
+  "eligibility": {
+    "minimum_level": 0
+  }
+}

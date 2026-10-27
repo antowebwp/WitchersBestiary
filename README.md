@@ -1,4 +1,6 @@
-# Witcher's Bestiary 0.19.0
+# Witcher's Bestiary 0.20.0-dev
+
+Development branch for Stage 20A, based on published v0.19.0. Contract foundation is developer-only; see [report](docs/STAGE20_A_REPORT.md). Stable installation instructions below refer to v0.19.0. This development version is not published.
 
 An unofficial Witcher-inspired Minecraft mod featuring monsters, three haunted graveyard structures, trophies, alchemy, workshop decorations and three dimensional swords. Not affiliated with CD PROJEKT RED, Mojang or Microsoft.
 
@@ -19,7 +21,7 @@ Tested baseline: Fabric Loader 0.19.5 and Fabric API 0.116.17+1.21.1. Optional B
 
 ## Build
 
-Use Java 21 and the supplied Gradle wrapper: `./gradlew build` (Windows: `.\gradlew.bat build`). The game JAR is `build/libs/witchersbestiary-0.19.0.jar`. Offline builds require cached dependencies. No development history or internal screenshots are included in this public snapshot.
+Use Java 21 and the supplied Gradle wrapper: `./gradlew build` (Windows: `.\gradlew.bat build`). The development game JAR is `build/libs/witchersbestiary-0.20.0-dev.jar`. Offline builds require cached dependencies. No development history or internal screenshots are included in this public snapshot.
 
 ## Validation and limitations
 

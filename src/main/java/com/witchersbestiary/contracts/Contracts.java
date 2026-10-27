@@ -1,0 +1,82 @@
+package com.witchersbestiary.contracts;
+
+import com.mojang.brigadier.arguments.StringArgumentType;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.registry.Registries;
+import net.minecraft.resource.ResourceType;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import java.util.*;
+import static net.minecraft.server.command.CommandManager.*;
+
+public final class Contracts {
+    public static final ContractDefinitions DEFINITIONS = new ContractDefinitions();
+    private Contracts() {}
+    public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId) {
+        var definition = DEFINITIONS.find(definitionId);
+        if (definition == null) throw new IllegalArgumentException("Missing/invalid contract definition: " + definitionId);
+        if (player.experienceLevel < definition.minimumLevel() || (!definition.dimension().isEmpty()
+                && !player.getServerWorld().getRegistryKey().getValue().toString().equals(definition.dimension())))
+            throw new IllegalStateException("Player does not meet contract eligibility");
+        var store = ContractState.get(player.getServer()); store.writable();
+        for (var existing : store.ownedBy(player.getUuid())) if (existing.expire(System.currentTimeMillis())) store.markDirty();
+        if (store.ownedBy(player.getUuid()).stream().filter(c -> c.status() == ContractInstance.Status.ACCEPTED || c.status() == ContractInstance.Status.COMPLETED).count() >= 16)
+            throw new IllegalStateException("At most 16 active/unclaimed contracts per player");
+        var c = new ContractInstance(UUID.randomUUID(), player.getUuid(), definition, System.currentTimeMillis());
+        c.transition(ContractInstance.Status.ACCEPTED); store.add(c); return c;
+    }
+    /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */
+    public static ServerPlayerEntity killer(LivingEntity victim, DamageSource damage) {
+        return damage.getAttacker() instanceof ServerPlayerEntity player && victim.getWorld() instanceof ServerWorld world
+                && player.getServer() == world.getServer() ? player : null;
+    }
+    public static void onDeath(LivingEntity victim, DamageSource source) {
+        var player = killer(victim, source);
+        if (player == null || victim.isAlive()) return;
+        var store = ContractState.get(player.getServer()); if (store.readOnly()) return; long now = System.currentTimeMillis();
+        var type = Registries.ENTITY_TYPE.getId(victim.getType());
+        for (var c : store.ownedBy(player.getUuid())) {
+            if (c.expire(now)) store.markDirty();
+            if (DEFINITIONS.find(c.definition().id()) != null && c.credit(victim.getUuid(), player.getUuid(), type, now)) store.markDirty();
+        }
+    }
+    public static void claim(ServerPlayerEntity player, UUID instance) {
+        var store = ContractState.get(player.getServer()); var c = store.find(instance);
+        if (c == null || DEFINITIONS.find(c.definition().id()) == null) throw new IllegalStateException("Contract or its definition is unavailable");
+        ContractRewards.claim(store, c, player);
+    }
+    public static void cancel(ServerPlayerEntity player, UUID instance) {
+        var store = ContractState.get(player.getServer()); store.writable(); var c = store.find(instance);
+        if (c == null || !c.owner().equals(player.getUuid())) throw new IllegalArgumentException("Contract not owned by player");
+        c.transition(ContractInstance.Status.CANCELLED); store.markDirty();
+    }
+    private static int command(ServerCommandSource source, Runnable action) {
+        try { action.run(); return 1; }
+        catch (IllegalArgumentException | IllegalStateException e) { source.sendError(Text.literal(e.getMessage())); return 0; }
+    }
+    public static void initialize() {
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(DEFINITIONS);
+        ServerLivingEntityEvents.AFTER_DEATH.register(Contracts::onDeath);
+        CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> dispatcher.register(literal("wbcontracts").requires(s -> s.hasPermissionLevel(2))
+            .then(literal("list").executes(c -> { DEFINITIONS.all().values().stream().sorted(Comparator.comparing(d -> d.id().toString())).forEach(d -> c.getSource().sendFeedback(() -> Text.literal(d.id() + " target=" + d.target() + " kills=" + d.required()), false)); return DEFINITIONS.all().size(); }))
+            .then(literal("assign").then(argument("player", EntityArgumentType.player()).then(argument("definition", StringArgumentType.word()).suggests((c,b) -> { DEFINITIONS.all().keySet().forEach(id -> b.suggest(id.toString())); return b.buildFuture(); }).executes(c -> {
+                var player = EntityArgumentType.getPlayer(c,"player"); return command(c.getSource(), () -> { var instance = assign(player, Identifier.of(StringArgumentType.getString(c,"definition"))); c.getSource().sendFeedback(() -> Text.literal("Assigned " + instance.id()), true); }); }))))
+            .then(literal("inspect").then(argument("player", EntityArgumentType.player()).executes(c -> {
+                var player = EntityArgumentType.getPlayer(c,"player"); var store = ContractState.get(player.getServer());
+                for (var instance : store.ownedBy(player.getUuid())) {
+                    if (instance.expire(System.currentTimeMillis())) store.markDirty();
+                    c.getSource().sendFeedback(() -> Text.literal(instance.id() + " " + instance.definition().id() + " " + instance.status() + " " + instance.progress() + "/" + instance.definition().required() + (DEFINITIONS.find(instance.definition().id()) == null ? " [definition unavailable]" : "")), false);
+                } return 1; })))
+            .then(literal("claim").then(argument("instance", StringArgumentType.word()).executes(c -> { var player = c.getSource().getPlayerOrThrow(); return command(c.getSource(), () -> claim(player, UUID.fromString(StringArgumentType.getString(c,"instance")))); })))
+            .then(literal("cancel").then(argument("instance", StringArgumentType.word()).executes(c -> { var player = c.getSource().getPlayerOrThrow(); return command(c.getSource(), () -> cancel(player, UUID.fromString(StringArgumentType.getString(c,"instance")))); })))
+        ));
+    }
+}

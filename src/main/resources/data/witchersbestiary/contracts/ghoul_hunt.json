@@ -1,0 +1,21 @@
+{
+  "id": "witchersbestiary:ghoul_hunt",
+  "name": "contract.witchersbestiary.ghoul_hunt",
+  "description": "contract.witchersbestiary.ghoul_hunt.description",
+  "target": "witchersbestiary:ghoul",
+  "required": 4,
+  "difficulty": 2,
+  "reward": {
+    "experience": 60,
+    "emeralds": 4,
+    "items": [
+      {
+        "item": "witchersbestiary:ghoul_claw",
+        "count": 1
+      }
+    ]
+  },
+  "eligibility": {
+    "minimum_level": 0
+  }
+}

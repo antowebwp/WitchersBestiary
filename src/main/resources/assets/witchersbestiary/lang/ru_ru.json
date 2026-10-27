@@ -281,5 +281,11 @@
   "item.witchersbestiary.silver_witcher_sword": "Серебряный ведьмачий меч",
   "item.witchersbestiary.grave_blade": "Могильный клинок",
   "tooltip.witchersbestiary.silver_witcher_sword": "+4 урона чудовищам Witcher's Bestiary",
-  "tooltip.witchersbestiary.grave_blade": "+4 урона призракам и некрофагам мода; 20%: холод на 2 с"
+  "tooltip.witchersbestiary.grave_blade": "+4 урона призракам и некрофагам мода; 20%: холод на 2 с",
+  "contract.witchersbestiary.drowner_cleanup": "Заказ на утопцев",
+  "contract.witchersbestiary.drowner_cleanup.description": "Уничтожьте указанных чудовищ и получите награду.",
+  "contract.witchersbestiary.ghoul_hunt": "Заказ на гулей",
+  "contract.witchersbestiary.ghoul_hunt.description": "Уничтожьте указанных чудовищ и получите награду.",
+  "contract.witchersbestiary.foglet_hunt": "Заказ на туманников",
+  "contract.witchersbestiary.foglet_hunt.description": "Уничтожьте указанных чудовищ и получите награду."
 }

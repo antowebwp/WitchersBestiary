@@ -281,5 +281,11 @@
   "item.witchersbestiary.silver_witcher_sword": "Silver Witcher Sword",
   "item.witchersbestiary.grave_blade": "Grave Blade",
   "tooltip.witchersbestiary.silver_witcher_sword": "+4 damage against Witcher's Bestiary monsters",
-  "tooltip.witchersbestiary.grave_blade": "+4 damage against mod specters and necrophages; 20%: chill for 2s"
+  "tooltip.witchersbestiary.grave_blade": "+4 damage against mod specters and necrophages; 20%: chill for 2s",
+  "contract.witchersbestiary.drowner_cleanup": "Drowners contract",
+  "contract.witchersbestiary.drowner_cleanup.description": "Hunt the specified monsters and claim your reward.",
+  "contract.witchersbestiary.ghoul_hunt": "Ghouls contract",
+  "contract.witchersbestiary.ghoul_hunt.description": "Hunt the specified monsters and claim your reward.",
+  "contract.witchersbestiary.foglet_hunt": "Foglets contract",
+  "contract.witchersbestiary.foglet_hunt.description": "Hunt the specified monsters and claim your reward."
 }
