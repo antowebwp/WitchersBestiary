@@ -9,7 +9,8 @@
     "SpawnRestrictionAccessor",
     "RootPlayerMovementMixin",
     "MonsterAiMixin",
-    "ProgressiveHealthAttributeMixin"
+    "ProgressiveHealthAttributeMixin",
+    "VillageNoticeBoardMixin"
   ],
   "injectors": {
     "defaultRequire": 1

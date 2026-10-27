@@ -287,5 +287,22 @@
   "contract.witchersbestiary.ghoul_hunt": "Ghouls contract",
   "contract.witchersbestiary.ghoul_hunt.description": "Hunt the specified monsters and claim your reward.",
   "contract.witchersbestiary.foglet_hunt": "Foglets contract",
-  "contract.witchersbestiary.foglet_hunt.description": "Hunt the specified monsters and claim your reward."
+  "contract.witchersbestiary.foglet_hunt.description": "Hunt the specified monsters and claim your reward.",
+  "block.witchersbestiary.notice_board": "Witcher Notice Board",
+  "gui.witchersbestiary.board.title": "Contracts",
+  "gui.witchersbestiary.board.accept": "Accept contract",
+  "gui.witchersbestiary.board.claim": "Claim reward",
+  "gui.witchersbestiary.board.accepted": "In progress",
+  "gui.witchersbestiary.board.completed": "Completed",
+  "gui.witchersbestiary.board.rewarded": "Reward claimed",
+  "gui.witchersbestiary.board.cancelled": "Cancelled",
+  "gui.witchersbestiary.board.expired": "Expired",
+  "gui.witchersbestiary.board.difficulty": "Difficulty",
+  "gui.witchersbestiary.board.progress": "Progress",
+  "gui.witchersbestiary.board.reward": "Reward",
+  "gui.witchersbestiary.board.loading": "No contracts available",
+  "gui.witchersbestiary.board.already": "This contract has already been taken.",
+  "gui.witchersbestiary.board.rejected": "Unavailable or not enough inventory space.",
+  "gui.witchersbestiary.board.updated": "Contract updated.",
+  "gui.witchersbestiary.board.available": "Available"
 }

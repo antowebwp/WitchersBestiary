@@ -287,5 +287,22 @@
   "contract.witchersbestiary.ghoul_hunt": "Заказ на гулей",
   "contract.witchersbestiary.ghoul_hunt.description": "Уничтожьте указанных чудовищ и получите награду.",
   "contract.witchersbestiary.foglet_hunt": "Заказ на туманников",
-  "contract.witchersbestiary.foglet_hunt.description": "Уничтожьте указанных чудовищ и получите награду."
+  "contract.witchersbestiary.foglet_hunt.description": "Уничтожьте указанных чудовищ и получите награду.",
+  "block.witchersbestiary.notice_board": "Ведьмачья доска объявлений",
+  "gui.witchersbestiary.board.title": "Заказы",
+  "gui.witchersbestiary.board.accept": "Принять заказ",
+  "gui.witchersbestiary.board.claim": "Получить награду",
+  "gui.witchersbestiary.board.accepted": "В работе",
+  "gui.witchersbestiary.board.completed": "Выполнено",
+  "gui.witchersbestiary.board.rewarded": "Награда получена",
+  "gui.witchersbestiary.board.cancelled": "Отменён",
+  "gui.witchersbestiary.board.expired": "Истёк",
+  "gui.witchersbestiary.board.difficulty": "Сложность",
+  "gui.witchersbestiary.board.progress": "Прогресс",
+  "gui.witchersbestiary.board.reward": "Награда",
+  "gui.witchersbestiary.board.loading": "Нет доступных заказов",
+  "gui.witchersbestiary.board.already": "Этот заказ уже был принят.",
+  "gui.witchersbestiary.board.rejected": "Недоступно или недостаточно места.",
+  "gui.witchersbestiary.board.updated": "Заказ обновлён.",
+  "gui.witchersbestiary.board.available": "Доступен"
 }

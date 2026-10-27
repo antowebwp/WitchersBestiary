@@ -1,0 +1,148 @@
+{
+  "variants": {
+    "facing=north,part=0": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=1": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=2": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=3": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=4": {
+      "model": "witchersbestiary:block/notice_board",
+      "y": 0
+    },
+    "facing=north,part=5": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=6": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=7": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=north,part=8": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 0
+    },
+    "facing=east,part=0": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=1": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=2": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=3": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=4": {
+      "model": "witchersbestiary:block/notice_board",
+      "y": 90
+    },
+    "facing=east,part=5": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=6": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=7": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=east,part=8": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 90
+    },
+    "facing=south,part=0": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=1": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=2": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=3": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=4": {
+      "model": "witchersbestiary:block/notice_board",
+      "y": 180
+    },
+    "facing=south,part=5": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=6": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=7": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=south,part=8": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 180
+    },
+    "facing=west,part=0": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=1": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=2": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=3": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=4": {
+      "model": "witchersbestiary:block/notice_board",
+      "y": 270
+    },
+    "facing=west,part=5": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=6": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=7": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    },
+    "facing=west,part=8": {
+      "model": "witchersbestiary:block/notice_board_empty",
+      "y": 270
+    }
+  }
+}

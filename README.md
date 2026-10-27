@@ -1,6 +1,6 @@
 # Witcher's Bestiary 0.20.0-dev
 
-Development branch for Stage 20A, based on published v0.19.0. Contract foundation is developer-only; see [report](docs/STAGE20_A_REPORT.md). Stable installation instructions below refer to v0.19.0. This development version is not published.
+Development branch for Stage 20A–20B, based on published v0.19.0. Notice boards provide player contract browsing/acceptance; operator commands remain available for development. See [foundation](docs/STAGE20_A_REPORT.md) and [notice boards](docs/STAGE20_B_REPORT.md). Stable installation instructions below refer to v0.19.0. This development version is not published.
 
 An unofficial Witcher-inspired Minecraft mod featuring monsters, three haunted graveyard structures, trophies, alchemy, workshop decorations and three dimensional swords. Not affiliated with CD PROJEKT RED, Mojang or Microsoft.
 

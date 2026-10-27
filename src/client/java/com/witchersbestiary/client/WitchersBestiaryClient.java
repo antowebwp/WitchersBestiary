@@ -8,6 +8,7 @@ import net.minecraft.client.render.entity.DrownedEntityRenderer;
 
 public final class WitchersBestiaryClient implements ClientModInitializer {
     @Override public void onInitializeClient() {
+        com.witchersbestiary.client.board.NoticeBoardClient.initialize();
         com.witchersbestiary.client.config.ProgressiveConfigClient.initialize();
         net.minecraft.client.gui.screen.ingame.HandledScreens.register(com.witchersbestiary.workshop.ModWorkshop.ALCHEMY_SCREEN,com.witchersbestiary.client.workshop.AlchemyScreen::new);
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(context->context.addModels(com.witchersbestiary.workshop.ModWorkshop.id("block/witcher_chest_lid")));

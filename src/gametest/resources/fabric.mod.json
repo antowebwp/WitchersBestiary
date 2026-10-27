@@ -1,1 +1,17 @@
-{"schemaVersion":1,"id":"witchersbestiary-tests","version":"1.0.0","name":"Contract foundation focused tests","environment":"server","entrypoints":{"fabric-gametest":["com.witchersbestiary.test.ContractFoundationTests"]},"depends":{"witchersbestiary":"*","fabric-gametest-api-v1":"*"}}
+{
+  "schemaVersion": 1,
+  "id": "witchersbestiary-tests",
+  "version": "1.0.0",
+  "name": "Contract foundation focused tests",
+  "environment": "server",
+  "entrypoints": {
+    "fabric-gametest": [
+      "com.witchersbestiary.test.ContractFoundationTests",
+      "com.witchersbestiary.test.NoticeBoardTests"
+    ]
+  },
+  "depends": {
+    "witchersbestiary": "*",
+    "fabric-gametest-api-v1": "*"
+  }
+}

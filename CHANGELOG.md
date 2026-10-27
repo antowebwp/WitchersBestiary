@@ -1,8 +1,10 @@
 # Changelog
 
-## 0.20.0-dev — Stage 20A (unreleased)
+## 0.20.0-dev — Stage 20A–20B (unreleased)
 
-Server-authoritative contract lifecycle, JSON definitions, persistent ownership/progress/reward states, kill attribution, once-only claims and operator test commands. Three internal contract examples and focused tests. No boards/UI/tracking effects or new monsters. Based on public v0.19.0; not published.
+Adds original 3D notice boards, best-effort placement near new vanilla villages, localized parchment contract browsing/acceptance, secure server menu validation and existing-service reward claiming.
+
+Server-authoritative contract lifecycle, JSON definitions, persistent ownership/progress/reward states, kill attribution, once-only claims and operator test commands. Three internal contract examples and focused tests. No tracking effects or new monsters. Based on public v0.19.0; not published.
 
 ## 0.19.0
 

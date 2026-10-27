@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"witchersbestiary-client-tests","version":"1.0.0","name":"Notice board bounded client review","environment":"client","entrypoints":{"client":["com.witchersbestiary.test.NoticeBoardReviewClient"]}}
