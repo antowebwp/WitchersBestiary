@@ -304,5 +304,15 @@
   "gui.witchersbestiary.board.already": "This contract has already been taken.",
   "gui.witchersbestiary.board.rejected": "Unavailable or not enough inventory space.",
   "gui.witchersbestiary.board.updated": "Contract updated.",
-  "gui.witchersbestiary.board.available": "Available"
+  "gui.witchersbestiary.board.available": "Available",
+  "hunt.witchersbestiary.swamp_lord": "Swamp Lord",
+  "hunt.witchersbestiary.started": "Hunt begun. Explore banks and swamps 150–500 blocks from the board.",
+  "hunt.witchersbestiary.description": "Slay the Swamp Lord. Explore banks and swamps 150–500 blocks from acceptance.",
+  "hunt.witchersbestiary.status.searching": "Searching loaded terrain",
+  "hunt.witchersbestiary.status.waiting": "Waiting: explore nearby banks",
+  "hunt.witchersbestiary.status.reserved": "Target reserved",
+  "hunt.witchersbestiary.status.active": "Target alive in hunt area",
+  "hunt.witchersbestiary.status.dead": "Target defeated",
+  "hunt.witchersbestiary.status.cancelled": "Hunt cancelled",
+  "hunt.witchersbestiary.area": "Area %s (128×128)"
 }

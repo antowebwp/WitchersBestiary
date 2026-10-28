@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.20.0-dev — Stage 20A–20B (unreleased)
+## 0.20.0-dev — Stage 20A–20C.1 (unreleased)
+
+Adds the Swamp Lord named contract hunt: unique persisted target, loaded-only cooperative search, dash, at most two helpers, local BossBar and existing board reward flow. Other named bosses are not included yet.
 
 Adds original 3D notice boards, best-effort placement near new vanilla villages, localized parchment contract browsing/acceptance, secure server menu validation and existing-service reward claiming.
 

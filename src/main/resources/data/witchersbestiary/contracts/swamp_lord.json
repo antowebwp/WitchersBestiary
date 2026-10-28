@@ -1,0 +1,21 @@
+{
+  "id": "witchersbestiary:swamp_lord",
+  "name": "hunt.witchersbestiary.swamp_lord",
+  "description": "hunt.witchersbestiary.description",
+  "target": "witchersbestiary:drowner",
+  "required": 1,
+  "difficulty": 3,
+  "reward": {
+    "experience": 120,
+    "emeralds": 12,
+    "items": [
+      {
+        "item": "witchersbestiary:drowner_essence",
+        "count": 3
+      }
+    ]
+  },
+  "eligibility": {
+    "dimension": "minecraft:overworld"
+  }
+}

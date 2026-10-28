@@ -6,6 +6,7 @@ import java.util.*;
 /** State can only change through validated transitions. The kill ledger survives reloads. */
 public final class ContractInstance {
     public enum Status { AVAILABLE, ACCEPTED, COMPLETED, REWARDED, CANCELLED, EXPIRED }
+    public com.witchersbestiary.contracts.hunt.SwampHunt hunt;
     private final UUID id, owner;
     private final ContractDefinition definition;
     private final long created, expires;
@@ -46,7 +47,7 @@ public final class ContractInstance {
     public NbtCompound toNbt() {
         var n = new NbtCompound(); n.putUuid("Id", id); n.putUuid("Owner", owner);
         n.putString("Definition", definition.toJson().toString()); n.putString("Status", status.name()); n.putLong("Created", created);
-        var list = new NbtList(); kills.stream().sorted().forEach(k -> list.add(NbtString.of(k.toString()))); n.put("Kills", list); return n;
+        var list = new NbtList(); kills.stream().sorted().forEach(k -> list.add(NbtString.of(k.toString()))); n.put("Kills", list); if(hunt!=null)n.put("Hunt",hunt.write()); return n;
     }
     public static ContractInstance fromNbt(NbtCompound n) {
         var j = com.google.gson.JsonParser.parseString(n.getString("Definition")).getAsJsonObject();
@@ -59,6 +60,7 @@ public final class ContractInstance {
         if (c.progress() > d.required() || ((c.status == Status.COMPLETED || c.status == Status.REWARDED) && c.progress() != d.required())
                 || ((c.status == Status.AVAILABLE || c.status == Status.ACCEPTED) && c.progress() == d.required()))
             throw new IllegalArgumentException("Inconsistent contract progress/state");
+        if(n.contains("Hunt"))c.hunt=com.witchersbestiary.contracts.hunt.SwampHunt.read(n.getCompound("Hunt"));
         return c;
     }
 }

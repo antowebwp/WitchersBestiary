@@ -21,6 +21,7 @@ public final class Contracts {
     public static final ContractDefinitions DEFINITIONS = new ContractDefinitions();
     private Contracts() {}
     public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId) {
+        com.witchersbestiary.contracts.hunt.SwampLord.validateAccept(player,definitionId);
         var definition = DEFINITIONS.find(definitionId);
         if (definition == null) throw new IllegalArgumentException("Missing/invalid contract definition: " + definitionId);
         if (player.experienceLevel < definition.minimumLevel() || (!definition.dimension().isEmpty()
@@ -31,7 +32,7 @@ public final class Contracts {
         if (store.ownedBy(player.getUuid()).stream().filter(c -> c.status() == ContractInstance.Status.ACCEPTED || c.status() == ContractInstance.Status.COMPLETED).count() >= 16)
             throw new IllegalStateException("At most 16 active/unclaimed contracts per player");
         var c = new ContractInstance(UUID.randomUUID(), player.getUuid(), definition, System.currentTimeMillis());
-        c.transition(ContractInstance.Status.ACCEPTED); store.add(c); return c;
+        c.transition(ContractInstance.Status.ACCEPTED); store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
     /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */
     public static ServerPlayerEntity killer(LivingEntity victim, DamageSource damage) {
@@ -39,13 +40,14 @@ public final class Contracts {
                 && player.getServer() == world.getServer() ? player : null;
     }
     public static void onDeath(LivingEntity victim, DamageSource source) {
+        if(com.witchersbestiary.contracts.hunt.SwampLord.death(victim))return;
         var player = killer(victim, source);
         if (player == null || victim.isAlive()) return;
         var store = ContractState.get(player.getServer()); if (store.readOnly()) return; long now = System.currentTimeMillis();
         var type = Registries.ENTITY_TYPE.getId(victim.getType());
         for (var c : store.ownedBy(player.getUuid())) {
             if (c.expire(now)) store.markDirty();
-            if (DEFINITIONS.find(c.definition().id()) != null && c.credit(victim.getUuid(), player.getUuid(), type, now)) store.markDirty();
+            if (!com.witchersbestiary.contracts.hunt.SwampLord.named(c) && DEFINITIONS.find(c.definition().id()) != null && c.credit(victim.getUuid(), player.getUuid(), type, now)) store.markDirty();
         }
     }
     public static void claim(ServerPlayerEntity player, UUID instance) {
@@ -56,13 +58,14 @@ public final class Contracts {
     public static void cancel(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); store.writable(); var c = store.find(instance);
         if (c == null || !c.owner().equals(player.getUuid())) throw new IllegalArgumentException("Contract not owned by player");
-        c.transition(ContractInstance.Status.CANCELLED); store.markDirty();
+        c.transition(ContractInstance.Status.CANCELLED); if(c.hunt!=null)c.hunt.status=com.witchersbestiary.contracts.hunt.SwampHunt.Status.CANCELLED; store.markDirty();
     }
     private static int command(ServerCommandSource source, Runnable action) {
         try { action.run(); return 1; }
         catch (IllegalArgumentException | IllegalStateException e) { source.sendError(Text.literal(e.getMessage())); return 0; }
     }
     public static void initialize() {
+        com.witchersbestiary.contracts.hunt.SwampLord.initialize();
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(DEFINITIONS);
         ServerLivingEntityEvents.AFTER_DEATH.register(Contracts::onDeath);
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> dispatcher.register(literal("wbcontracts").requires(s -> s.hasPermissionLevel(2))

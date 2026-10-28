@@ -39,7 +39,7 @@ public final class NoticeBoardTests implements FabricGameTest {
  @GameTest(templateName=ARENA,batchId="stage20b",tickLimit=40)
  public void interactionDistanceAcceptanceAndClosedSession(TestContext c){var w=c.getWorld();var root=floor(c);NoticeBoardBlock.place(w,root,Direction.NORTH);var p=player(c,root);var state=w.getBlockState(root);
   state.onUse(w,p,new BlockHitResult(root.toCenterPos(),Direction.NORTH,root,false));c.assertTrue(p.currentScreenHandler instanceof BoardScreenHandler,"Right click opens real screen handler");var h=(BoardScreenHandler)p.currentScreenHandler;
-  c.assertTrue(h.canUse(p)&&h.view(p,"").getAsJsonArray("offers").size()==3,"Live board and three offers");
+  c.assertTrue(h.canUse(p)&&h.view(p,"").getAsJsonArray("offers").size()==4,"Live board and three offers");
   int before=ContractState.get(p.getServer()).ownedBy(p.getUuid()).size();c.assertTrue(h.onButtonClick(p,0),"Accept request");int after=ContractState.get(p.getServer()).ownedBy(p.getUuid()).size();c.assertTrue(after==before+1,"Exactly one accepted instance");h.onButtonClick(p,0);c.assertTrue(ContractState.get(p.getServer()).ownedBy(p.getUuid()).size()==after,"Duplicate rejection");
   var reopened=new BoardScreenHandler(79,p.getInventory(),root);p.currentScreenHandler=reopened;reopened.onButtonClick(p,0);c.assertTrue(ContractState.get(p.getServer()).ownedBy(p.getUuid()).size()==after,"Duplicate acceptance rejected after reopening, independent of action throttle");p.currentScreenHandler=h;
   var second=player(c,root);var foreign=new BoardScreenHandler(99,second.getInventory(),root);c.assertTrue(!h.onButtonClick(second,1),"Other owner denied");
@@ -75,6 +75,6 @@ public final class NoticeBoardTests implements FabricGameTest {
   }c.complete();
  }
  private void storeDirty(net.minecraft.server.network.ServerPlayerEntity p){ContractState.get(p.getServer()).markDirty();}
- @GameTest(templateName=ARENA,batchId="stage20b",tickLimit=20)
- public void supportedVillageTerrainAndNoRegeneration(TestContext c){var w=c.getWorld();var root=floor(c);var chunk=new ChunkPos(root);boolean generated=VillageNoticeBoards.attempt(w,chunk);c.assertTrue(generated,"Bounded candidate placement on village-like terrain");c.assertTrue(!VillageNoticeBoards.attempt(w,chunk),"Existing board prevents repeat");c.complete();}
+ @GameTest(templateName="witchersbestiary:village_board_arena",batchId="stage20b-village-repeat",tickLimit=20)
+ public void supportedVillageTerrainAndNoRegeneration(TestContext c){var w=c.getWorld();var root=c.getAbsolutePos(new BlockPos(24,2,24));var chunk=new ChunkPos(root);for(int x=chunk.getStartX();x<=chunk.getEndX();x++)for(int z=chunk.getStartZ();z<=chunk.getEndZ();z++){w.setBlockState(new BlockPos(x,root.getY()-1,z),Blocks.GRASS_BLOCK.getDefaultState());for(int y=root.getY(),ceiling=w.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE,x,z);y<Math.max(root.getY()+5,ceiling);y++)w.setBlockState(new BlockPos(x,y,z),Blocks.AIR.getDefaultState());}boolean generated=VillageNoticeBoards.attempt(w,chunk);c.assertTrue(generated,"Bounded candidate placement: base="+root+" height="+w.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE,chunk.getStartX()+8,chunk.getStartZ()+8)+" top="+w.getBlockState(new BlockPos(chunk.getStartX()+8,w.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE,chunk.getStartX()+8,chunk.getStartZ()+8)-1,chunk.getStartZ()+8)));c.assertTrue(!VillageNoticeBoards.attempt(w,chunk),"Existing board prevents repeat");c.complete();}
 }

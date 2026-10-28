@@ -51,6 +51,7 @@ public final class BoardScreenHandler extends ScreenHandler {
         var j=new JsonObject();j.addProperty("message",message);var array=new JsonArray();
         for(var id:offers){var live=Contracts.DEFINITIONS.find(id);if(live==null)continue;
             var current=existing(player,id);var definition=current==null?live:current.definition();var row=definition.toJson();
+            if(current!=null&&current.hunt!=null){row.addProperty("hunt_status",current.hunt.status.name().toLowerCase(java.util.Locale.ROOT));row.addProperty("hunt_area",(Math.floorDiv((current.hunt.position==null?current.hunt.origin:current.hunt.position).getX(),128)*128)+", "+(Math.floorDiv((current.hunt.position==null?current.hunt.origin:current.hunt.position).getZ(),128)*128));}
             row.addProperty("button",offers.indexOf(id));row.addProperty("state",current==null?"AVAILABLE":current.status().name());row.addProperty("progress",current==null?0:current.progress());array.add(row);
         }j.add("offers",array);return j;
     }

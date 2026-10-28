@@ -304,5 +304,15 @@
   "gui.witchersbestiary.board.already": "Этот заказ уже был принят.",
   "gui.witchersbestiary.board.rejected": "Недоступно или недостаточно места.",
   "gui.witchersbestiary.board.updated": "Заказ обновлён.",
-  "gui.witchersbestiary.board.available": "Доступен"
+  "gui.witchersbestiary.board.available": "Доступен",
+  "hunt.witchersbestiary.swamp_lord": "Владыка топей",
+  "hunt.witchersbestiary.started": "Охота началась. Ищите берега и болота в 150–500 блоках от доски.",
+  "hunt.witchersbestiary.description": "Уничтожьте Владыку топей. Исследуйте берега и болота в 150–500 блоках от места принятия.",
+  "hunt.witchersbestiary.status.searching": "Поиск загруженной территории",
+  "hunt.witchersbestiary.status.waiting": "Ожидание: исследуйте берега",
+  "hunt.witchersbestiary.status.reserved": "Цель зарезервирована",
+  "hunt.witchersbestiary.status.active": "Цель жива в районе охоты",
+  "hunt.witchersbestiary.status.dead": "Цель уничтожена",
+  "hunt.witchersbestiary.status.cancelled": "Охота отменена",
+  "hunt.witchersbestiary.area": "Район %s (128×128)"
 }

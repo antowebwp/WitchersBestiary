@@ -1,5 +1,9 @@
 # Progress
 
+## Stage 20C.1 — Swamp Lord hunt
+
+0.20.0-dev: named-target binding in existing contract state, loaded-only budgeted bank search,108HP/9damage Drowner variant, dash, capped helpers, local BossBar, hunt statuses and ordinary board reward flow implemented. Native acceptance/combat/completion/claim cycle verified; see [report](STAGE20_C_REPORT.md). Other two bosses remain unimplemented. No push/release.
+
 ## Stage 20B — notice boards and contract interface
 
 0.20.0-dev: original 163-cuboid board, exact multiblock collision/cleanup, village placement hook, localized journal GUI, secure player acceptance/claims using 20A. Native normal-world plains generation and real client acceptance verified. Focused checks/limitations: [Stage 20B report](STAGE20_B_REPORT.md). No push/release; Stage 20C not started.

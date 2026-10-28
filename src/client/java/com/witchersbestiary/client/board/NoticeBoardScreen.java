@@ -49,6 +49,7 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
   var reward=row.getAsJsonObject("reward");var rewardText=key("reward").copy().append(": "+reward.get("experience").getAsInt()+" XP");
   for(var e:reward.getAsJsonArray("items")){var item=e.getAsJsonObject();var id=Identifier.of(item.get("item").getAsString());rewardText.append(", "+item.get("count").getAsInt()+" × ").append(Registries.ITEM.get(id).getName());}
   wrapped(c,rewardText,xx,139,ww,3,0xff49351e);
+  if(row.has("hunt_status"))wrapped(c,Text.translatable("hunt.witchersbestiary.status."+row.get("hunt_status").getAsString()).append(" · ").append(Text.translatable("hunt.witchersbestiary.area",row.get("hunt_area").getAsString())),xx,174,ww,2,0xff49351e);
   if(handler.snapshot.has("message")&&!handler.snapshot.get("message").getAsString().isEmpty())wrapped(c,key(handler.snapshot.get("message").getAsString()),xx,backgroundHeight-60,ww,2,0xff7c2920);
  }
  @Override public void render(DrawContext c,int mouseX,int mouseY,float delta){super.render(c,mouseX,mouseY,delta);drawMouseoverTooltip(c,mouseX,mouseY);}
