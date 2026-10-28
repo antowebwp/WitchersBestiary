@@ -314,5 +314,8 @@
   "hunt.witchersbestiary.status.active": "Цель жива в районе охоты",
   "hunt.witchersbestiary.status.dead": "Цель уничтожена",
   "hunt.witchersbestiary.status.cancelled": "Охота отменена",
-  "hunt.witchersbestiary.area": "Район %s (128×128)"
+  "hunt.witchersbestiary.area": "Район %s (128×128)",
+  "hunt.witchersbestiary.grave_devourer": "Могильный пожиратель",
+  "hunt.witchersbestiary.grave_description": "В лесах охотится прожорливый гуль. Победите Могильного пожирателя, опасаясь его прыжка и ярости. За наградой вернитесь к доске.",
+  "hunt.witchersbestiary.grave_started": "Охота началась. Ищите в лесах и тёмных лесах в 150–500 блоках от доски."
 }

@@ -1,0 +1,8 @@
+{
+ "id":"witchersbestiary:grave_devourer",
+ "name":"hunt.witchersbestiary.grave_devourer",
+ "description":"hunt.witchersbestiary.grave_description",
+ "target":"witchersbestiary:ghoul", "required":1, "difficulty":3,
+ "reward":{"experience":150,"emeralds":14,"items":[]},
+ "eligibility":{"dimension":"minecraft:overworld"}
+}

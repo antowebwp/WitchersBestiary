@@ -39,7 +39,7 @@ public final class NoticeBoardTests implements FabricGameTest {
  @GameTest(templateName=ARENA,batchId="stage20b",tickLimit=40)
  public void interactionDistanceAcceptanceAndClosedSession(TestContext c){var w=c.getWorld();var root=floor(c);NoticeBoardBlock.place(w,root,Direction.NORTH);var p=player(c,root);var state=w.getBlockState(root);
   state.onUse(w,p,new BlockHitResult(root.toCenterPos(),Direction.NORTH,root,false));c.assertTrue(p.currentScreenHandler instanceof BoardScreenHandler,"Right click opens real screen handler");var h=(BoardScreenHandler)p.currentScreenHandler;
-  c.assertTrue(h.canUse(p)&&h.view(p,"").getAsJsonArray("offers").size()==4,"Live board and three offers");
+  c.assertTrue(h.canUse(p)&&h.view(p,"").getAsJsonArray("offers").size()==5,"Live board and three offers");
   int before=ContractState.get(p.getServer()).ownedBy(p.getUuid()).size();c.assertTrue(h.onButtonClick(p,0),"Accept request");int after=ContractState.get(p.getServer()).ownedBy(p.getUuid()).size();c.assertTrue(after==before+1,"Exactly one accepted instance");h.onButtonClick(p,0);c.assertTrue(ContractState.get(p.getServer()).ownedBy(p.getUuid()).size()==after,"Duplicate rejection");
   var reopened=new BoardScreenHandler(79,p.getInventory(),root);p.currentScreenHandler=reopened;reopened.onButtonClick(p,0);c.assertTrue(ContractState.get(p.getServer()).ownedBy(p.getUuid()).size()==after,"Duplicate acceptance rejected after reopening, independent of action throttle");p.currentScreenHandler=h;
   var second=player(c,root);var foreign=new BoardScreenHandler(99,second.getInventory(),root);c.assertTrue(!h.onButtonClick(second,1),"Other owner denied");

@@ -798,3 +798,5 @@ tasks.withType(AbstractArchiveTask).configureEach {
 loom.runs { noticeBoardReview { client(); source sourceSets.clientSmoke; programArgs "--username", "BoardReview", "--width", "1280", "--height", "900"; runDir "build/stage20b-client" } }
 
 loom.runs { swampLordReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.swampReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "SwampReview", "--width", "1280", "--height", "900"; runDir "build/stage20c1-client" } }
+
+loom.runs { graveDevourerReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.graveReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "GraveReview", "--width", "1280", "--height", "900"; runDir "build/stage20c2-client" } }

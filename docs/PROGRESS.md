@@ -1,5 +1,10 @@
 # Progress
 
+## Stage 20C.2 — Grave Devourer hunt
+
+Second fixed named hunt implemented: existing Ghoul model/AI, 120HP, safe telegraphed leap, one-time rage and capped on-hit healing; shared search, persistence, board and BossBar. All25 focused tests and Gradle build PASS; native board-to-reward cycle PASS. See [report](STAGE20_C_REPORT.md). No push/release.
+
+
 ## Stage 20C.1 — Swamp Lord hunt
 
 0.20.0-dev: named-target binding in existing contract state, loaded-only budgeted bank search,108HP/9damage Drowner variant, dash, capped helpers, local BossBar, hunt statuses and ordinary board reward flow implemented. Native acceptance/combat/completion/claim cycle verified; see [report](STAGE20_C_REPORT.md). Other two bosses remain unimplemented. No push/release.

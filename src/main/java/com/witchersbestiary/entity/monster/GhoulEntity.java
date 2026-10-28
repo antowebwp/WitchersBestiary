@@ -35,6 +35,10 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.ghoul.run");
     private static final RawAnimation DEATH = RawAnimation.begin().thenPlayAndHold("animation.ghoul.death");
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    public java.util.UUID huntContract;
+    public int huntLeap, huntRage, huntFeed;
+    public boolean huntRageUsed;
+    public float huntHealed;
     private int leapCooldown;
     private boolean pouncing;
     public void preparePounce(){pouncing=true;leapCooldown=com.witchersbestiary.config.ModConfig.abilityTicks(55+random.nextInt(21));triggerAnim("action","leap");}
@@ -49,6 +53,7 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
     @Override public com.witchersbestiary.combat.CombatState getCombatState(){return com.witchersbestiary.combat.Stun.active(this)?com.witchersbestiary.combat.CombatState.STUNNED:pouncing?com.witchersbestiary.combat.CombatState.SPECIAL_ABILITY:melee==null?com.witchersbestiary.combat.CombatState.IDLE:melee.state();}
     @Override public void cancelCombatForStun(){pouncing=false;if(melee!=null)melee.stop();}
     @Override protected void initGoals() {
+        goalSelector.add(0, new com.witchersbestiary.entity.ai.GravePounceGoal(this));
         goalSelector.add(1, new GhoulLeapGoal(this));
         goalSelector.add(2, melee=new com.witchersbestiary.entity.ai.ResponsiveMeleeGoal(this,true));
         goalSelector.add(7, new WanderAroundFarGoal(this, .9));
@@ -60,9 +65,10 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
     @Override public void tick() {
         super.tick();com.witchersbestiary.entity.ai.LocalAggression.tick(this);
         if (leapCooldown > 0) leapCooldown--;
+        com.witchersbestiary.contracts.hunt.GraveDevourer.tick(this);
     }
 
-    public boolean canLeap() { return !com.witchersbestiary.combat.Stun.active(this) && leapCooldown == 0 && isOnGround() && getTarget() != null; }
+    public boolean canLeap() { return huntContract==null && !com.witchersbestiary.combat.Stun.active(this) && leapCooldown == 0 && isOnGround() && getTarget() != null; }
 
     @Override public MonsterCategory getMonsterCategory() { return MonsterCategory.NECROPHAGE; }
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
@@ -87,6 +93,15 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
         if (hit && !getWorld().isClient && isAlive() && (melee==null || melee.state()==com.witchersbestiary.combat.CombatState.IDLE || melee.state()==com.witchersbestiary.combat.CombatState.CHASE)) triggerAnim("action", "hurt");
         return hit;
     }
+
+    @Override public boolean tryAttack(net.minecraft.entity.Entity victim){
+        float before=victim instanceof net.minecraft.entity.LivingEntity l?l.getHealth()+l.getAbsorptionAmount():0;
+        boolean hit=super.tryAttack(victim);
+        if(hit&&victim instanceof net.minecraft.entity.LivingEntity l&&l.getHealth()+l.getAbsorptionAmount()<before)com.witchersbestiary.contracts.hunt.GraveDevourer.feed(this);
+        return hit;
+    }
+    @Override public void writeCustomDataToNbt(net.minecraft.nbt.NbtCompound n){super.writeCustomDataToNbt(n);com.witchersbestiary.contracts.hunt.GraveDevourer.write(this,n);}
+    @Override public void readCustomDataFromNbt(net.minecraft.nbt.NbtCompound n){super.readCustomDataFromNbt(n);com.witchersbestiary.contracts.hunt.GraveDevourer.read(this,n);}
 
     public static DefaultAttributeContainer.Builder createGhoulAttributes() {
         return HostileEntity.createHostileAttributes()

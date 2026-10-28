@@ -314,5 +314,8 @@
   "hunt.witchersbestiary.status.active": "Target alive in hunt area",
   "hunt.witchersbestiary.status.dead": "Target defeated",
   "hunt.witchersbestiary.status.cancelled": "Hunt cancelled",
-  "hunt.witchersbestiary.area": "Area %s (128×128)"
+  "hunt.witchersbestiary.area": "Area %s (128×128)",
+  "hunt.witchersbestiary.grave_devourer": "Grave Devourer",
+  "hunt.witchersbestiary.grave_description": "A ravenous ghoul stalks the forests. Defeat the Grave Devourer, beware its leap and rage, then return to this board.",
+  "hunt.witchersbestiary.grave_started": "Hunt begun. Explore forests and dark forests 150–500 blocks from the board."
 }

@@ -40,7 +40,7 @@ public final class ResponsiveMeleeGoal extends Goal {
                 mob.tryAttack(target);if(current<10)firstHit=true;else secondHit=true;
             }
             if(second && current==11) ((GeoEntity)mob).triggerAnim("action","attack");
-            if(current>=end) {age=0;cooldown=ModConfig.attackTicks(4);state=CombatState.CHASE;}
+            if(current>=end) {age=0;cooldown=ModConfig.attackTicks(mob instanceof com.witchersbestiary.entity.monster.GhoulEntity g&&g.huntContract!=null&&g.huntRage>0?1:4);state=CombatState.CHASE;}
         } else if(cooldown==0 && CombatMotion.distance(mob,target)<=2.15 && CombatMotion.meleeHeight(mob,target) && mob.canSee(target)) {
             facing=net.minecraft.util.math.Vec3d.fromPolar(0,mob.getYaw());firstHit=secondHit=false; second=combos && mob.getRandom().nextFloat()<.55f; age=1; end=second?24:14;
             state=CombatState.ATTACK_WINDUP;
