@@ -20,6 +20,7 @@ public final class CombatIllusions {
         });
         return Math.max(0,capacity-slots.size());
     }
+    public int available(ServerWorld world,int limit){return Math.min(available(world),Math.max(0,limit-slots.size()));}
     public void add(Entity entity, long expiry) { slots.put(entity.getUuid(),expiry); }
     public void save(NbtCompound nbt) {
         NbtList list=new NbtList();

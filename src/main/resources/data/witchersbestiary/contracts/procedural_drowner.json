@@ -1,0 +1,16 @@
+{
+  "id": "witchersbestiary:procedural_drowner",
+  "name": "hunt.witchersbestiary.proc.offer.drowner",
+  "description": "hunt.witchersbestiary.proc.description",
+  "target": "witchersbestiary:drowner",
+  "required": 1,
+  "difficulty": 1,
+  "reward": {
+    "experience": 30,
+    "emeralds": 3,
+    "items": []
+  },
+  "eligibility": {
+    "dimension": "minecraft:overworld"
+  }
+}

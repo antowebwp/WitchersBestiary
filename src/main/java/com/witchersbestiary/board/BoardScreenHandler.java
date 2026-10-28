@@ -32,7 +32,7 @@ public final class BoardScreenHandler extends ScreenHandler {
     }
     @Override public ItemStack quickMove(PlayerEntity p,int slot){return ItemStack.EMPTY;}
     public static ContractInstance existing(ServerPlayerEntity player,Identifier definition){
-        return ContractState.get(player.getServer()).ownedBy(player.getUuid()).stream().filter(c->c.definition().id().equals(definition)).findFirst().orElse(null);
+        return ContractState.get(player.getServer()).ownedBy(player.getUuid()).stream().filter(c->c.definition().id().equals(definition)).filter(c->!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definition)||c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED).findFirst().orElse(null);
     }
     @Override public boolean onButtonClick(PlayerEntity player,int button){
         if(!(player instanceof ServerPlayerEntity server)||server.currentScreenHandler!=this||!canUse(server))return false;
@@ -51,6 +51,7 @@ public final class BoardScreenHandler extends ScreenHandler {
         var j=new JsonObject();j.addProperty("message",message);var array=new JsonArray();
         for(var id:offers){var live=Contracts.DEFINITIONS.find(id);if(live==null)continue;
             var current=existing(player,id);var definition=current==null?live:current.definition();var row=definition.toJson();
+            if(current!=null&&current.procedural!=null){row.addProperty("generated_name",current.procedural.nameKey());row.addProperty("generated_epithet",current.procedural.epithetKey());row.addProperty("rarity",current.procedural.tier().name());}else if((id.equals(com.witchersbestiary.contracts.hunt.SwampLord.ID)||id.equals(com.witchersbestiary.contracts.hunt.GraveDevourer.ID)))row.addProperty("rarity","LEGENDARY");
             if(current!=null&&current.hunt!=null){row.addProperty("hunt_status",current.hunt.status.name().toLowerCase(java.util.Locale.ROOT));row.addProperty("hunt_area",(Math.floorDiv((current.hunt.position==null?current.hunt.origin:current.hunt.position).getX(),128)*128)+", "+(Math.floorDiv((current.hunt.position==null?current.hunt.origin:current.hunt.position).getZ(),128)*128));}
             row.addProperty("button",offers.indexOf(id));row.addProperty("state",current==null?"AVAILABLE":current.status().name());row.addProperty("progress",current==null?0:current.progress());array.add(row);
         }j.add("offers",array);return j;

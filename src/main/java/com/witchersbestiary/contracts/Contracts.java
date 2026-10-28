@@ -31,7 +31,10 @@ public final class Contracts {
         for (var existing : store.ownedBy(player.getUuid())) if (existing.expire(System.currentTimeMillis())) store.markDirty();
         if (store.ownedBy(player.getUuid()).stream().filter(c -> c.status() == ContractInstance.Status.ACCEPTED || c.status() == ContractInstance.Status.COMPLETED).count() >= 16)
             throw new IllegalStateException("At most 16 active/unclaimed contracts per player");
-        var c = new ContractInstance(UUID.randomUUID(), player.getUuid(), definition, System.currentTimeMillis());
+        var instanceId=UUID.randomUUID();
+        var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits(),definition.target().getPath()):null;
+        if(profile!=null)definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
+        var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
         c.transition(ContractInstance.Status.ACCEPTED); store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
     /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */

@@ -45,6 +45,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
     @Override public boolean trackedStun(){return dataTracker.get(STUN_FLAG);}
     @Override public void setTrackedStun(boolean value){dataTracker.set(STUN_FLAG,value);}
 
+    public com.witchersbestiary.contracts.procedural.ProceduralCombat procedural;
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.foglet.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.foglet.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.foglet.run");
@@ -53,7 +54,10 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
     private boolean illusion;
     private int illusionAge;
     private long illusionExpiry;
-    private final CombatIllusions copies=new CombatIllusions();
+    public java.util.UUID huntContract,huntIllusionParent;
+    private final CombatIllusions copies=new CombatIllusions(3);
+    public void clearContractCopies(ServerWorld w){copies.clear(w);}
+    public int contractCopiesAvailable(ServerWorld w){return copies.available(w,3);}
     private int fogCooldown = 40;
     private int vanishCooldown = 70;
     private int illusionCooldown = 60;
@@ -78,7 +82,9 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
     @Override public void tick() {
         super.tick();
         if (getWorld().isClient) return;
+        if(procedural!=null){com.witchersbestiary.contracts.procedural.ProceduralHunts.tick(this);if(isRemoved())return;}
         if (illusion) {
+            if(huntIllusionParent!=null&&age%20==0){var c=com.witchersbestiary.contracts.ContractState.get(((ServerWorld)getWorld()).getServer()).find(huntIllusionParent);if(c==null||c.status()!=com.witchersbestiary.contracts.ContractInstance.Status.ACCEPTED){discard();return;}}
             if (++illusionAge >= CombatIllusions.LIFETIME || illusionExpiry>0 && getWorld().getTime()>=illusionExpiry || getWorld().getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL) discard();
             return;
         }
@@ -99,11 +105,11 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
             fogCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(140);
         }
         if (canSee(target) && vanishCooldown == 0 && distance < 9 * 9 && tryVanishNear(target)) {
-            vanishCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(160);
+            vanishCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(procedural!=null&&procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.PHASE_SHIFT)?100:160);
         }
         if (canSee(target) && illusionCooldown == 0 && distance < 18 * 18) {
             summonIllusions(target);
-            illusionCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(220);
+            illusionCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(procedural!=null&&procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.ILLUSIONIST)?160:220);
         }
     }
 
@@ -130,6 +136,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
             int y = MathHelper.clamp(MathHelper.floor(target.getY()), world.getBottomY() + 1, world.getTopY() - 3);
             BlockPos feet = BlockPos.ofFloored(x, y, z);
             BlockPos below = feet.down();
+            if(procedural!=null){boolean loaded=true;for(int dx=-2;dx<=2;dx+=4)for(int dz=-2;dz<=2;dz+=4)if(world.getChunkManager().getWorldChunk((feet.getX()+dx)>>4,(feet.getZ()+dz)>>4)==null)loaded=false;if(!loaded)continue;}
             if (!world.getWorldBorder().contains(feet) || !world.isInBuildLimit(feet)
                     || !world.getBlockState(below).isSolidBlock(world, below)
                     || !world.getBlockState(feet).isAir()
@@ -155,7 +162,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
     /** Creates up to two combat copies; persisted slots prevent accumulation and recursion. */
     public int summonIllusions(LivingEntity target) {
         if (!(getWorld() instanceof ServerWorld world) || illusion || target.isRemoved()) return 0;
-        int count = Math.min(1 + random.nextInt(2),copies.available(world));
+        int count = Math.min(1 + random.nextInt(2),copies.available(world,procedural!=null&&procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.ILLUSIONIST)?3:2));
         int created = 0;
         for (int i = 0; i < count; i++) {
             double angle = Math.PI * 2 * (i + 1) / (count + 1.0) + random.nextDouble() * .3;
@@ -165,6 +172,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
             copy.refreshPositionAndAngles(getX() + Math.cos(angle) * radius, getY(),
                     getZ() + Math.sin(angle) * radius, getYaw(), 0);
             copy.setIllusion(true);
+            if(procedural!=null){copy.huntIllusionParent=huntContract;var at=copy.getBlockPos();boolean loaded=true;for(int dx=-2;dx<=2;dx+=4)for(int dz=-2;dz<=2;dz+=4)if(world.getChunkManager().getWorldChunk((at.getX()+dx)>>4,(at.getZ()+dz)>>4)==null)loaded=false;if(!loaded||!world.isSpaceEmpty(copy,copy.getBoundingBox())||!world.getFluidState(at).isEmpty()||!world.getBlockState(at.down()).isSolidBlock(world,at.down()))continue;}
             copy.setAiDisabled(false);
             copy.setTarget(target);
             copy.setGlowing(false);
@@ -195,11 +203,11 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
     }
 
     @Override public void writeCustomDataToNbt(NbtCompound nbt) {
-        super.writeCustomDataToNbt(nbt);nbt.putBoolean("CombatIllusion",illusion);nbt.putInt("IllusionAge",illusionAge);
+        super.writeCustomDataToNbt(nbt);if(procedural!=null){nbt.put("WbProcedural",procedural.write());nbt.putUuid("WbProceduralHunt",huntContract);nbt.putInt("WbFogCooldown",fogCooldown);nbt.putInt("WbVanishCooldown",vanishCooldown);nbt.putInt("WbIllusionCooldown",illusionCooldown);nbt.putInt("WbVanishTicks",vanishTicks);}if(huntIllusionParent!=null)nbt.putUuid("WbIllusionContract",huntIllusionParent);nbt.putBoolean("CombatIllusion",illusion);nbt.putInt("IllusionAge",illusionAge);
         nbt.putLong("IllusionExpiry",illusionExpiry);copies.save(nbt);
     }
     @Override public void readCustomDataFromNbt(NbtCompound nbt) {
-        super.readCustomDataFromNbt(nbt);setIllusion(nbt.getBoolean("CombatIllusion"));
+        super.readCustomDataFromNbt(nbt);procedural=nbt.contains("WbProcedural")?com.witchersbestiary.contracts.procedural.ProceduralCombat.read(nbt.getCompound("WbProcedural")):null;huntContract=nbt.containsUuid("WbProceduralHunt")?nbt.getUuid("WbProceduralHunt"):null;huntIllusionParent=nbt.containsUuid("WbIllusionContract")?nbt.getUuid("WbIllusionContract"):null;if(procedural!=null){fogCooldown=Math.clamp(nbt.getInt("WbFogCooldown"),0,140);vanishCooldown=Math.clamp(nbt.getInt("WbVanishCooldown"),0,160);illusionCooldown=Math.clamp(nbt.getInt("WbIllusionCooldown"),0,220);vanishTicks=Math.clamp(nbt.getInt("WbVanishTicks"),0,28);}setIllusion(nbt.getBoolean("CombatIllusion"));
         illusionAge=nbt.getInt("IllusionAge");if(nbt.contains("IllusionExpiry"))illusionExpiry=nbt.getLong("IllusionExpiry");
         if(illusion)setAiDisabled(false);copies.load(nbt);
     }

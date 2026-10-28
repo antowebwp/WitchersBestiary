@@ -800,3 +800,15 @@ loom.runs { noticeBoardReview { client(); source sourceSets.clientSmoke; program
 loom.runs { swampLordReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.swampReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "SwampReview", "--width", "1280", "--height", "900"; runDir "build/stage20c1-client" } }
 
 loom.runs { graveDevourerReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.graveReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "GraveReview", "--width", "1280", "--height", "900"; runDir "build/stage20c2-client" } }
+
+loom.runs { proceduralReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.proceduralReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "ProcReview", "--width", "1280", "--height", "900"; runDir "build/stage20c3-client" } }
+
+tasks.named('runProceduralReview') {
+ doLast {
+  def out = file('build/stage20c3-review')
+  if(new File(out,'failure.txt').exists() || new File(out,'timeout.txt').exists()) throw new GradleException('Procedural native review failed; inspect build/stage20c3-review')
+  def result = new groovy.json.JsonSlurper().parse(new File(out,'results.json'))
+  ['drowner','ghoul','foglet'].each { kind -> if(result[kind+'.real_packet_claim'] != true) throw new GradleException('Missing native claim evidence: '+kind) }
+  if(result['ghoul.active_world_rejoin'] != true) throw new GradleException('Missing active-world rejoin evidence')
+ }
+}

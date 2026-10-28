@@ -1,5 +1,7 @@
 # Stage 20C — named contract hunts
 
+Current state: Stage20C.3 is implemented and verified. The final section records procedural architecture/results; earlier sections preserve the separate20C.1 and20C.2 checkpoint evidence.
+
 ## Stage 20C.1 — archived checkpoint evidence
 
 28 October 2026. Version 0.20.0-dev, branch dev/0.20.0, base 90497bf. Implements ONLY Swamp Lord; Grave Devourer, Mist Phantom and Stage20D are not implemented. No push, release or modification of the v0.19.0 tag. Existing uncommitted search-queue work was retained and integrated.
@@ -85,3 +87,74 @@ Game JAR: `build/libs/witchersbestiary-0.20.0-dev.jar`, 8173301 bytes; SHA-256 `
 - No full historical GameTest suite, multi-hour audit or second concurrent client was run. No separate process-restart or two-human multiplayer benchmark is claimed; disk NBT/state reload plus live UUID rehydration cover the tested persistence paths. Shared cross-file crash-atomicity limitation from Stage20A remains. No gameplay assets changed; no user game installation access; no push/release/tag changes.
 
 JAR: `build/libs/witchersbestiary-0.20.0-dev.jar`, 8183028 bytes; SHA-256 `1def8f6d880443b4a6f6d4171ebc84f63623ad3d2bb30ff92ce8cf2c6016a9f1`. ZIP metadata/definition and exclusion of native/test harness classes verified.
+
+
+## Stage 20C.3 — procedural named monster contracts completed
+
+28 October 2026. Continues the separately committed Stage20C.2 checkpoint `280ccbe`. Version remains0.20.0-dev; no push, release, stable tag change or Stage21 work.
+
+### Architecture and generation
+
+There are now two kinds of named hunts. Swamp Lord and Grave Devourer remain fixed LEGENDARY definitions with their existing stats/abilities/rewards. Three additional renewable species-specific board templates select the supported target pool: `procedural_drowner`, `procedural_ghoul`, `procedural_foglet`. The old three ordinary kill contracts also remain, for eight definitions total. No per-combination entity classes, replacement monster models or parallel contract database were created.
+
+`ProceduralProfile` is an immutable per-instance roll: seed, approved species, rarity, two structured localized name indices, compatible ability set, base HP and damage. Contracts.assign generates it ONCE from a fresh instance identity, snapshots difficulty/reward into the normal ContractDefinition and persists the profile with ContractInstance. Entity runtime state stores the same immutable profile plus its own cooldowns. GUI reopening, entity load and world load never invoke generation. A missing/invalid saved procedural roll is rejected/quarantined rather than silently regenerated or spawning the wrong fallback species.
+
+There are eight original localized name stems per species and eight geographical epithets:64 possible combinations per species,192 total. Nested translatable Text components are used by entity names, BossBars and board details, so switching language does not reroll the name. Different targets may coincidentally share a lexical combination; UUID identity remains unique. RU/EN procedural key parity is verified from the built JAR. Native review used English; a separate manual RU-language session was not run.
+
+Rarity selection is60% COMMON,30% RARE,10% EPIC. Base HP uses1.5x/2x/3x with bounded +/-5% jitter; damage uses1.1x/1.25x/1.5x. Values are stored, applied to base attributes once at spawn and then restored through vanilla entity NBT. Existing global progressive difficulty remains a separate existing modifier system; reload does not multiply base values again. COMMON chooses one additional compatible trait; RARE two; EPIC two or three (Foglet has two eligible traits). Rewards are30/60/90XP and3/6/10 emeralds, all below the fixed legendary rewards. No new currency.
+
+### Ability registry and existing AI
+
+`ContractAbility` is the finite extensible compatibility registry; `ProceduralCombat` stores optional named-only runtime state; `ProceduralHunts` adapts the existing entity/controller APIs and lifecycle. Ordinary monsters have no procedural state.
+
+| Trait | Species | Runtime bound and persistence |
+|---|---|---|
+| CHARGE | Drowner, Ghoul | Existing Drowner15-tick windup/120-tick dash cooldown, or existing Grave14-tick windup/200-tick safe leap cooldown. One handler per species; no competing leap controllers. |
+| FRENZY | Drowner, Ghoul | Below40%HP, once-only persisted latch,300-tick speed boost and slightly shorter melee recovery cooldown. Fixed modifier ID prevents stacking. |
+| LIFESTEAL | Ghoul | Existing actual-damage hook,2HP,80-tick cooldown,12HP lifetime cap persisted. |
+| POISONOUS | Drowner, Ghoul | Actual-damage hook,35% chance of60-tick Poison I; attempts separated by100-tick cooldown persisted. Blocked/invulnerable hits do not proc. |
+| SUMMONER | Drowner | Existing300-tick summoning handler, two persisted UUID slots; no summon on mere login/load and no unknown unloaded slot replacement. |
+| ILLUSIONIST | Foglet | Adapts the SAME CombatIllusions pool used by base AI. Named selected variants allow three total copies and160-tick summon cadence; ordinary Foglet remains capped at two/220ticks. Copies keep the existing400-tick expiry and no-loot behavior. |
+| PHASE_SHIFT | Foglet | Adapts existing safe vanish/teleport,100-tick cadence instead of160; invisibility remains bounded at28ticks. Loaded footprint, supported dry destination and collision checks precede teleport. |
+
+Foglet retains its base AI, fog veil and bounded base illusions/vanish behavior; procedural traits augment those handlers. They do not create a second illusion or invisibility engine. Named copies carry the contract ID for cleanup after parent cancellation/death, including copies loaded later. Parent death/cancel clears loaded copies. Existing unrelated ordinary monster behavior is retained.
+
+### Search, lifecycle, multiplayer and interface
+
+The same SwampLord coordinator, HuntSearchQueue, SwampHunt NBT record, ContractState and ContractRewards serve legendary and procedural hunts. The shared1ms cooperative budget and fair owner scheduling remain; there is no separate procedural scheduler, forced chunk ticket, biome scan or background world access. Drowners use loaded banks/wet biomes; ghouls and foglets use loaded forest-tag habitat. Existing safe floor/collision/border/occupied-village checks remain. With no suitable loaded territory the accepted instance waits and retries when its owner explores another chunk.
+
+The existing stricter cap of one accepted named hunt per owner covers both procedural and legendary hunts. Old ordinary kill contracts can coexist. Each accepted instance reserves exactly one target UUID before insertion into the world. Unloading, logging out or reopening the board does not clear that reservation; there is no respawn while the target is absent. Vanilla entity saves retain health, attributes and combat state, and the existing store retains owner/instance/target/dimension/position/status. Ambiguous cross-file crash reservations continue to fail closed as documented in Stage20A/C.1.
+
+Only the bound UUID completes its own instance. Helping kill another owner's target credits that owner, never the helper's different instance. Owner-only one-time claims use the existing reward service. Successful claims make procedural board slots available for a new accepted roll; the old rewarded instance and immutable roll remain in saved history. Active/completed rolls are stable on reopen. Fixed legendary catalogue behavior is unchanged. Historical completed instances are retained; this is not a long-duration world-size benchmark.
+
+Existing nearby BossBars are reused and removed on death/unload/cancel; names are cached per runtime state rather than rebuilt every tick. GUI shows generated name, species, colored COMMON/RARE/EPIC label, brief description, coarse128x128 hunt area, reward and progress/status. Fixed hunts show LEGENDARY. No UI art or model changes.
+
+### Verification
+
+- Final focused `runGametest build --offline --console=plain`: **32 required tests PASS**,6.965s test execution; **BUILD SUCCESSFUL in1m2s** and all9 release mixin/refmap checks PASS. Log remains ignored at `build/stage20c3-checkpoint.log`.
+- Includes all Stage20A/B tests, all three Swamp Lord tests and all five Grave Devourer tests. Seven combined procedural tests cover900 deterministic profile rolls, name variation/rarities, compatibility and incompatible-trait rejection, bounded attributes/rewards, all three spawns, exact UUID/no duplicate, ordinary/foreign-target rejection, disk NBT and same-UUID entity rehydration, missing-roll rejection, stable history/renewable board slots, owner-only/repeated reward rejection, BossBar cleanup, shared helper/illusion caps, Foglet slot NBT, phase clearance, selected frenzy/poison and unselected lifesteal gating, plus controlled load scenarios.
+- Standalone shared queue checks for1/5/10 synthetic jobs passed again (fairness, budget, waiting, cancellation, step cap, re-enqueue). They are not live server benchmarks.
+- One successful bounded native Fabric-only client sequentially completed all three species through real board acceptance/claim packets and real attack packets, then saved/shut down gracefully: **PASS in1m57s**. The ghoul hunt was saved while ACTIVE, disconnected and reopened in the same client process; instance roll and target UUID/profile were verified unchanged and the hunt then completed normally. This is a real integrated-server world rejoin, not a separate JVM/power-loss test.
+- Observed native rolls: Rare Drowner with CHARGE/SUMMONER (70HP, two helpers); Rare Ghoul with LIFESTEAL/POISONOUS (60HP,4HP actual healing); Common Foglet with PHASE_SHIFT (64HP, existing fog/vanish/copy behavior). Each showed one named BossBar, completed only its own instance, cleared its bar after death and granted the proper reward once. Other selected traits/tiers are covered by GameTests, not claimed as additional native runs.
+- Native fixture: flat loaded chunks assigned the actual FOREST biome plus a small bank,48–96 block test search radius. Production default remains150–500. Player used netherite armor, strong regeneration and an automated UUID-targeted attack driver; this is protocol/mechanics coverage, not human survival/balance testing. No natural-biome distribution survey or two-human session is claimed.
+- Eighteen native screenshots under ignored `build/stage20c3-review/` cover available/active/boss-and-bar/combat/completed/rewarded for each species. Representative active UI and boss images were inspected; poison/fog particles and blindness can obscure combat frames as expected. `results.json` records per-species identity/profile/completion/claim and the active-world rejoin. Early attempts exposed a misplaced test water block and incorrect test-driver disconnect ordering; both were corrected in the harness, with no production safety relaxation. Raw failed-attempt evidence remains ignored. Native Gradle task now validates result flags, not merely process exit.
+
+### Performance evidence and limits
+
+The dedicated GameTest server runs accelerated rather than normal20TPS. The live test registers and ticks real bound entities/AI for three200-tick windows, with one Drowner summoner, then mixed Drowner/Foglet/Ghoul populations, helper/copy cleanup between windows. No mock players are retained as combat targets; an invulnerable cow drives the controlled AI workload. Mean server tick processing time uses the server tick-time ring after60 warmup ticks:
+
+| Active hunts | Helpers | Illusions | Mean server MSPT | Observed accelerated test ticks/sec |
+|---|---:|---:|---:|---:|
+|1|2|0|1.421|394.3|
+|5|2|3|2.014|413.7|
+|10|2|3|2.191|422.8|
+
+These short accelerated windows are diagnostic, not production TPS, long-run latency percentiles or proof that a populated real server will maintain20TPS. Caps remained bounded and targets/children were cleaned between scenarios. No extrapolation from the high accelerated tick rate is made.
+
+A separate manual100-iteration real-entity subsystem sample measured mean batch costs of1.325/7.118/11.181 microseconds for1/5/10 targets. It excludes full AI/world processing and is explicitly NOT whole-server MSPT. No production tick profiler or long-running multiplayer benchmark is claimed. No permanent scanner, per-tick PersistentState dirty writes or forced entity/chunk retention was introduced.
+
+### Build artifact and remaining scope
+
+JAR: `build/libs/witchersbestiary-0.20.0-dev.jar`, 8204952 bytes; SHA-256 `63310595a78357781f97a51896130539ec0482fc508474cf42e838b3370ef395`. ZIP/version/eight definitions and RU/EN procedural keys verified; native/GameTest harness classes and logs are absent from the game JAR.
+
+Only Drowner/Ghoul/Foglet are supported for procedural generation. Other species can be added through the profile/compatibility/controller adapters later; no Leshen/Fiend/etc. procedural content, new currency, Stage21 work or public push/release was performed. Existing legendary definitions, stable v0.19.0 tag and protected monster/sword assets remain intact.

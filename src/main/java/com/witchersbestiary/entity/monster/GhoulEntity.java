@@ -30,6 +30,7 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
     @Override public boolean trackedStun(){return dataTracker.get(STUN_FLAG);}
     @Override public void setTrackedStun(boolean value){dataTracker.set(STUN_FLAG,value);}
 
+    public com.witchersbestiary.contracts.procedural.ProceduralCombat procedural;
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.ghoul.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.ghoul.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.ghoul.run");
@@ -68,7 +69,7 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
         com.witchersbestiary.contracts.hunt.GraveDevourer.tick(this);
     }
 
-    public boolean canLeap() { return huntContract==null && !com.witchersbestiary.combat.Stun.active(this) && leapCooldown == 0 && isOnGround() && getTarget() != null; }
+    public boolean canLeap() { return (huntContract==null||procedural!=null&&!procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.CHARGE)) && !com.witchersbestiary.combat.Stun.active(this) && leapCooldown == 0 && isOnGround() && getTarget() != null; }
 
     @Override public MonsterCategory getMonsterCategory() { return MonsterCategory.NECROPHAGE; }
     @Override public AnimatableInstanceCache getAnimatableInstanceCache() { return cache; }
@@ -97,11 +98,11 @@ public final class GhoulEntity extends HostileEntity implements com.witchersbest
     @Override public boolean tryAttack(net.minecraft.entity.Entity victim){
         float before=victim instanceof net.minecraft.entity.LivingEntity l?l.getHealth()+l.getAbsorptionAmount():0;
         boolean hit=super.tryAttack(victim);
-        if(hit&&victim instanceof net.minecraft.entity.LivingEntity l&&l.getHealth()+l.getAbsorptionAmount()<before)com.witchersbestiary.contracts.hunt.GraveDevourer.feed(this);
+        if(hit&&victim instanceof net.minecraft.entity.LivingEntity l&&l.getHealth()+l.getAbsorptionAmount()<before){com.witchersbestiary.contracts.hunt.GraveDevourer.feed(this);com.witchersbestiary.contracts.procedural.ProceduralHunts.hit(this,l);}
         return hit;
     }
-    @Override public void writeCustomDataToNbt(net.minecraft.nbt.NbtCompound n){super.writeCustomDataToNbt(n);com.witchersbestiary.contracts.hunt.GraveDevourer.write(this,n);}
-    @Override public void readCustomDataFromNbt(net.minecraft.nbt.NbtCompound n){super.readCustomDataFromNbt(n);com.witchersbestiary.contracts.hunt.GraveDevourer.read(this,n);}
+    @Override public void writeCustomDataToNbt(net.minecraft.nbt.NbtCompound n){super.writeCustomDataToNbt(n);if(procedural!=null)n.put("WbProcedural",procedural.write());com.witchersbestiary.contracts.hunt.GraveDevourer.write(this,n);}
+    @Override public void readCustomDataFromNbt(net.minecraft.nbt.NbtCompound n){super.readCustomDataFromNbt(n);procedural=n.contains("WbProcedural")?com.witchersbestiary.contracts.procedural.ProceduralCombat.read(n.getCompound("WbProcedural")):null;com.witchersbestiary.contracts.hunt.GraveDevourer.read(this,n);}
 
     public static DefaultAttributeContainer.Builder createGhoulAttributes() {
         return HostileEntity.createHostileAttributes()

@@ -17,6 +17,7 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
  private final List<ButtonWidget> rows=new ArrayList<>();private ButtonWidget action;private int selected,page,leftWidth;
  public NoticeBoardScreen(BoardScreenHandler h,PlayerInventory inventory,Text title){super(h,inventory,title);}
  private JsonArray offers(){return handler.snapshot.has("offers")?handler.snapshot.getAsJsonArray("offers"):new JsonArray();}
+ private Text name(JsonObject row){return row.has("generated_name")?Text.translatable("hunt.witchersbestiary.proc.name_format",Text.translatable(row.get("generated_name").getAsString()),Text.translatable(row.get("generated_epithet").getAsString())):Text.translatable(row.get("name").getAsString());}
  private Text key(String suffix){return Text.translatable("gui.witchersbestiary.board."+suffix);}
  @Override protected void init(){
   backgroundWidth=Math.min(384,width-12);backgroundHeight=Math.min(240,height-12);super.init();leftWidth=backgroundWidth/3;rows.clear();
@@ -29,7 +30,7 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
  }
  public void refresh(){
   var data=offers();if(selected>=data.size())selected=0;
-  for(int i=0;i<rows.size();i++){int index=page*3+i;var button=rows.get(i);button.visible=index<data.size();if(button.visible)button.setMessage(Text.translatable(data.get(index).getAsJsonObject().get("name").getAsString()));}
+  for(int i=0;i<rows.size();i++){int index=page*3+i;var button=rows.get(i);button.visible=index<data.size();if(button.visible)button.setMessage(name(data.get(index).getAsJsonObject()));}
   if(action!=null){action.active=false;if(selected<data.size()){String state=data.get(selected).getAsJsonObject().get("state").getAsString();action.active=state.equals("AVAILABLE")||state.equals("COMPLETED");action.setMessage(key(state.equals("AVAILABLE")?"accept":state.equals("COMPLETED")?"claim":state.toLowerCase(Locale.ROOT)));}}
  }
  private void wrapped(DrawContext c,Text text,int xx,int yy,int maxWidth,int maxLines,int color){var lines=textRenderer.wrapLines(text,maxWidth);for(int i=0;i<Math.min(maxLines,lines.size());i++)c.drawText(textRenderer,lines.get(i),xx,yy+i*11,color,false);}
@@ -39,12 +40,12 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
   for(int i=0;i<3;i++){int n=page*3+i;if(n<offers().size())c.drawText(textRenderer,key(offers().get(n).getAsJsonObject().get("state").getAsString().toLowerCase(Locale.ROOT)),11,73+i*50,0xffefcfa0,false);}
   if(selected>=offers().size()){wrapped(c,key("loading"),leftWidth+15,35,backgroundWidth-leftWidth-30,4,0xff382817);return;}
   var row=offers().get(selected).getAsJsonObject();int xx=leftWidth+14,ww=backgroundWidth-leftWidth-28;
-  wrapped(c,Text.translatable(row.get("name").getAsString()),xx,15,ww-24,2,0xff372617);
+  wrapped(c,name(row),xx,15,ww-24,2,0xff372617);
   var target=Identifier.of(row.get("target").getAsString());var iconId=Identifier.of(target.getNamespace(),target.getPath()+"_head");
   if(Registries.ITEM.containsId(iconId))c.drawItem(new ItemStack(Registries.ITEM.get(iconId)),xx,43);
   wrapped(c,Text.translatable("entity."+target.getNamespace()+"."+target.getPath()),xx+22,45,ww-22,2,0xff46321d);
   wrapped(c,Text.translatable(row.get("description").getAsString()),xx,70,ww,3,0xff49351e);
-  c.drawText(textRenderer,key("difficulty").copy().append(": "+row.get("difficulty").getAsInt()+" / 5"),xx,108,0xff6c2c23,false);
+  if(row.has("rarity")){String rarity=row.get("rarity").getAsString();int color=switch(rarity){case "RARE"->0xff244b80;case "EPIC"->0xff702e83;case "LEGENDARY"->0xff8a5019;default->0xff49351e;};c.drawText(textRenderer,Text.translatable("hunt.witchersbestiary.proc.rarity."+rarity.toLowerCase(Locale.ROOT)),xx,108,color,false);}else c.drawText(textRenderer,key("difficulty").copy().append(": "+row.get("difficulty").getAsInt()+" / 5"),xx,108,0xff6c2c23,false);
   c.drawText(textRenderer,key("progress").copy().append(": "+row.get("progress").getAsInt()+" / "+row.get("required").getAsInt()),xx,122,0xff372617,false);
   var reward=row.getAsJsonObject("reward");var rewardText=key("reward").copy().append(": "+reward.get("experience").getAsInt()+" XP");
   for(var e:reward.getAsJsonArray("items")){var item=e.getAsJsonObject();var id=Identifier.of(item.get("item").getAsString());rewardText.append(", "+item.get("count").getAsInt()+" × ").append(Registries.ITEM.get(id).getName());}

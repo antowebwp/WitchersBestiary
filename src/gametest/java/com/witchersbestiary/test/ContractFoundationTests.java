@@ -112,7 +112,7 @@ public final class ContractFoundationTests implements FabricGameTest {
     @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE, batchId="stage20a", tickLimit=20)
     public void reloadSnapshotMissingAndExpiration(TestContext c) {
         var i=instance(UUID.randomUUID());var snapshot=i.definition();Contracts.DEFINITIONS.reload(c.getWorld().getServer().getResourceManager());
-        c.assertTrue(Contracts.DEFINITIONS.all().size()==5&&i.definition()==snapshot,"Reload publishes definitions without mutating instances");
+        c.assertTrue(Contracts.DEFINITIONS.all().size()==8&&i.definition()==snapshot,"Reload publishes definitions without mutating instances");
         var json=definition().toJson();json.addProperty("duration_millis",10);var expiring=new ContractInstance(UUID.randomUUID(),i.owner(),ContractDefinition.parse(definition().id(),json),1000);
         expiring.transition(ContractInstance.Status.ACCEPTED);c.assertTrue(expiring.expire(1010)&&expiring.status()==ContractInstance.Status.EXPIRED,"Deadline inclusive");
         c.assertTrue(!expiring.credit(UUID.randomUUID(),expiring.owner(),expiring.definition().target(),1011),"Expired blocks kills");

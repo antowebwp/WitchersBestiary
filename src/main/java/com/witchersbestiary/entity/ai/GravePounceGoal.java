@@ -25,7 +25,7 @@ public final class GravePounceGoal extends Goal {
   }
   var landing=BlockPos.ofFloored(g.getPos().add(delta));return g.canSee(target)&&w.getFluidState(landing).isEmpty()&&w.getBlockState(landing.down()).isSolidBlock(w,landing.down());
  }
- @Override public boolean canStart(){if(g.huntContract==null||g.huntLeap>0||!g.isOnGround()||Stun.active(g)||g.getTarget()==null||!g.getTarget().isAlive()||g.age<nextProbe)return false;nextProbe=g.age+10;return safeTrajectory();}
+ @Override public boolean canStart(){if(g.huntContract==null||g.procedural!=null&&!g.procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.CHARGE)||g.huntLeap>0||!g.isOnGround()||Stun.active(g)||g.getTarget()==null||!g.getTarget().isAlive()||g.age<nextProbe)return false;nextProbe=g.age+10;return safeTrajectory();}
  @Override public boolean shouldContinue(){return ticks<34&&g.isAlive()&&!Stun.active(g)&&g.getTarget()!=null&&g.getTarget().isAlive();}
  @Override public boolean shouldRunEveryTick(){return true;}
  @Override public void start(){ticks=0;hit=false;g.huntLeap=200;g.getNavigation().stop();if(g.getWorld() instanceof ServerWorld w)w.spawnParticles(net.minecraft.particle.ParticleTypes.ANGRY_VILLAGER,g.getX(),g.getY()+1.4,g.getZ(),5,.3,.2,.3,0);g.getWorld().playSound(null,g.getBlockPos(),SoundEvents.ENTITY_RAVAGER_ATTACK,SoundCategory.HOSTILE,.7f,.7f);}

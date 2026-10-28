@@ -1,5 +1,10 @@
 # Progress
 
+## Stage 20C.3 — procedural named hunts
+
+Drowner/Ghoul/Foglet renewable procedural hunts implemented with persisted RU/EN names, rarity/attributes, compatible traits and existing search/store/reward/BossBar integration. Swamp Lord and Grave Devourer remain legendary. All32 focused tests/build PASS; native cycles for all three species and ACTIVE-world rejoin PASS. Controlled accelerated1/5/10-hunt measurements and limits are in the [report](STAGE20_C_REPORT.md). No push/release or Stage21.
+
+
 ## Stage 20C.2 — Grave Devourer hunt
 
 Second fixed named hunt implemented: existing Ghoul model/AI, 120HP, safe telegraphed leap, one-time rage and capped on-hit healing; shared search, persistence, board and BossBar. All25 focused tests and Gradle build PASS; native board-to-reward cycle PASS. See [report](STAGE20_C_REPORT.md). No push/release.

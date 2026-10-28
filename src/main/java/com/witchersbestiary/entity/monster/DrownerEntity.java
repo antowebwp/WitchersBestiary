@@ -93,11 +93,13 @@ public final class DrownerEntity extends DrownedEntity implements com.witchersbe
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE,32).add(EntityAttributes.GENERIC_STEP_HEIGHT,1);
     }
 
+    public com.witchersbestiary.contracts.procedural.ProceduralCombat procedural;
+    @Override public boolean tryAttack(net.minecraft.entity.Entity target){float before=target instanceof net.minecraft.entity.LivingEntity l?l.getHealth()+l.getAbsorptionAmount():0;boolean hit=super.tryAttack(target);if(hit&&target instanceof net.minecraft.entity.LivingEntity l&&l.getHealth()+l.getAbsorptionAmount()<before)com.witchersbestiary.contracts.procedural.ProceduralHunts.hit(this,l);return hit;}
     public java.util.UUID huntContract,huntParent;
     public final java.util.UUID[] huntHelpers=new java.util.UUID[2];
     public int huntDash=80,huntSummon=100,huntWindup;
-    @Override public void writeCustomDataToNbt(net.minecraft.nbt.NbtCompound n){super.writeCustomDataToNbt(n);if(huntContract!=null||huntParent!=null)com.witchersbestiary.contracts.hunt.SwampLord.write(this,n);}
-    @Override public void readCustomDataFromNbt(net.minecraft.nbt.NbtCompound n){super.readCustomDataFromNbt(n);com.witchersbestiary.contracts.hunt.SwampLord.read(this,n);}
+    @Override public void writeCustomDataToNbt(net.minecraft.nbt.NbtCompound n){super.writeCustomDataToNbt(n);if(procedural!=null)n.put("WbProcedural",procedural.write());if(huntContract!=null||huntParent!=null)com.witchersbestiary.contracts.hunt.SwampLord.write(this,n);}
+    @Override public void readCustomDataFromNbt(net.minecraft.nbt.NbtCompound n){super.readCustomDataFromNbt(n);procedural=n.contains("WbProcedural")?com.witchersbestiary.contracts.procedural.ProceduralCombat.read(n.getCompound("WbProcedural")):null;com.witchersbestiary.contracts.hunt.SwampLord.read(this,n);}
     @Override public void tick(){super.tick();com.witchersbestiary.entity.ai.LocalAggression.tick(this);if(huntContract!=null||huntParent!=null)com.witchersbestiary.contracts.hunt.SwampLord.tick(this);}
     private java.util.UUID sharedTarget;
     public java.util.UUID sharedGroupTarget(){return sharedTarget;}

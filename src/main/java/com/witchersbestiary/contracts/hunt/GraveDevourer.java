@@ -43,18 +43,23 @@ public final class GraveDevourer {
   h.status=SwampHunt.Status.ACTIVE;ContractState.get(w.getServer()).markDirty();return true;
  }
  public static void tick(GhoulEntity g){
+  if(g.procedural!=null){com.witchersbestiary.contracts.procedural.ProceduralHunts.tick(g);return;}
   if(g.huntContract==null||!(g.getWorld() instanceof ServerWorld w))return;
   var c=ContractState.get(w.getServer()).find(g.huntContract);
   if(!g.isAlive()){SwampLord.clearBar(g.getUuid());return;}
   if(c==null||!c.definition().id().equals(ID)||c.hunt==null||!g.getUuid().equals(c.hunt.target)||c.status()!=ContractInstance.Status.ACCEPTED){SwampLord.clearBar(g.getUuid());g.discard();return;}
   SwampLord.updateBar(g,"hunt.witchersbestiary.grave_devourer",BossBar.Color.RED);
+  combatTick(g,w,true);
+ }
+ public static void combatTick(GhoulEntity g,ServerWorld w,boolean frenzy){
   if(g.huntLeap>0)g.huntLeap--;if(g.huntFeed>0)g.huntFeed--;
-  if(!g.huntRageUsed&&g.getHealth()<g.getMaxHealth()*.4f){g.huntRageUsed=true;g.huntRage=300;w.playSound(null,g.getBlockPos(),SoundEvents.ENTITY_RAVAGER_ROAR,SoundCategory.HOSTILE,.8f,.7f);}
+  if(frenzy&&!g.huntRageUsed&&g.getHealth()<g.getMaxHealth()*.4f){g.huntRageUsed=true;g.huntRage=300;w.playSound(null,g.getBlockPos(),SoundEvents.ENTITY_RAVAGER_ROAR,SoundCategory.HOSTILE,.8f,.7f);}
   var speed=g.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
   if(g.huntRage>0){g.huntRage--;if(!speed.hasModifier(RAGE))speed.addTemporaryModifier(new EntityAttributeModifier(RAGE,.20,EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));}
   else speed.removeModifier(RAGE);
  }
  public static void feed(GhoulEntity g){
+  if(g.procedural!=null&&!g.procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.LIFESTEAL))return;
   if(g.huntContract==null||g.getWorld().isClient||!g.isAlive()||g.huntFeed>0||g.huntHealed>=12)return;
   float amount=Math.min(2,Math.min(12-g.huntHealed,g.getMaxHealth()-g.getHealth()));
   if(amount>0){g.heal(amount);g.huntHealed+=amount;g.huntFeed=80;}
