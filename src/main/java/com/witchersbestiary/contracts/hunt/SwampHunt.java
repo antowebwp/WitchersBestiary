@@ -4,7 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.UUID;
 /** Stored inside the authoritative contract, not in a second PersistentState. */
 public final class SwampHunt {
- public enum Status { SEARCHING, WAITING, RESERVED, ACTIVE, DEAD, CANCELLED }
+ public enum Status { SEARCHING, WAITING, TRACKING, RESERVED, ACTIVE, DEAD, CANCELLED }
  public final String dimension; public final BlockPos origin; public UUID target;
  public BlockPos position; public Status status=Status.SEARCHING; public int attempts;
  public SwampHunt(String dimension,BlockPos origin){this.dimension=dimension;this.origin=origin.toImmutable();}

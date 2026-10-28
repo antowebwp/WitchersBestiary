@@ -10,7 +10,8 @@
       "com.witchersbestiary.test.NoticeBoardTests",
       "com.witchersbestiary.test.SwampLordTests",
       "com.witchersbestiary.test.GraveDevourerTests",
-      "com.witchersbestiary.test.ProceduralHuntTests"
+      "com.witchersbestiary.test.ProceduralHuntTests",
+      "com.witchersbestiary.test.InvestigationTests"
     ]
   },
   "depends": {

@@ -40,7 +40,7 @@ public final class GraveDevourer {
   if(!w.doesNotIntersectEntities(g))return false;
   h.target=g.getUuid();h.position=at.toImmutable();h.status=SwampHunt.Status.RESERVED;ContractState.get(w.getServer()).markDirty();
   if(!w.spawnEntity(g)){h.target=null;h.position=null;h.status=SwampHunt.Status.WAITING;ContractState.get(w.getServer()).markDirty();return false;}
-  h.status=SwampHunt.Status.ACTIVE;ContractState.get(w.getServer()).markDirty();return true;
+  h.status=SwampHunt.Status.ACTIVE;com.witchersbestiary.contracts.tracking.Investigations.targetSpawned(c,at);ContractState.get(w.getServer()).markDirty();return true;
  }
  public static void tick(GhoulEntity g){
   if(g.procedural!=null){com.witchersbestiary.contracts.procedural.ProceduralHunts.tick(g);return;}

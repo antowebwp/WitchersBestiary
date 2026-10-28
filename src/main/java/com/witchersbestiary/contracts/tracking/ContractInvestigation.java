@@ -1,0 +1,13 @@
+package com.witchersbestiary.contracts.tracking;
+import net.minecraft.nbt.*;
+import net.minecraft.util.math.BlockPos;
+import java.util.*;
+/** Additive investigation state inside the existing ContractInstance. */
+public final class ContractInvestigation {
+ public enum Stage {SEARCHING,TRACKING,LAIR_FOUND,HUNTING,COMPLETED,CANCELLED}
+ public final UUID contract,owner;public final String dimension;public Stage stage=Stage.SEARCHING;public List<ContractClue> clues=List.of();public BlockPos lair;public int current;
+ public ContractInvestigation(UUID contract,UUID owner,String dimension){this.contract=contract;this.owner=owner;this.dimension=dimension;}
+ public ContractClue next(){return current<clues.size()?clues.get(current):null;}
+ public NbtCompound write(){var n=new NbtCompound();n.putInt("Schema",1);n.putUuid("Contract",contract);n.putUuid("Owner",owner);n.putString("Dimension",dimension);n.putString("Stage",stage.name());n.putInt("Current",current);if(lair!=null)n.putLong("Lair",lair.asLong());var list=new NbtList();clues.forEach(c->list.add(c.write()));n.put("Clues",list);return n;}
+ public static ContractInvestigation read(NbtCompound n){if(n.getInt("Schema")!=1)throw new IllegalArgumentException("Unknown investigation schema");var i=new ContractInvestigation(n.getUuid("Contract"),n.getUuid("Owner"),n.getString("Dimension"));if(net.minecraft.util.Identifier.tryParse(i.dimension)==null)throw new IllegalArgumentException("Invalid investigation dimension");i.stage=Stage.valueOf(n.getString("Stage"));i.current=n.getInt("Current");if(n.contains("Lair"))i.lair=BlockPos.fromLong(n.getLong("Lair"));var list=n.getList("Clues",NbtElement.COMPOUND_TYPE);if(list.size()>5||i.current<0||i.current>list.size())throw new IllegalArgumentException("Invalid investigation progress");var clues=new ArrayList<ContractClue>();var ids=new HashSet<UUID>();for(int x=0;x<list.size();x++){var c=ContractClue.read(list.getCompound(x));if(!ids.add(c.id)||!c.owner.equals(i.owner)||!c.contract.equals(i.contract)||!c.dimension.equals(i.dimension)||c.order!=x||c.studied!=(x<i.current))throw new IllegalArgumentException("Invalid clue binding/sequence");clues.add(c);}for(int x=0;x<clues.size();x++)if(!Objects.equals(clues.get(x).next,x+1<clues.size()?clues.get(x+1).id:null))throw new IllegalArgumentException("Invalid clue link");i.clues=List.copyOf(clues);if(i.stage==Stage.HUNTING&&i.lair==null)throw new IllegalArgumentException("Missing lair for active hunt");if(i.stage==Stage.TRACKING&&(i.next()==null||i.lair==null)||i.stage==Stage.LAIR_FOUND&&(i.lair==null||i.current!=i.clues.size()))throw new IllegalArgumentException("Invalid route phase");return i;}
+}

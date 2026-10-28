@@ -32,7 +32,7 @@ public final class ProceduralHunts {
   com.witchersbestiary.combat.ProgressiveDifficulty.freshSpawn(e);
   e.refreshPositionAndAngles(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);if(!w.doesNotIntersectEntities(e))return false;
   h.target=e.getUuid();h.position=at.toImmutable();h.status=SwampHunt.Status.RESERVED;ContractState.get(w.getServer()).markDirty();
-  if(!w.spawnEntity(e)){h.target=null;h.position=null;h.status=SwampHunt.Status.WAITING;ContractState.get(w.getServer()).markDirty();return false;}h.status=SwampHunt.Status.ACTIVE;ContractState.get(w.getServer()).markDirty();return true;
+  if(!w.spawnEntity(e)){h.target=null;h.position=null;h.status=SwampHunt.Status.WAITING;ContractState.get(w.getServer()).markDirty();return false;}h.status=SwampHunt.Status.ACTIVE;com.witchersbestiary.contracts.tracking.Investigations.targetSpawned(c,at);ContractState.get(w.getServer()).markDirty();return true;
  }
  public static void cleanup(MobEntity e,ServerWorld w){if(e instanceof DrownerEntity d)SwampLord.cleanup(d,w);if(e instanceof FogletEntity f)f.clearContractCopies(w);SwampLord.clearBar(e.getUuid());}
  public static void tick(MobEntity e){

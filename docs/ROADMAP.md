@@ -7,6 +7,7 @@
 - Stage20C.2: Grave Devourer implemented, focused tests/build and native hunt cycle verified.
 - Stage20C.3: procedural Drowner/Ghoul/Foglet hunts complete; fixed legendary hunts retained. Deterministic persistence, compatible abilities, focused regressions and native three-species/rejoin cycles verified.
 - Future verification: longer production multiplayer/performance sessions and optional additional species; no further implementation started.
-- Stage20D: not started.
+- Stage20D: Witcher Senses, private persisted investigation chains and deferred lair encounters implemented;38 focused tests/build and two native hunt/rejoin cycles verified. See [report](STAGE20_D_REPORT.md).
+- Stage20E / Stage21: not started.
 
 Development branch: dev/0.20.0. No Stage 20 push or new release authorized.

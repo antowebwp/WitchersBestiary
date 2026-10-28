@@ -1,0 +1,42 @@
+package com.witchersbestiary.client.tracking;
+import com.google.gson.*;
+import com.witchersbestiary.contracts.tracking.*;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.*;
+import net.fabricmc.fabric.api.client.rendering.v1.*;
+import net.fabricmc.fabric.api.event.player.*;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.render.*;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.*;
+import net.minecraft.util.math.*;
+import java.util.*;
+import org.lwjgl.glfw.GLFW;
+
+/** Private cached clue rendering and toggle input. Never searches client chunks/entities. */
+public final class WitcherSensesClient {
+ public static KeyBinding KEY;private static JsonObject snapshot=new JsonObject();private static boolean enabled;private static String dimension="";private static Point point;private static int lastInspect=-100,ticks,lastProgress;
+ private record Point(BlockPos position,ContractClue.Type type,UUID id,boolean lair,float yaw,float[] color){}
+ private static final int[] FACES={0,1,5,4,2,6,7,3,0,2,3,1,4,5,7,6,0,4,6,2,1,3,7,5};
+ public static boolean enabled(){return enabled;}
+ public static JsonObject snapshot(){return snapshot.deepCopy();}
+ private static void clear(){snapshot=new JsonObject();point=null;enabled=false;dimension="";lastProgress=0;lastInspect=-100;}
+ private static void receive(MinecraftClient c,String json){var j=JsonParser.parseString(json).getAsJsonObject();if(c.world==null||!j.get("dimension").getAsString().equals(c.world.getRegistryKey().getValue().toString()))return;int progress=j.has("progress")?j.get("progress").getAsInt():0;if(progress>lastProgress&&snapshot.has("contract")&&j.has("contract")&&snapshot.get("contract").equals(j.get("contract"))&&c.player!=null){if(j.has("last"))c.player.sendMessage(Text.translatable(j.has("stage")&&j.get("stage").getAsString().equals("hunting")?"tracking.witchersbestiary.hint.lair":j.get("last").getAsString()),true);c.player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME,.55f,1.2f);if(point!=null)for(int n=0;n<6;n++)c.world.addParticle(ParticleTypes.ENCHANT,point.position.getX()+.5,point.position.getY()+.2,point.position.getZ()+.5,(n%3-1)*.015,.04,0);}
+  lastProgress=progress;dimension=j.get("dimension").getAsString();snapshot=j;enabled=j.get("enabled").getAsBoolean();point=null;if(j.has("point")){var p=j.getAsJsonObject("point");var type=ContractClue.Type.valueOf(p.get("type").getAsString());point=new Point(new BlockPos(p.get("x").getAsInt(),p.get("y").getAsInt(),p.get("z").getAsInt()),type,p.has("id")?UUID.fromString(p.get("id").getAsString()):null,p.get("lair").getAsBoolean(),p.has("yaw")?p.get("yaw").getAsFloat():0,ClueVisuals.color(type));}
+ }
+ public static boolean inspect(){var c=MinecraftClient.getInstance();if(c.player==null||c.world==null||point==null||point.id==null||ticks-lastInspect<5)return false;var eye=c.player.getEyePos();var end=eye.add(c.player.getRotationVec(1).multiply(4.5));var box=new Box(point.position).expand(.18,.1,.18);if(box.raycast(eye,end).isEmpty()||c.player.squaredDistanceTo(point.position.toCenterPos())>20.25)return false;lastInspect=ticks;ClientPlayNetworking.send(new TrackingPackets.Inspect(point.id));return true;}
+ private static void render(WorldRenderContext ctx){var c=MinecraftClient.getInstance();if(point==null||c.player==null||c.world==null||ctx.matrixStack()==null||ctx.consumers()==null||c.player.squaredDistanceTo(point.position.toCenterPos())>32*32)return;var matrix=ctx.matrixStack();var camera=ctx.camera().getPos();matrix.push();matrix.translate(point.position.getX()-camera.x,point.position.getY()-camera.y,point.position.getZ()-camera.z);matrix.translate(.5,0,.5);matrix.multiply(net.minecraft.util.math.RotationAxis.POSITIVE_Y.rotationDegrees(point.yaw));matrix.translate(-.5,0,-.5);var fill=ctx.consumers().getBuffer(RenderLayer.getDebugQuads());var entry=matrix.peek();float a=point.type==ContractClue.Type.MIST_RESIDUE?(enabled?.6f:.25f):(enabled?.95f:.65f);for(var box:ClueVisuals.shapes(point.type)){for(int index:FACES){float x=(float)((index&1)==0?box.minX:box.maxX),y=(float)((index&2)==0?box.minY:box.maxY),z=(float)((index&4)==0?box.minZ:box.maxZ);fill.vertex(entry,x,y,z).color(point.color[0],point.color[1],point.color[2],a);}}
+  if(enabled){var lines=ctx.consumers().getBuffer(RenderLayer.getLines());for(var box:ClueVisuals.shapes(point.type))WorldRenderer.drawBox(matrix,lines,box,1,.78f,.23f,.9f);}matrix.pop();
+ }
+ public static void initialize(){KEY=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.witchersbestiary.senses",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_V,"category.witchersbestiary"));ClientPlayNetworking.registerGlobalReceiver(TrackingPackets.Snapshot.ID,(packet,ctx)->ctx.client().execute(()->receive(ctx.client(),packet.json())));ClientPlayConnectionEvents.DISCONNECT.register((handler,c)->clear());net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((c,w)->clear());
+  ClientTickEvents.END_CLIENT_TICK.register(c->{ticks++;if(c.world==null||c.player==null){if(!dimension.isEmpty())clear();return;}String dim=c.world.getRegistryKey().getValue().toString();if(!dimension.equals(dim)){boolean was=enabled;clear();dimension=dim;if(was&&ClientPlayNetworking.canSend(TrackingPackets.Toggle.ID))ClientPlayNetworking.send(new TrackingPackets.Toggle(false));}while(KEY.wasPressed())if(ClientPlayNetworking.canSend(TrackingPackets.Toggle.ID))ClientPlayNetworking.send(new TrackingPackets.Toggle(!enabled));if(enabled&&point!=null&&ticks%10==0&&c.player.squaredDistanceTo(point.position.toCenterPos())<=32*32)c.world.addParticle(point.type==ContractClue.Type.MIST_RESIDUE?ParticleTypes.CLOUD:ParticleTypes.END_ROD,point.position.getX()+.5,point.position.getY()+.18,point.position.getZ()+.5,0,.015,0);});
+  UseItemCallback.EVENT.register((p,w,hand)->w.isClient&&inspect()?TypedActionResult.success(p.getStackInHand(hand)):TypedActionResult.pass(p.getStackInHand(hand)));UseBlockCallback.EVENT.register((p,w,hand,hit)->w.isClient&&inspect()?ActionResult.SUCCESS:ActionResult.PASS);
+  WorldRenderEvents.AFTER_ENTITIES.register(WitcherSensesClient::render);
+  HudRenderCallback.EVENT.register((draw,delta)->{var c=MinecraftClient.getInstance();if(c.player==null||c.currentScreen!=null||c.options.hudHidden||c.getDebugHud().shouldShowDebugHud()||!enabled&&!snapshot.has("contract"))return;int width=c.getWindow().getScaledWidth(),height=c.getWindow().getScaledHeight();if(enabled){draw.fill(0,0,width,16,0x102e7677);draw.fill(0,height-12,width,height,0x102e7677);draw.fill(0,16,10,height-12,0x102e7677);draw.fill(width-10,16,width,height-12,0x102e7677);}String hint=snapshot.has("hint")?snapshot.get("hint").getAsString():"search";Text text=Text.translatable("tracking.witchersbestiary.hint."+hint);if(snapshot.has("bearing"))text=Text.translatable("tracking.witchersbestiary.direction",Text.translatable("tracking.witchersbestiary.bearing."+snapshot.get("bearing").getAsInt()));draw.drawTextWithShadow(c.textRenderer,Text.translatable(enabled?"tracking.witchersbestiary.senses_on":"tracking.witchersbestiary.senses_off"),12,24,enabled?0xffe5cc8f:0xffaaaaaa);if(hint.equals("activate")||hint.equals("off"))text=text.copy().append(" [").append(KEY.getBoundKeyLocalizedText()).append("]");draw.drawTextWithShadow(c.textRenderer,text,12,38,0xffdfd4b8);if(snapshot.has("stage"))draw.drawTextWithShadow(c.textRenderer,Text.translatable("tracking.witchersbestiary.stage."+snapshot.get("stage").getAsString()).append(" "+snapshot.get("progress").getAsInt()+"/"+snapshot.get("total").getAsInt()),12,52,0xffc7bead);});
+ }
+}

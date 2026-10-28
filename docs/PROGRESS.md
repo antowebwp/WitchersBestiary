@@ -1,5 +1,10 @@
 # Progress
 
+## Stage 20D — Witcher Senses and investigations
+
+V-toggle private clue rendering, persisted species-specific routes, authoritative right-click study, journal progress/findings and lair-triggered existing target spawn implemented for procedural/legendary hunts. All38 focused tests/build PASS; native EPIC Foglet and legendary Grave Devourer cycles plus mid-investigation world rejoin PASS. Evidence, configuration and performance limits: [report](STAGE20_D_REPORT.md). No push/release or Stage20E/21.
+
+
 ## Stage 20C.3 — procedural named hunts
 
 Drowner/Ghoul/Foglet renewable procedural hunts implemented with persisted RU/EN names, rarity/attributes, compatible traits and existing search/store/reward/BossBar integration. Swamp Lord and Grave Devourer remain legendary. All32 focused tests/build PASS; native cycles for all three species and ACTIVE-world rejoin PASS. Controlled accelerated1/5/10-hunt measurements and limits are in the [report](STAGE20_C_REPORT.md). No push/release or Stage21.

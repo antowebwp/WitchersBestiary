@@ -812,3 +812,14 @@ tasks.named('runProceduralReview') {
   if(result['ghoul.active_world_rejoin'] != true) throw new GradleException('Missing active-world rejoin evidence')
  }
 }
+
+loom.runs { investigationReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.investigationReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "TrackReview", "--width", "1280", "--height", "900"; runDir "build/stage20d-client" } }
+tasks.named('runInvestigationReview') {
+ doLast {
+  def out=file('build/stage20d-review')
+  if(new File(out,'failure.txt').exists() || new File(out,'timeout.txt').exists()) throw new GradleException('Investigation native review failed; inspect build/stage20d-review')
+  def result=new groovy.json.JsonSlurper().parse(new File(out,'results.json'))
+  ['procedural','legendary'].each { kind -> ['claimed','completed','real_v_toggle','deferred_unique_spawn','no_early_target'].each { check -> if(result[kind+'.'+check]!=true) throw new GradleException('Missing native evidence: '+kind+'.'+check) } }
+  if(result['procedural.tracking_world_rejoin']!=true) throw new GradleException('Missing tracking-state rejoin evidence')
+ }
+}

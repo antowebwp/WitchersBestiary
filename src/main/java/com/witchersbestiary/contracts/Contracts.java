@@ -43,7 +43,7 @@ public final class Contracts {
                 && player.getServer() == world.getServer() ? player : null;
     }
     public static void onDeath(LivingEntity victim, DamageSource source) {
-        if(com.witchersbestiary.contracts.hunt.SwampLord.death(victim))return;
+        if(com.witchersbestiary.contracts.hunt.SwampLord.death(victim)){com.witchersbestiary.contracts.tracking.Investigations.afterDeath(victim);return;}
         var player = killer(victim, source);
         if (player == null || victim.isAlive()) return;
         var store = ContractState.get(player.getServer()); if (store.readOnly()) return; long now = System.currentTimeMillis();
@@ -61,7 +61,7 @@ public final class Contracts {
     public static void cancel(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); store.writable(); var c = store.find(instance);
         if (c == null || !c.owner().equals(player.getUuid())) throw new IllegalArgumentException("Contract not owned by player");
-        c.transition(ContractInstance.Status.CANCELLED); if(c.hunt!=null)c.hunt.status=com.witchersbestiary.contracts.hunt.SwampHunt.Status.CANCELLED; store.markDirty();
+        c.transition(ContractInstance.Status.CANCELLED); if(c.hunt!=null)c.hunt.status=com.witchersbestiary.contracts.hunt.SwampHunt.Status.CANCELLED;if(c.investigation!=null)c.investigation.stage=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.CANCELLED; store.markDirty();
     }
     private static int command(ServerCommandSource source, Runnable action) {
         try { action.run(); return 1; }

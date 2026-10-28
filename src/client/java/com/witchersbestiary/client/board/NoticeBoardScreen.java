@@ -44,13 +44,14 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
   var target=Identifier.of(row.get("target").getAsString());var iconId=Identifier.of(target.getNamespace(),target.getPath()+"_head");
   if(Registries.ITEM.containsId(iconId))c.drawItem(new ItemStack(Registries.ITEM.get(iconId)),xx,43);
   wrapped(c,Text.translatable("entity."+target.getNamespace()+"."+target.getPath()),xx+22,45,ww-22,2,0xff46321d);
-  wrapped(c,Text.translatable(row.get("description").getAsString()),xx,70,ww,3,0xff49351e);
+  wrapped(c,Text.translatable(row.has("last_finding")?row.get("last_finding").getAsString():row.get("description").getAsString()),xx,70,ww,3,0xff49351e);
   if(row.has("rarity")){String rarity=row.get("rarity").getAsString();int color=switch(rarity){case "RARE"->0xff244b80;case "EPIC"->0xff702e83;case "LEGENDARY"->0xff8a5019;default->0xff49351e;};c.drawText(textRenderer,Text.translatable("hunt.witchersbestiary.proc.rarity."+rarity.toLowerCase(Locale.ROOT)),xx,108,color,false);}else c.drawText(textRenderer,key("difficulty").copy().append(": "+row.get("difficulty").getAsInt()+" / 5"),xx,108,0xff6c2c23,false);
   c.drawText(textRenderer,key("progress").copy().append(": "+row.get("progress").getAsInt()+" / "+row.get("required").getAsInt()),xx,122,0xff372617,false);
   var reward=row.getAsJsonObject("reward");var rewardText=key("reward").copy().append(": "+reward.get("experience").getAsInt()+" XP");
   for(var e:reward.getAsJsonArray("items")){var item=e.getAsJsonObject();var id=Identifier.of(item.get("item").getAsString());rewardText.append(", "+item.get("count").getAsInt()+" × ").append(Registries.ITEM.get(id).getName());}
   wrapped(c,rewardText,xx,139,ww,3,0xff49351e);
-  if(row.has("hunt_status"))wrapped(c,Text.translatable("hunt.witchersbestiary.status."+row.get("hunt_status").getAsString()).append(" · ").append(Text.translatable("hunt.witchersbestiary.area",row.get("hunt_area").getAsString())),xx,174,ww,2,0xff49351e);
+  if(row.has("investigation_stage"))wrapped(c,Text.translatable("tracking.witchersbestiary.stage."+row.get("investigation_stage").getAsString()).append(" "+row.get("clues").getAsInt()+"/"+row.get("clue_total").getAsInt()).append(" · ").append(Text.translatable("hunt.witchersbestiary.area",row.get("hunt_area").getAsString())),xx,174,ww,2,0xff49351e);
+  else if(row.has("hunt_status"))wrapped(c,Text.translatable("hunt.witchersbestiary.status."+row.get("hunt_status").getAsString()).append(" · ").append(Text.translatable("hunt.witchersbestiary.area",row.get("hunt_area").getAsString())),xx,174,ww,2,0xff49351e);
   if(handler.snapshot.has("message")&&!handler.snapshot.get("message").getAsString().isEmpty())wrapped(c,key(handler.snapshot.get("message").getAsString()),xx,backgroundHeight-60,ww,2,0xff7c2920);
  }
  @Override public void render(DrawContext c,int mouseX,int mouseY,float delta){super.render(c,mouseX,mouseY,delta);drawMouseoverTooltip(c,mouseX,mouseY);}
