@@ -32,7 +32,7 @@ public final class BoardScreenHandler extends ScreenHandler {
     }
     @Override public ItemStack quickMove(PlayerEntity p,int slot){return ItemStack.EMPTY;}
     public static ContractInstance existing(ServerPlayerEntity player,Identifier definition){
-        return ContractState.get(player.getServer()).ownedBy(player.getUuid()).stream().filter(c->c.definition().id().equals(definition)).filter(c->!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definition)||c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED).findFirst().orElse(null);
+        return ContractState.get(player.getServer()).ownedBy(player.getUuid()).stream().filter(c->c.definition().id().equals(definition)).filter(c->!com.witchersbestiary.contracts.hunt.SwampLord.named(c)||c.status()!=ContractInstance.Status.CANCELLED&&c.status()!=ContractInstance.Status.EXPIRED).filter(c->!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definition)||c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED).findFirst().orElse(null);
     }
     @Override public boolean onButtonClick(PlayerEntity player,int button){
         if(!(player instanceof ServerPlayerEntity server)||server.currentScreenHandler!=this||!canUse(server))return false;

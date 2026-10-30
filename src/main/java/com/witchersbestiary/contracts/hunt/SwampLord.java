@@ -132,7 +132,7 @@ public final class SwampLord {
   }});
   net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler,s)->{LAST_CHUNK.remove(handler.player.getUuid());var q=QUEUES.get(s);if(q!=null)q.cancel(handler.player.getUuid());BARS.values().forEach(b->b.removePlayer(handler.player));});
   ServerEntityEvents.ENTITY_LOAD.register((e,w)->{GraveDevourer.loaded(e,w);com.witchersbestiary.contracts.procedural.ProceduralHunts.loaded(e,w);if(e instanceof DrownerEntity d&&d.huntContract!=null){var store=ContractState.get(w.getServer());var c=store.find(d.huntContract);if(c!=null&&c.hunt!=null&&d.getUuid().equals(c.hunt.target)&&c.hunt.status==SwampHunt.Status.RESERVED){c.hunt.status=SwampHunt.Status.ACTIVE;store.markDirty();}}});
-  ServerEntityEvents.ENTITY_UNLOAD.register((e,w)->{var b=BARS.remove(e.getUuid());if(b!=null)b.clearPlayers();});
+  ServerEntityEvents.ENTITY_UNLOAD.register((e,w)->{com.witchersbestiary.contracts.Contracts.targetRemoved(e,w);var b=BARS.remove(e.getUuid());if(b!=null)b.clearPlayers();});
   ServerLifecycleEvents.SERVER_STOPPED.register(s->{var q=QUEUES.remove(s);if(q!=null)q.clear();BARS.values().forEach(ServerBossBar::clearPlayers);BARS.clear();LAST_CHUNK.clear();});
  }
 }

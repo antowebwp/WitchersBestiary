@@ -1,0 +1,87 @@
+"""Bounded localhost review using two real native clients and up to three server JVM runs.
+Requires JAVA_HOME (21), and Gradle stage20ePrepareLaunch -Pstage19fProfile=A first.
+All generated settings/worlds/logs stay in a fresh ignored build/ directory.
+"""
+import os, json, subprocess, time, datetime
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]
+BASE = ROOT / 'build/stage20e-network'
+CASE = BASE / ('run-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S'))
+JAVA = Path(os.environ['JAVA_HOME']) / 'bin/java.exe'
+CASE.mkdir(parents=True)
+(BASE / 'current-run.json').write_text(json.dumps({'directory':str(CASE)}))
+
+def quote(value):
+    return '"' + str(value).replace('\\', '\\\\').replace('"','\\"') + '"'
+
+plans = {}
+for role in ['Server', 'One', 'Two']:
+    data = json.loads((BASE / f'{role}.launch.json').read_text())
+    env = 'server' if role == 'Server' else 'client'
+    cwd = CASE / role.lower()
+    cwd.mkdir()
+    jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
+           f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
+           f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' else '-Xmx1G']
+    if role == 'Server':
+        jvm += ['-Dwitchersbestiary.stage20eServer=true']
+        args = ['--nogui']
+        (cwd / 'eula.txt').write_text('eula=true\n')
+        (cwd / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=25583\nonline-mode=false\nenforce-secure-profile=false\nview-distance=4\nsimulation-distance=4\nmax-players=2\nlevel-name=world\nlevel-seed=202001\nlevel-type=minecraft\\:normal\ngenerate-structures=true\nspawn-protection=0\ndifficulty=normal\nenable-rcon=false\n')
+    else:
+        jvm += [f'-Dwitchersbestiary.stage20eClient=WB{role}']
+        args = ['--username', f'WB{role}', '--width','960','--height','640']
+    argfile = CASE / f'{role}.args'
+    argfile.write_text('\n'.join(quote(a) for a in jvm + ['-cp',data['classpath'],data['main']] + args))
+    plans[role] = (cwd, argfile)
+
+processes = []
+counts = {}
+def launch(role):
+    count = counts.get(role,0)+1
+    counts[role] = count
+    cwd, argfile = plans[role]
+    log = (CASE / f'{role}-{count}.log').open('wb')
+    process = subprocess.Popen([str(JAVA), '@'+str(argfile)], cwd=cwd, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT,
+                               creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+    processes.append((role,process,log))
+    (CASE / 'processes.json').write_text(json.dumps([{'role':r,'pid':p.pid} for r,p,l in processes]))
+    print(f'{role} JVM run {count}, PID {process.pid}',flush=True)
+    return process
+
+started = time.monotonic()
+try:
+    server = launch('Server')
+    time.sleep(3)
+    launch('One'); launch('Two')
+    while time.monotonic()-started < 900:
+        failures = list(CASE.glob('*.failure.txt')) + list(CASE.glob('*.timeout.txt'))
+        if (CASE/'server-failure.json').exists(): failures.append(CASE/'server-failure.json')
+        if any(p.poll() is not None for r,p,l in processes if r != 'Server') and not (CASE/'complete.json').exists(): raise RuntimeError('A native client exited before completion; inspect its log')
+        if failures: raise RuntimeError('Review failure: '+', '.join(str(p) for p in failures))
+        if server.poll() is not None:
+            if (CASE/'complete.json').exists():
+                print((CASE/'complete.json').read_text(),flush=True)
+                break
+            if (CASE/'resume.json').exists() and counts['Server'] < 3:
+                print('Restarting dedicated server from the same saved world.',flush=True)
+                server = launch('Server')
+            else:
+                raise RuntimeError('Server exited without a valid completion/restart marker; see '+str(CASE))
+        time.sleep(1)
+    else: raise TimeoutError('900-second orchestration limit')
+finally:
+    for role,process,log in processes:
+        if process.poll() is None and role != 'Server':
+            try: (CASE/f'WB{role}.command.json').write_text(json.dumps({'nonce':int(time.time()*1000),'action':'stop'}))
+            except OSError: pass
+    for role,process,log in processes:
+        if role == "Server" and process.poll() is None:
+            try: process.stdin.write(b"stop\n"); process.stdin.flush()
+            except OSError: pass
+    deadline=time.monotonic()+10
+    while time.monotonic()<deadline and any(p.poll() is None for _,p,_ in processes): time.sleep(.5)
+    for role,process,log in processes:
+        if process.poll() is None: process.terminate()
+        log.close()
+    print('Artifacts: '+str(CASE),flush=True)

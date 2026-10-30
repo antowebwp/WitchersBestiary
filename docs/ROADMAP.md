@@ -11,3 +11,9 @@
 - Stage20E / Stage21: not started.
 
 Development branch: dev/0.20.0. No Stage 20 push or new release authorized.
+
+## Stage20E — RC1 built; manual validation pending
+
+44/44 focused GameTests PASS; Gradle build PASS. Stability fixes and approximately3x graveyard candidate density implemented. See [Stage20E report](STAGE20_E_REPORT.md) for real-network evidence and remaining checks. No push/release or Stage21.
+
+Two real native clients completed independent Ghoul investigations/combat/rewards, unload/reload and two dedicated restarts; repeat rewards rejected. Remaining basilisk, optional-stack and natural graveyard validation stays pending.

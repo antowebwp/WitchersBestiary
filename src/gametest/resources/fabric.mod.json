@@ -11,7 +11,11 @@
       "com.witchersbestiary.test.SwampLordTests",
       "com.witchersbestiary.test.GraveDevourerTests",
       "com.witchersbestiary.test.ProceduralHuntTests",
-      "com.witchersbestiary.test.InvestigationTests"
+      "com.witchersbestiary.test.InvestigationTests",
+      "com.witchersbestiary.test.Stage20EStabilityTests"
+    ],
+    "main": [
+      "com.witchersbestiary.test.Stage20ENetworkServer"
     ]
   },
   "depends": {

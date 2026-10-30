@@ -30,3 +30,9 @@ Public-history development branch dev/0.20.0 starts at published v0.19.0. Server
 ## Released baseline
 
 Witcher's Bestiary v0.19.0 is published. Original development history remains separate and backed up; excluded third-party references/internal diagnostics are not restored into this history.
+
+## Stage20E — local RC1, validation pending
+
+44/44 focused GameTests PASS; Gradle build PASS. Stability fixes and approximately3x graveyard candidate density implemented. See [Stage20E report](STAGE20_E_REPORT.md) for real-network evidence and remaining checks. No push/release or Stage21.
+
+Two real native clients completed independent Ghoul investigations/combat/rewards, unload/reload and two dedicated restarts; repeat rewards rejected. Remaining basilisk, optional-stack and natural graveyard validation stays pending.

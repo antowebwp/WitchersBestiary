@@ -823,3 +823,24 @@ tasks.named('runInvestigationReview') {
   if(result['procedural.tracking_world_rejoin']!=true) throw new GradleException('Missing tracking-state rejoin evidence')
  }
 }
+
+if(project.hasProperty('stage20eCompat')) {
+ dependencies { modRuntimeOnly fileTree(dir:'build/stage20e-compat/mods',include:'*.jar');modRuntimeOnly('org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.0'){transitive=false};modRuntimeOnly('org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.0'){transitive=false} }
+}
+
+loom.runs {
+ stage20eServer { server();source sourceSets.gametest;vmArg '-Dwitchersbestiary.stage20eServer=true';vmArg '-Xmx2G';programArgs '--nogui';runDir 'build/stage20e-server' }
+ stage20eOne { client();source sourceSets.clientSmoke;vmArg '-Dwitchersbestiary.stage20eClient=WBOne';vmArg '-Xmx1G';programArgs '--username','WBOne','--width','960','--height','640';runDir 'build/stage20e-one' }
+ stage20eTwo { client();source sourceSets.clientSmoke;vmArg '-Dwitchersbestiary.stage20eClient=WBTwo';vmArg '-Xmx1G';programArgs '--username','WBTwo','--width','960','--height','640';runDir 'build/stage20e-two' }
+}
+tasks.register('stage20ePrepareLaunch') {
+ dependsOn tasks.named('compileGametestJava'),tasks.named('processGametestResources'),tasks.named('compileClientSmokeJava'),tasks.named('processClientSmokeResources'),tasks.named('configureLaunch')
+ doLast {
+  def dir=file('build/stage20e-network');dir.mkdirs()
+  ['Server','One','Two'].each { role ->
+   def run=tasks.named('runStage20e'+role).get()
+   def data=[jvm:run.allJvmArgs,classpath:run.classpath.asPath,main:run.mainClass.get(),args:run.args,cwd:run.workingDir.absolutePath]
+   new File(dir,role+'.launch.json').text=groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(data))
+  }
+ }
+}

@@ -53,6 +53,18 @@ public final class Contracts {
             if (!com.witchersbestiary.contracts.hunt.SwampLord.named(c) && DEFINITIONS.find(c.definition().id()) != null && c.credit(victim.getUuid(), player.getUuid(), type, now)) store.markDirty();
         }
     }
+    /** Destruction without a credited death is a failed hunt, never completion or permission to duplicate a target. */
+    public static void targetRemoved(net.minecraft.entity.Entity e,ServerWorld world){
+        var reason=e.getRemovalReason();if(reason==null||!reason.shouldDestroy())return;
+        var binding=com.witchersbestiary.contracts.procedural.ProceduralHunts.binding(e);if(binding==null)return;
+        var store=ContractState.get(world.getServer());if(store.readOnly())return;var c=store.find(binding);
+        if(c==null||c.hunt==null||!e.getUuid().equals(c.hunt.target)||c.status()!=ContractInstance.Status.ACCEPTED)return;
+        c.transition(ContractInstance.Status.CANCELLED);c.hunt.status=com.witchersbestiary.contracts.hunt.SwampHunt.Status.CANCELLED;
+        if(c.investigation!=null)c.investigation.stage=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.CANCELLED;
+        store.markDirty();
+        if(e instanceof com.witchersbestiary.entity.monster.DrownerEntity d)com.witchersbestiary.contracts.hunt.SwampLord.cleanup(d,world);
+        if(e instanceof com.witchersbestiary.entity.monster.FogletEntity f)f.clearContractCopies(world);
+    }
     public static void claim(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); var c = store.find(instance);
         if (c == null || DEFINITIONS.find(c.definition().id()) == null) throw new IllegalStateException("Contract or its definition is unavailable");
