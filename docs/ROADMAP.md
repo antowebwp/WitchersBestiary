@@ -17,3 +17,9 @@ Development branch: dev/0.20.0. No Stage 20 push or new release authorized.
 44/44 focused GameTests PASS; Gradle build PASS. Stability fixes and approximately3x graveyard candidate density implemented. See [Stage20E report](STAGE20_E_REPORT.md) for real-network evidence and remaining checks. No push/release or Stage21.
 
 Two real native clients completed independent Ghoul investigations/combat/rewards, unload/reload and two dedicated restarts; repeat rewards rejected. Remaining basilisk, optional-stack and natural graveyard validation stays pending.
+
+## Stage20F — RC2 built, validation pending
+
+Versioned two-clue routes and separate lair approach, approximate area HUD, bright raised outline, extensible village tag/central chunk candidates and operator repair implemented. Full44 tests/build PASS; natural village and full visual/Moog runtime checks pending. See [report](STAGE20_F_REPORT.md). No push/release/Stage21.
+
+Stage20F two-real-client normal-world investigation-to-reward and two dedicated restarts PASS after bounded repeat. Remaining natural village and visual/Moog requirements prevent full readiness.

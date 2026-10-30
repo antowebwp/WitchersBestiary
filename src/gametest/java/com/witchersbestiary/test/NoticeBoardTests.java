@@ -65,7 +65,7 @@ public final class NoticeBoardTests implements FabricGameTest {
     public void generate(net.minecraft.world.StructureWorldAccess world,net.minecraft.world.gen.StructureAccessor accessor,net.minecraft.world.gen.chunk.ChunkGenerator generator,net.minecraft.util.math.random.Random random,BlockBox box,ChunkPos cp,BlockPos pivot){}
    };
    var start=new net.minecraft.structure.StructureStart(structure,new ChunkPos(root),0,new net.minecraft.structure.StructurePiecesList(List.of(piece)));
-   var actual=start.getBoundingBox();var chunk=new ChunkPos(new BlockPos((actual.getMinX()+actual.getMaxX())/2,0,actual.getMinZ()+5));
+   var actual=piece.getBoundingBox();var chunk=new ChunkPos(new BlockPos((actual.getMinX()+actual.getMaxX())/2,0,(actual.getMinZ()+actual.getMaxZ())/2));
    // Jigsaw terrain adaptation expands the start box: prepare its actual candidate chunk.
    for(int x=chunk.getStartX();x<=chunk.getEndX();x++)for(int z=chunk.getStartZ();z<=chunk.getEndZ();z++){w.setBlockState(new BlockPos(x,root.getY()-1,z),surfaces[t].getDefaultState());for(int y=root.getY();y<root.getY()+8;y++)w.setBlockState(new BlockPos(x,y,z),Blocks.AIR.getDefaultState());}
    // Invoke the actual mapped vanilla method to exercise the injected tail, not only its helper.

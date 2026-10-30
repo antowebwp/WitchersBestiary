@@ -13,9 +13,9 @@ public final class VillageNoticeBoards {
     private VillageNoticeBoards(){}
     public static boolean generate(StructureWorldAccess world,StructureStart start,ChunkPos chunk) {
         var id=world.getRegistryManager().get(RegistryKeys.STRUCTURE).getId(start.getStructure());
-        if(id==null||!id.getNamespace().equals("minecraft")||!id.getPath().startsWith("village_"))return false;
-        var bounds=start.getBoundingBox();
-        var selected=new ChunkPos(new BlockPos((bounds.getMinX()+bounds.getMaxX())/2,0,bounds.getMinZ()+5));
+        if(id==null||!(id.getNamespace().equals("minecraft")&&java.util.Set.of("village_plains","village_desert","village_savanna","village_snowy","village_taiga").contains(id.getPath()))&&!world.getRegistryManager().get(RegistryKeys.STRUCTURE).getEntry(start.getStructure()).isIn(net.minecraft.registry.tag.TagKey.of(RegistryKeys.STRUCTURE,net.minecraft.util.Identifier.of("witchersbestiary","notice_board_villages"))))return false;
+        var bounds=start.getChildren().isEmpty()?start.getBoundingBox():start.getChildren().getFirst().getBoundingBox();
+        var selected=new ChunkPos(new BlockPos((bounds.getMinX()+bounds.getMaxX())/2,0,(bounds.getMinZ()+bounds.getMaxZ())/2));
         if(!selected.equals(chunk))return false;
         return attempt(world,chunk);
     }
@@ -26,7 +26,8 @@ public final class VillageNoticeBoards {
             if(world.getBlockState(new BlockPos(x,y-1,z)).isOf(NoticeBoards.BLOCK))return false;
         }
         int[][] offsets={{8,8},{4,4},{12,12},{4,12},{12,4},{8,4},{8,12},{4,8},{12,8}};
-        for(var offset:offsets){int x=chunk.getStartX()+offset[0],z=chunk.getStartZ()+offset[1];int y=world.getTopY((world instanceof net.minecraft.world.ChunkRegion?Heightmap.Type.WORLD_SURFACE_WG:Heightmap.Type.WORLD_SURFACE),x,z);
+        var candidates=new java.util.ArrayList<int[]>();for(var offset:offsets)candidates.add(offset);for(int a=3;a<=13;a+=2)for(int b=3;b<=13;b+=2)candidates.add(new int[]{a,b});
+        for(var offset:candidates){int x=chunk.getStartX()+offset[0],z=chunk.getStartZ()+offset[1];int y=world.getTopY((world instanceof net.minecraft.world.ChunkRegion?Heightmap.Type.WORLD_SURFACE_WG:Heightmap.Type.WORLD_SURFACE),x,z);
             if(world.getBlockState(new BlockPos(x,y-1,z)).isOf(Blocks.SNOW))y--;
             var root=new BlockPos(x,y,z);
             for(var facing:Direction.Type.HORIZONTAL){boolean terrain=true;

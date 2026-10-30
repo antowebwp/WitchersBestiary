@@ -402,5 +402,6 @@
   "tracking.witchersbestiary.finding.foglet.claw_marks": "Thin scratches end abruptly in the air.",
   "tracking.witchersbestiary.finding.foglet.remains": "Remains hidden under a layer of cold mist.",
   "tracking.witchersbestiary.finding.foglet.mist_residue": "Cold residue. The fog moves against the wind.",
-  "hunt.witchersbestiary.status.tracking": "Follow the investigation trail"
+  "hunt.witchersbestiary.status.tracking": "Follow the investigation trail",
+  "tracking.witchersbestiary.search_area": "Search area X: %s, Z: %s (20 blocks)"
 }

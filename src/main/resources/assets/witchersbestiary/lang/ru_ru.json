@@ -402,5 +402,6 @@
   "tracking.witchersbestiary.finding.foglet.claw_marks": "Тонкие царапины внезапно обрываются.",
   "tracking.witchersbestiary.finding.foglet.remains": "Останки скрыты под слоем холодного тумана.",
   "tracking.witchersbestiary.finding.foglet.mist_residue": "Холодный след. Туман движется против ветра.",
-  "hunt.witchersbestiary.status.tracking": "Изучите цепочку следов"
+  "hunt.witchersbestiary.status.tracking": "Изучите цепочку следов",
+  "tracking.witchersbestiary.search_area": "Район поиска X: %s, Z: %s (20 блоков)"
 }
