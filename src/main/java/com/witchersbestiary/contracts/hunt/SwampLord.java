@@ -117,7 +117,7 @@ public final class SwampLord {
  public static void updateBar(LivingEntity e,String key,BossBar.Color color){updateBar(e,Text.translatable(key),color);}
  public static void updateBar(LivingEntity e,Text name,BossBar.Color color){
   if(!(e.getWorld() instanceof ServerWorld w)||e.age%10!=0)return;
-  var bar=BARS.computeIfAbsent(e.getUuid(),id->new ServerBossBar(name,color,BossBar.Style.PROGRESS));bar.setPercent(MathHelper.clamp(e.getHealth()/e.getMaxHealth(),0,1));
+  var bar=BARS.computeIfAbsent(e.getUuid(),id->new ServerBossBar(name,color,BossBar.Style.PROGRESS));bar.setPercent(MathHelper.clamp(com.witchersbestiary.contracts.procedural.ProceduralHunts.healthFraction(e),0,1));
   for(var p:w.getServer().getPlayerManager().getPlayerList()){if(!p.isSpectator()&&p.getServerWorld()==w&&p.squaredDistanceTo(e)<1024)bar.addPlayer(p);else bar.removePlayer(p);}
  }
  public static void write(DrownerEntity d,NbtCompound n){if(d.huntContract!=null)n.putUuid("WbHunt",d.huntContract);if(d.huntParent!=null)n.putUuid("WbHuntParent",d.huntParent);n.putInt("WbDash",d.huntDash);n.putInt("WbSummon",d.huntSummon);n.putInt("WbWindup",d.huntWindup);for(int i=0;i<2;i++)if(d.huntHelpers[i]!=null)n.putUuid("WbHelper"+i,d.huntHelpers[i]);}

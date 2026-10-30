@@ -67,11 +67,13 @@ public final class WerewolfEntity extends HostileEntity implements GeoEntity, Ca
     private static boolean shouldBeHuman(World world){long time=Math.floorMod(world.getTimeOfDay(),24000);return world.getDimension().hasSkyLight()&&!world.getDimension().hasFixedTime()&&(time<13000||time>=23000);}
     public boolean isHumanForm(){return dataTracker.get(HUMAN);}
     public boolean isTransforming(){return dataTracker.get(TRANSFORM)>0;}
+    public void prepareContractForm(){if(com.witchersbestiary.contracts.procedural.ProceduralHunts.combat(this)!=null)applyForm(false);}
     private void applyForm(boolean human){
+        var contract=com.witchersbestiary.contracts.procedural.ProceduralHunts.combat(this);if(contract!=null)human=false;
         float fraction=getMaxHealth()>0?getHealth()/getMaxHealth():1;
-        dataTracker.set(HUMAN,human);getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(human?20:120);com.witchersbestiary.combat.ProgressiveDifficulty.refresh(this);
+        dataTracker.set(HUMAN,human);getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(human?20:contract==null?120:contract.profile.health());com.witchersbestiary.combat.ProgressiveDifficulty.refresh(this);
         getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(human?.22:com.witchersbestiary.config.ModConfig.speed(.43));
-        getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(human?0:9);setHealth(Math.clamp(getMaxHealth()*fraction,0f,getMaxHealth()));
+        getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(human?0:contract==null?9:contract.profile.damage());setHealth(Math.clamp(getMaxHealth()*fraction,0f,getMaxHealth()));
         if(human){setTarget(null);removeStatusEffect(StatusEffects.SPEED);}calculateDimensions();
     }
     private void tickForm(){
@@ -79,7 +81,7 @@ public final class WerewolfEntity extends HostileEntity implements GeoEntity, Ca
             int remaining=dataTracker.get(TRANSFORM)-1;dataTracker.set(TRANSFORM,remaining);getNavigation().stop();setVelocity(0,getVelocity().y,0);
             if(remaining==0)applyForm(transformTarget);return;
         }
-        if(age==1||age%20==0){boolean day=shouldBeHuman(getWorld());
+        if(age==1||age%20==0){boolean day=com.witchersbestiary.contracts.procedural.ProceduralHunts.combat(this)==null&&shouldBeHuman(getWorld());
             if(day!=isHumanForm()){
                 transformTarget=day;dataTracker.set(TRANSFORM,30);attack=Attack.NONE;actionAge=0;getNavigation().stop();setTarget(null);
                 triggerAnim("action","transform");playSound(SoundEvents.ENTITY_WOLF_HOWL,1,.7f);

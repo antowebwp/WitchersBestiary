@@ -844,3 +844,23 @@ tasks.register('stage20ePrepareLaunch') {
   }
  }
 }
+
+
+// Test-only intermediary harnesses for exact production-mod compatibility checks.
+['Server','Client'].each { side ->
+ def sourceName=side=='Server'?'gametest':'clientSmoke'
+ tasks.register('stage20g'+side+'HarnessJar',Jar) {
+  dependsOn tasks.named(sourceName+'Classes')
+  destinationDirectory.set(layout.buildDirectory.dir('stage20g-production-harness'))
+  archiveClassifier.set('network-'+side.toLowerCase()+'-dev')
+  from(sourceSets[sourceName].output) { include 'com/witchersbestiary/test/Stage20ENetwork'+side+'*.class'; if(side=='Server') include 'data/witchersbestiary/tags/worldgen/structure/stage20g*.json' }
+  from('src/'+sourceName+'/resources/stage20g-production-'+side.toLowerCase()+'.fabric.json') { rename { 'fabric.mod.json' } }
+ }
+ tasks.register('remapStage20g'+side+'Harness',net.fabricmc.loom.task.RemapJarTask) {
+  dependsOn tasks.named('stage20g'+side+'HarnessJar')
+  inputFile=tasks.named('stage20g'+side+'HarnessJar').flatMap { it.archiveFile }
+  destinationDirectory.set(layout.buildDirectory.dir('stage20g-production-harness'))
+  archiveClassifier.set('network-'+side.toLowerCase())
+  classpath.from(sourceSets[sourceName].compileClasspath)
+ }
+}

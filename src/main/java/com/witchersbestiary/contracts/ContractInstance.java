@@ -63,7 +63,7 @@ public final class ContractInstance {
                 || ((c.status == Status.AVAILABLE || c.status == Status.ACCEPTED) && c.progress() == d.required()))
             throw new IllegalArgumentException("Inconsistent contract progress/state");
         if(n.contains("Hunt"))c.hunt=com.witchersbestiary.contracts.hunt.SwampHunt.read(n.getCompound("Hunt"));
-        if(n.contains("Procedural")){c.procedural=com.witchersbestiary.contracts.procedural.ProceduralProfile.read(n.getCompound("Procedural"));if(!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(c.definition.id())||!c.definition.target().getPath().equals(c.procedural.species()))throw new IllegalArgumentException("Procedural species mismatch");}
+        if(n.contains("Procedural")){c.procedural=com.witchersbestiary.contracts.procedural.ProceduralProfile.read(n.getCompound("Procedural"));if(!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(c.definition.id())||!c.definition.target().getPath().equals(com.witchersbestiary.contracts.procedural.ContractSpecies.ENTITIES.get(c.procedural.species())))throw new IllegalArgumentException("Procedural species mismatch");}
         if(com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(d.id())&&c.procedural==null)throw new IllegalArgumentException("Missing saved procedural profile; refusing reroll");
         if(n.contains("Investigation")){c.investigation=com.witchersbestiary.contracts.tracking.ContractInvestigation.read(n.getCompound("Investigation"));if(!c.id.equals(c.investigation.contract)||!c.owner.equals(c.investigation.owner)||c.hunt==null||!c.hunt.dimension.equals(c.investigation.dimension))throw new IllegalArgumentException("Investigation owner mismatch");}
         return c;

@@ -1,0 +1,16 @@
+{
+  "id": "witchersbestiary:procedural_specter",
+  "name": "hunt.witchersbestiary.proc.offer.specter",
+  "description": "hunt.witchersbestiary.proc.description",
+  "target": "witchersbestiary:wraith",
+  "required": 1,
+  "difficulty": 1,
+  "reward": {
+    "experience": 30,
+    "emeralds": 3,
+    "items": []
+  },
+  "eligibility": {
+    "dimension": "minecraft:overworld"
+  }
+}

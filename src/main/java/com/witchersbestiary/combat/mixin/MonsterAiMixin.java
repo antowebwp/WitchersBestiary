@@ -7,7 +7,18 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 @Mixin(MobEntity.class)
-public abstract class MonsterAiMixin implements com.witchersbestiary.lure.LureGoalAccess {
+public abstract class MonsterAiMixin implements com.witchersbestiary.contracts.procedural.ContractTargetAccess, com.witchersbestiary.lure.LureGoalAccess {
+    @org.spongepowered.asm.mixin.Unique private java.util.UUID witcher$contract;
+    @org.spongepowered.asm.mixin.Unique private com.witchersbestiary.contracts.procedural.ProceduralCombat witcher$combat;
+    public java.util.UUID witcher$contract(){return witcher$contract;}
+    public com.witchersbestiary.contracts.procedural.ProceduralCombat witcher$combat(){return witcher$combat;}
+    public void witcher$bind(java.util.UUID id,com.witchersbestiary.contracts.procedural.ProceduralCombat combat){witcher$contract=id;witcher$combat=combat;}
+    @Inject(method="tick",at=@At("TAIL"))
+    private void witcher$huntTick(CallbackInfo ci){if(witcher$combat!=null)com.witchersbestiary.contracts.procedural.ProceduralHunts.tick((MobEntity)(Object)this);}
+    @Inject(method="writeCustomDataToNbt",at=@At("TAIL"))
+    private void witcher$saveHunt(net.minecraft.nbt.NbtCompound n,CallbackInfo ci){if(witcher$combat!=null&&witcher$contract!=null){n.putUuid("WitcherNamedContract",witcher$contract);n.put("WitcherNamedCombat",witcher$combat.write());}}
+    @Inject(method="readCustomDataFromNbt",at=@At("TAIL"))
+    private void witcher$readHunt(net.minecraft.nbt.NbtCompound n,CallbackInfo ci){if(n.containsUuid("WitcherNamedContract")&&n.contains("WitcherNamedCombat")){witcher$bind(n.getUuid("WitcherNamedContract"),com.witchersbestiary.contracts.procedural.ProceduralCombat.read(n.getCompound("WitcherNamedCombat")));}}
     @org.spongepowered.asm.mixin.Shadow @org.spongepowered.asm.mixin.Final protected net.minecraft.entity.ai.goal.GoalSelector goalSelector;
     @org.spongepowered.asm.mixin.Unique private boolean witchersbestiary$lureGoalAdded;
     @Override public void witchersbestiary$addLureGoal(net.minecraft.entity.ai.goal.Goal goal){if(!witchersbestiary$lureGoalAdded){witchersbestiary$lureGoalAdded=true;goalSelector.add(2,goal);}}

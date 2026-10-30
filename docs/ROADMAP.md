@@ -1,5 +1,10 @@
 # Roadmap
 
+## Stage20G — RC3 built, validation pending
+
+12/12 approved procedural species integrated with existing entities, saved named profiles and two-clue/lair lifecycle. Automatic visited-village ledger and63 optional surface CTOV IDs added. Real production CTOV hunt/reward/restarts and natural/saved vanilla+CTOV villages verified; Moog coexistence without misclassifying a statue. Two independent claw→2black-dye recipes/book unlocks added. Final50/50 GameTests and Gradle build PASS. Extra trait diversity, broader ecology/large-village/full modpack/manual combat gates remain. [Report](STAGE20_G_REPORT.md), [player guide](STAGE20_G_PLAYER_GUIDE.md). No push/release or Stage21.
+
+
 - v0.19.0: published baseline, unchanged.
 - Stage 20A: Witcher Contracts server foundation — domain lifecycle, definitions, persistence, kill tracking, rewards, operator test interface and focused tests. See [report](STAGE20_A_REPORT.md).
 - Stage 20B: 3D notice boards, safe best-effort village generation, localized contract browser/acceptance and focused verification implemented. See [report](STAGE20_B_REPORT.md).
@@ -8,7 +13,7 @@
 - Stage20C.3: procedural Drowner/Ghoul/Foglet hunts complete; fixed legendary hunts retained. Deterministic persistence, compatible abilities, focused regressions and native three-species/rejoin cycles verified.
 - Future verification: longer production multiplayer/performance sessions and optional additional species; no further implementation started.
 - Stage20D: Witcher Senses, private persisted investigation chains and deferred lair encounters implemented;38 focused tests/build and two native hunt/rejoin cycles verified. See [report](STAGE20_D_REPORT.md).
-- Stage20E / Stage21: not started.
+- Stage20E/20F: local RC evidence recorded; Stage21 remains not started.
 
 Development branch: dev/0.20.0. No Stage 20 push or new release authorized.
 

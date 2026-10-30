@@ -21,6 +21,7 @@ public final class ProgressiveDifficulty {
         });
     }
     public static boolean eligible(LivingEntity e){
+        if(com.witchersbestiary.contracts.procedural.ProceduralHunts.binding(e)!=null)return false;
         if(!(e instanceof CategorizedMonster)||!Registries.ENTITY_TYPE.getId(e.getType()).getNamespace().equals("witchersbestiary"))return false;
         if(!(e instanceof net.minecraft.entity.mob.HostileEntity) && !(e instanceof InfernalBasiliskEntity))return false;
         if(e instanceof TameableEntity pet && pet.isTamed())return false;

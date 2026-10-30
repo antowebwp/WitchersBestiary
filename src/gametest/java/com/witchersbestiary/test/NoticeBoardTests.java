@@ -39,7 +39,7 @@ public final class NoticeBoardTests implements FabricGameTest {
  @GameTest(templateName=ARENA,batchId="stage20b",tickLimit=40)
  public void interactionDistanceAcceptanceAndClosedSession(TestContext c){var w=c.getWorld();var root=floor(c);NoticeBoardBlock.place(w,root,Direction.NORTH);var p=player(c,root);var state=w.getBlockState(root);
   state.onUse(w,p,new BlockHitResult(root.toCenterPos(),Direction.NORTH,root,false));c.assertTrue(p.currentScreenHandler instanceof BoardScreenHandler,"Right click opens real screen handler");var h=(BoardScreenHandler)p.currentScreenHandler;
-  c.assertTrue(h.canUse(p)&&h.view(p,"").getAsJsonArray("offers").size()==8,"Live board and three offers");
+  c.assertTrue(h.canUse(p)&&h.view(p,"").getAsJsonArray("offers").size()==17,"All registered offers available");
   int before=ContractState.get(p.getServer()).ownedBy(p.getUuid()).size();c.assertTrue(h.onButtonClick(p,0),"Accept request");int after=ContractState.get(p.getServer()).ownedBy(p.getUuid()).size();c.assertTrue(after==before+1,"Exactly one accepted instance");h.onButtonClick(p,0);c.assertTrue(ContractState.get(p.getServer()).ownedBy(p.getUuid()).size()==after,"Duplicate rejection");
   var reopened=new BoardScreenHandler(79,p.getInventory(),root);p.currentScreenHandler=reopened;reopened.onButtonClick(p,0);c.assertTrue(ContractState.get(p.getServer()).ownedBy(p.getUuid()).size()==after,"Duplicate acceptance rejected after reopening, independent of action throttle");p.currentScreenHandler=h;
   var second=player(c,root);var foreign=new BoardScreenHandler(99,second.getInventory(),root);c.assertTrue(!h.onButtonClick(second,1),"Other owner denied");
@@ -67,7 +67,7 @@ public final class NoticeBoardTests implements FabricGameTest {
    var start=new net.minecraft.structure.StructureStart(structure,new ChunkPos(root),0,new net.minecraft.structure.StructurePiecesList(List.of(piece)));
    var actual=piece.getBoundingBox();var chunk=new ChunkPos(new BlockPos((actual.getMinX()+actual.getMaxX())/2,0,(actual.getMinZ()+actual.getMaxZ())/2));
    // Jigsaw terrain adaptation expands the start box: prepare its actual candidate chunk.
-   for(int x=chunk.getStartX();x<=chunk.getEndX();x++)for(int z=chunk.getStartZ();z<=chunk.getEndZ();z++){w.setBlockState(new BlockPos(x,root.getY()-1,z),surfaces[t].getDefaultState());for(int y=root.getY();y<root.getY()+8;y++)w.setBlockState(new BlockPos(x,y,z),Blocks.AIR.getDefaultState());}
+   for(int x=chunk.getStartX();x<=chunk.getEndX();x++)for(int z=chunk.getStartZ();z<=chunk.getEndZ();z++){w.setBlockState(new BlockPos(x,root.getY()-1,z),surfaces[t].getDefaultState());for(int y=root.getY();y<Math.max(root.getY()+8,w.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE,x,z)+1);y++)w.setBlockState(new BlockPos(x,y,z),Blocks.AIR.getDefaultState());}
    // Invoke the actual mapped vanilla method to exercise the injected tail, not only its helper.
    start.place(w,w.getStructureAccessor(),w.getChunkManager().getChunkGenerator(),w.random,new BlockBox(chunk.getStartX(),w.getBottomY(),chunk.getStartZ(),chunk.getEndX(),w.getTopY()-1,chunk.getEndZ()),chunk);
    var roots=new HashSet<BlockPos>();for(int x=chunk.getStartX();x<=chunk.getEndX();x++)for(int z=chunk.getStartZ();z<=chunk.getEndZ();z++){var at=new BlockPos(x,w.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE,x,z)-1,z);var b=w.getBlockState(at);if(b.isOf(NoticeBoards.BLOCK))roots.add(NoticeBoardBlock.root(at,b));}

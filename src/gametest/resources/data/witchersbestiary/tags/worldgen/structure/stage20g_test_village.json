@@ -1,0 +1,9 @@
+{
+  "values": [
+    {
+      "id": "ctov:small/village_plains",
+      "required": false
+    },
+    "minecraft:village_plains"
+  ]
+}

@@ -2,7 +2,7 @@
 Requires JAVA_HOME (21), and Gradle stage20ePrepareLaunch -Pstage19fProfile=A first.
 All generated settings/worlds/logs stay in a fresh ignored build/ directory.
 """
-import os, json, subprocess, time, datetime
+import os, json, subprocess, time, datetime, shutil
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / 'build/stage20e-network'
@@ -16,21 +16,38 @@ def quote(value):
 
 plans = {}
 for role in ['Server', 'One', 'Two']:
-    data = json.loads((BASE / f'{role}.launch.json').read_text())
+    production=os.environ.get('STAGE20G_PRODUCTION') == '1'
+    data = json.loads((BASE / (f'{role}.production.launch.json' if production else f'{role}.launch.json')).read_text())
     env = 'server' if role == 'Server' else 'client'
     cwd = CASE / role.lower()
     cwd.mkdir()
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
            f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' else '-Xmx1G']
+    if production:
+        jvm=[a for a in jvm if not a.startswith('-Dfabric.dli.')] + ['-Dfabric.development=false']
+        mods=cwd/'mods';mods.mkdir()
+        for source in data['mods']: shutil.copyfile(source,mods/Path(source).name)
+    if os.environ.get('STAGE20G_VILLAGE') == '1': jvm += ['-Dwitchersbestiary.stage20gVillage=true']
+    if os.environ.get('STAGE20G_CTOV_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gCtovOnly=true']
+    for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
+        if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
+    if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
     if role == 'Server':
         jvm += ['-Dwitchersbestiary.stage20eServer=true']
+        if os.environ.get('STAGE20G_VILLAGE') == '1': jvm += ['-Dwitchersbestiary.stage20gVillage=true']
         args = ['--nogui']
         (cwd / 'eula.txt').write_text('eula=true\n')
         (cwd / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=25583\nonline-mode=false\nenforce-secure-profile=false\nview-distance=4\nsimulation-distance=4\nmax-players=2\nlevel-name=world\nlevel-seed=202001\nlevel-type=minecraft\\:normal\ngenerate-structures=true\nspawn-protection=0\ndifficulty=normal\nenable-rcon=false\n')
     else:
         jvm += [f'-Dwitchersbestiary.stage20eClient=WB{role}']
         args = ['--username', f'WB{role}', '--width','960','--height','640']
+    if production and role != 'Server': args += data['clientArgs']
+    if role == 'Server' and os.environ.get('STAGE20G_VILLAGE') == '1':
+        config=cwd/'server.properties'
+        config.write_text(config.read_text().replace('view-distance=4','view-distance=8'))
+    if role == 'Server' and os.environ.get('STAGE20G_SEED'):
+        config=cwd/'server.properties';config.write_text(config.read_text().replace('level-seed=202001','level-seed='+os.environ['STAGE20G_SEED']))
     argfile = CASE / f'{role}.args'
     argfile.write_text('\n'.join(quote(a) for a in jvm + ['-cp',data['classpath'],data['main']] + args))
     plans[role] = (cwd, argfile)
@@ -63,7 +80,12 @@ try:
             if (CASE/'complete.json').exists():
                 print((CASE/'complete.json').read_text(),flush=True)
                 break
-            if (CASE/'resume.json').exists() and counts['Server'] < 3:
+            if ((CASE/'resume.json').exists() or (CASE/'village-resume.json').exists()) and counts['Server'] < 3:
+                if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1' and counts['Server'] == 1:
+                    ledger=(CASE/'server/world/data/witchersbestiary_village_boards.dat').resolve()
+                    backup=(CASE/'pre-retro-village-ledger.dat').resolve()
+                    if not ledger.is_relative_to(CASE.resolve()) or not backup.is_relative_to(CASE.resolve()): raise RuntimeError('Unsafe review ledger path')
+                    ledger.rename(backup) # Preserve prior ledger outside isolated world to emulate pre-install village.
                 print('Restarting dedicated server from the same saved world.',flush=True)
                 server = launch('Server')
             else:
@@ -72,14 +94,14 @@ try:
     else: raise TimeoutError('900-second orchestration limit')
 finally:
     for role,process,log in processes:
-        if process.poll() is None and role != 'Server':
+        if process.poll() is None and role != 'Server' and not (CASE/'complete.json').exists():
             try: (CASE/f'WB{role}.command.json').write_text(json.dumps({'nonce':int(time.time()*1000),'action':'stop'}))
             except OSError: pass
     for role,process,log in processes:
         if role == "Server" and process.poll() is None:
             try: process.stdin.write(b"stop\n"); process.stdin.flush()
             except OSError: pass
-    deadline=time.monotonic()+10
+    deadline=time.monotonic()+30
     while time.monotonic()<deadline and any(p.poll() is None for _,p,_ in processes): time.sleep(.5)
     for role,process,log in processes:
         if process.poll() is None: process.terminate()

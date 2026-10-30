@@ -1,5 +1,10 @@
 # Progress
 
+## Stage20G — RC3 built, validation pending
+
+12/12 approved procedural species integrated with existing entities, saved named profiles and two-clue/lair lifecycle. Automatic visited-village ledger and63 optional surface CTOV IDs added. Real production CTOV hunt/reward/restarts and natural/saved vanilla+CTOV villages verified; Moog coexistence without misclassifying a statue. Two independent claw→2black-dye recipes/book unlocks added. Final50/50 GameTests and Gradle build PASS. Extra trait diversity, broader ecology/large-village/full modpack/manual combat gates remain. [Report](STAGE20_G_REPORT.md), [player guide](STAGE20_G_PLAYER_GUIDE.md). No push/release or Stage21.
+
+
 ## Stage 20D — Witcher Senses and investigations
 
 V-toggle private clue rendering, persisted species-specific routes, authoritative right-click study, journal progress/findings and lair-triggered existing target spawn implemented for procedural/legendary hunts. All38 focused tests/build PASS; native EPIC Foglet and legendary Grave Devourer cycles plus mid-investigation world rejoin PASS. Evidence, configuration and performance limits: [report](STAGE20_D_REPORT.md). No push/release or Stage20E/21.

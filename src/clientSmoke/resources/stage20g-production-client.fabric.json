@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "witchersbestiary-network-client",
+  "version": "1.0.0",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.witchersbestiary.test.Stage20ENetworkClient"
+    ]
+  },
+  "depends": {
+    "witchersbestiary": "*",
+    "fabric-api": "*"
+  }
+}

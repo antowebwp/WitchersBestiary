@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "black_dye",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:drowner_claw"
+    }
+  ],
+  "result": {
+    "id": "minecraft:black_dye",
+    "count": 2
+  }
+}
