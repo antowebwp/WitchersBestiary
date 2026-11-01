@@ -20,7 +20,8 @@ import static net.minecraft.server.command.CommandManager.*;
 public final class Contracts {
     public static final ContractDefinitions DEFINITIONS = new ContractDefinitions();
     private Contracts() {}
-    public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId) {
+    public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId) {return assign(player,definitionId,null);}
+    public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {
         com.witchersbestiary.contracts.hunt.SwampLord.validateAccept(player,definitionId);
         var definition = DEFINITIONS.find(definitionId);
         if (definition == null) throw new IllegalArgumentException("Missing/invalid contract definition: " + definitionId);
@@ -32,7 +33,7 @@ public final class Contracts {
         if (store.ownedBy(player.getUuid()).stream().filter(c -> c.status() == ContractInstance.Status.ACCEPTED || c.status() == ContractInstance.Status.COMPLETED).count() >= 16)
             throw new IllegalStateException("At most 16 active/unclaimed contracts per player");
         var instanceId=UUID.randomUUID();
-        var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits(),com.witchersbestiary.contracts.procedural.ContractSpecies.species(definition.target().getPath())):null;
+        var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(offerSeed==null?instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits():offerSeed,com.witchersbestiary.contracts.procedural.ContractSpecies.species(definition.target().getPath())):null;
         if(profile!=null)definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
         c.transition(ContractInstance.Status.ACCEPTED); store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;

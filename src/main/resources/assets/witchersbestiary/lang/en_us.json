@@ -530,5 +530,7 @@
   "tracking.witchersbestiary.finding.grave_hag.blood_trace": "Fresh blood from a scavenged carcass.",
   "tracking.witchersbestiary.finding.grave_hag.claw_marks": "Three deep gouges. A large ghoul passed here.",
   "tracking.witchersbestiary.finding.grave_hag.mist_residue": "A cold haze gathers over the disturbed soil.",
-  "tracking.witchersbestiary.finding.grave_hag.remains": "Gnawed bones and marrow stains. This is its feeding ground."
+  "tracking.witchersbestiary.finding.grave_hag.remains": "Gnawed bones and marrow stains. This is its feeding ground.",
+  "gui.witchersbestiary.board.refresh": "New hunts",
+  "gui.witchersbestiary.board.rotation": "Rotation: %s days"
 }

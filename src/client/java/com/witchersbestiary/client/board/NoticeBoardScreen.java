@@ -26,7 +26,8 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
   addDrawableChild(new JournalButton(x+leftWidth-33,y+backgroundHeight-35,24,22,Text.literal(">"),b->{if((page+1)*3<offers().size()){page++;selected=page*3;refresh();}}));
   action=addDrawableChild(new JournalButton(x+leftWidth+15,y+backgroundHeight-34,backgroundWidth-leftWidth-30,23,key("accept"),b->{
    if(client.interactionManager==null||selected>=offers().size())return;var row=offers().get(selected).getAsJsonObject();int button=row.get("button").getAsInt();if(row.get("state").getAsString().equals("COMPLETED"))button+=32;client.interactionManager.clickButton(handler.syncId,button);
-  }));refresh();
+  }));
+  addDrawableChild(new JournalButton(x+9,y+backgroundHeight-60,leftWidth-18,20,key("refresh"),b->{if(client.interactionManager!=null)client.interactionManager.clickButton(handler.syncId,64);}));refresh();
  }
  public void refresh(){
   var data=offers();if(selected>=data.size())selected=0;
@@ -36,7 +37,7 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
  private void wrapped(DrawContext c,Text text,int xx,int yy,int maxWidth,int maxLines,int color){var lines=textRenderer.wrapLines(text,maxWidth);for(int i=0;i<Math.min(maxLines,lines.size());i++)c.drawText(textRenderer,lines.get(i),xx,yy+i*11,color,false);}
  @Override protected void drawBackground(DrawContext c,float delta,int mouseX,int mouseY){c.drawTexture(TEXTURE,x,y,backgroundWidth,backgroundHeight,0f,0f,384,240,384,240);}
  @Override protected void drawForeground(DrawContext c,int mouseX,int mouseY){
-  c.drawText(textRenderer,key("title"),10,13,0xfff0d49d,false);c.drawText(textRenderer,Text.literal((page+1)+" / "+Math.max(1,(offers().size()+2)/3)),leftWidth/2-12,backgroundHeight-26,0xffedd5aa,false);
+  c.drawText(textRenderer,key("title"),10,13,0xfff0d49d,false);if(handler.snapshot.has("refresh_days"))c.drawText(textRenderer,Text.translatable("gui.witchersbestiary.board.rotation",handler.snapshot.get("refresh_days").getAsInt()),10,25,0xffedd5aa,false);c.drawText(textRenderer,Text.literal((page+1)+" / "+Math.max(1,(offers().size()+2)/3)),leftWidth/2-12,backgroundHeight-26,0xffedd5aa,false);
   for(int i=0;i<3;i++){int n=page*3+i;if(n<offers().size())c.drawText(textRenderer,key(offers().get(n).getAsJsonObject().get("state").getAsString().toLowerCase(Locale.ROOT)),11,73+i*50,0xffefcfa0,false);}
   if(selected>=offers().size()){wrapped(c,key("loading"),leftWidth+15,35,backgroundWidth-leftWidth-30,4,0xff382817);return;}
   var row=offers().get(selected).getAsJsonObject();int xx=leftWidth+14,ww=backgroundWidth-leftWidth-28;

@@ -1,5 +1,9 @@
 # Roadmap
 
+## Stage20H — RC4 built, validation pending
+
+Village offer generations, five-offer board integration, per-offer acceptance identity, lazy72000-tick rotation and personal refresh implemented. 53/53 tests/build PASS. Native release gates and identity/legendary/history limits remain; see [report](STAGE20_H_REPORT.md). No push or Stage21.
+
 ## Stage20G — RC3 built, validation pending
 
 12/12 approved procedural species integrated with existing entities, saved named profiles and two-clue/lair lifecycle. Automatic visited-village ledger and63 optional surface CTOV IDs added. Real production CTOV hunt/reward/restarts and natural/saved vanilla+CTOV villages verified; Moog coexistence without misclassifying a statue. Two independent claw→2black-dye recipes/book unlocks added. Final50/50 GameTests and Gradle build PASS. Extra trait diversity, broader ecology/large-village/full modpack/manual combat gates remain. [Report](STAGE20_G_REPORT.md), [player guide](STAGE20_G_PLAYER_GUIDE.md). No push/release or Stage21.

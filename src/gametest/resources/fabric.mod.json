@@ -14,7 +14,8 @@
       "com.witchersbestiary.test.InvestigationTests",
       "com.witchersbestiary.test.Stage20EStabilityTests",
       "com.witchersbestiary.test.Stage20GTests",
-      "com.witchersbestiary.test.BlackDyeRecipeTests"
+      "com.witchersbestiary.test.BlackDyeRecipeTests",
+      "com.witchersbestiary.test.VillageOfferTests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer"

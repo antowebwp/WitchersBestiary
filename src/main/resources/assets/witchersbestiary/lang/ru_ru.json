@@ -530,5 +530,7 @@
   "tracking.witchersbestiary.finding.grave_hag.blood_trace": "Свежая кровь у обглоданной туши.",
   "tracking.witchersbestiary.finding.grave_hag.claw_marks": "Три глубоких борозды. Здесь прошёл крупный гуль.",
   "tracking.witchersbestiary.finding.grave_hag.mist_residue": "Над разрытой землёй сгущается холодная дымка.",
-  "tracking.witchersbestiary.finding.grave_hag.remains": "Обглоданные кости. Здесь чудовище кормится."
+  "tracking.witchersbestiary.finding.grave_hag.remains": "Обглоданные кости. Здесь чудовище кормится.",
+  "gui.witchersbestiary.board.refresh": "Новые охоты",
+  "gui.witchersbestiary.board.rotation": "Обновление: через %s дн."
 }
