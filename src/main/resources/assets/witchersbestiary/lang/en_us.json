@@ -532,5 +532,6 @@
   "tracking.witchersbestiary.finding.grave_hag.mist_residue": "A cold haze gathers over the disturbed soil.",
   "tracking.witchersbestiary.finding.grave_hag.remains": "Gnawed bones and marrow stains. This is its feeding ground.",
   "gui.witchersbestiary.board.refresh": "New hunts",
-  "gui.witchersbestiary.board.rotation": "Rotation: %s days"
+  "gui.witchersbestiary.board.rotation": "Rotation: %s days",
+  "gui.witchersbestiary.board.legendary": "Legends"
 }

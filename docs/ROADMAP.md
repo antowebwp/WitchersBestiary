@@ -1,5 +1,9 @@
 # Roadmap
 
+## Stage20H final fixes — RC5 validation pending
+
+Origin-independent village references, separate legendary category and bounded terminal history implemented. Full native five-hunt/rotation/RC3 migration gates remain; see [report](STAGE20_H_REPORT.md). No release/push/Stage21.
+
 ## Stage20H — RC4 built, validation pending
 
 Village offer generations, five-offer board integration, per-offer acceptance identity, lazy72000-tick rotation and personal refresh implemented. 53/53 tests/build PASS. Native release gates and identity/legendary/history limits remain; see [report](STAGE20_H_REPORT.md). No push or Stage21.

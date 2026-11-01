@@ -32,4 +32,4 @@ for role in ['Server','One','Two']:
  mods=mandatory+optional+[root/('build/libs/witchersbestiary-'+next(line.split('=',1)[1].strip() for line in (root/'gradle.properties').read_text().splitlines() if line.startswith('version='))+'.jar'),harnesses[0]]
  result={'main':'net.fabricmc.loader.impl.launch.knot.Knot'+('Server' if role=='Server' else 'Client'),'classpath':classpath,'mods':[str(p) for p in mods],'clientArgs':['--accessToken','0','--version','1.21.1','--assetIndex',configured('--assetIndex'),'--assetsDir',configured('--assetsDir')]}
  (base/(role+'.production.launch.json')).write_text(json.dumps(result,indent=2),encoding='utf-8')
-print('Prepared production namespace with '+str(len(optional))+' original optional mod jars, Minecraft intermediary cache and RC3.')
+print('Prepared production namespace with '+str(len(optional))+' original optional mod jars, Minecraft intermediary cache and the configured release candidate.')

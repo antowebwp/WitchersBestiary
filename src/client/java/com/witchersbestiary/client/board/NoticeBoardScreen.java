@@ -27,7 +27,8 @@ public final class NoticeBoardScreen extends HandledScreen<BoardScreenHandler> {
   action=addDrawableChild(new JournalButton(x+leftWidth+15,y+backgroundHeight-34,backgroundWidth-leftWidth-30,23,key("accept"),b->{
    if(client.interactionManager==null||selected>=offers().size())return;var row=offers().get(selected).getAsJsonObject();int button=row.get("button").getAsInt();if(row.get("state").getAsString().equals("COMPLETED"))button+=32;client.interactionManager.clickButton(handler.syncId,button);
   }));
-  addDrawableChild(new JournalButton(x+9,y+backgroundHeight-60,leftWidth-18,20,key("refresh"),b->{if(client.interactionManager!=null)client.interactionManager.clickButton(handler.syncId,64);}));refresh();
+  addDrawableChild(new JournalButton(x+9,y+backgroundHeight-60,leftWidth-18,20,key("refresh"),b->{if(client.interactionManager!=null)client.interactionManager.clickButton(handler.syncId,64);}));
+  addDrawableChild(new JournalButton(x+36,y+backgroundHeight-35,leftWidth-72,22,key("legendary"),b->{if(client.interactionManager!=null){page=0;selected=0;client.interactionManager.clickButton(handler.syncId,65);}}));refresh();
  }
  public void refresh(){
   var data=offers();if(selected>=data.size())selected=0;

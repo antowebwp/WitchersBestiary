@@ -25,6 +25,16 @@ public final class ContractState extends PersistentState {
     public void add(ContractInstance c) {
         writable(); if (contracts.putIfAbsent(c.id(), c) != null) throw new IllegalArgumentException("Duplicate instance id"); owners.computeIfAbsent(c.owner(), key -> new ArrayList<>()).add(c); markDirty();
     }
+    /** Keep live work, current-cycle receipts and permanent legendary receipts; bound old terminal detail. */
+    public void compact(java.util.function.Predicate<UUID> liveOffer) {
+        writable();boolean changed=false;
+        for(var list:owners.values()) {int retained=0;var iterator=list.listIterator(list.size());while(iterator.hasPrevious()){
+            var c=iterator.previous();boolean terminal=c.status()==ContractInstance.Status.REWARDED||c.status()==ContractInstance.Status.CANCELLED||c.status()==ContractInstance.Status.EXPIRED;
+            boolean legendary=c.definition().id().equals(com.witchersbestiary.contracts.hunt.SwampLord.ID)||c.definition().id().equals(com.witchersbestiary.contracts.hunt.GraveDevourer.ID);
+            if(!terminal||legendary||liveOffer.test(c.offer))continue;
+            if(retained++>=128){iterator.remove();contracts.remove(c.id());changed=true;}
+        }}if(changed)markDirty();
+    }
     @Override public NbtCompound writeNbt(NbtCompound n, RegistryWrapper.WrapperLookup lookup) {
         if (futureSchema != null) return futureSchema.copy();
         n.putInt("Schema", SCHEMA); var list = new NbtList();

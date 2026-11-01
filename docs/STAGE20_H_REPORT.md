@@ -1,3 +1,35 @@
+# Stage20H final fixes — RC5
+
+Date: 2026-11-01. Base e5f0cbd, dev/0.20.0.
+
+Status: PARTIALLY COMPLETED; RC5 BUILT — VALIDATION PENDING. The older RC4 record below is retained as historical evidence and is superseded by this section.
+
+## Defect fixes
+
+Village identity now reads dimension/structure/origin directly from the board chunk's saved structure references. It never requests the origin chunk, so origin unload/reload does not cause standalone fallback. When references contain multiple supported starts, nearest origin is selected deterministically, with registry-key ordering as a tie breaker. Standalone root fallback is unchanged. Overlap boundaries and multiple boards across unusually large neighboring settlements still require native coverage; no universal geometry guarantee.
+
+The board has a separate Legends/Regular selector (RU/EN). The two existing fixed hunts retain their normal definitions, rewards, eligibility and owner receipts. They consume no regular slots, do not get procedural source IDs, and never get profile-rerolled by village rotation. Rewarded legendary entries remain permanently retained; regular selection still has five offers. Active legacy contracts remain selectable on initial opening; reopening restores the extra active list after switching categories.
+
+ContractState.compact retains every active contract, every completed-unclaimed contract, permanent legendary receipts and all receipts referenced by any current offer generation. Other terminal details are bounded to128 per player. Pruned contract UUIDs cannot be rewarded: claim requires an exact existing owned COMPLETED instance, and ordinary board acceptance requires a current Offer ID. Pruning is invoked when opening a board; worlds/villages/players can still naturally increase world data, but completed cycles cannot retain unlimited full contract payloads for one player. Current generation and personal-cycle receipts stay available for refresh; obsolete personal generations are removed by existing rotation. No active investigation or unclaimed reward is discarded.
+
+## Verification scope
+
+Existing53 tests retained. Added hundred-rotation/current-generation-size,500-terminal-record/128-limit/NBT reload, and unloaded-origin reference/no-load tests. Extended real screen-handler integration to switch to two legendary entries and back to five ordinary slots. Final counts/logs recorded below after completion. These are automated server tests, not a claim of a full five-hunt native playthrough.
+
+The RC5 production review uses two native clients, CTOV/Lithostitched/Cloth and both Moog mods. New/saved village GUI and server-restart scenarios use fresh ignored worlds. It does not automatically exercise five accepted hunts, all refresh/replay cases or a real active RC3 migration; those remain NOT TESTED. The old combat runner hardcodes Endrega and Grave Devourer in a global catalogue and must be adapted to the new randomized five-offer category workflow before it can prove those scenarios. This is unfinished test coverage, not an external blocker or a PASS.
+
+RC5 is not READY. Remaining mandatory gates: full five hunts/refresh with an unaffected peer; timed rotation while both investigations are active; actual RC3 partial-clue save migration through reward and replay denial; vanilla A/B and neighboring/overlapping village identity cases. No new representative MSPT benchmark.
+
+No publication, push, tag changes or Stage21. Previous candidate jars are backed up under build/stage20h-rc5-backup and restored to build/libs. Protected directories are not modified.
+
+## Final evidence
+
+Final source:55/55 GameTests PASS; Gradle build PASS, build/stage20h-rc5-final-source.log. Production review run-20261101-175237: CTOV new/saved board GUI, two native clients, automatic retrofit and two server restarts PASS, complete=true. Coexistence uses original Moog dependencies. This native case preceded the final GUI-spacing/nearest-origin tie-selection refinements; final artifact is covered by the final55 tests/build, not by an asserted identical native binary replay.
+
+Final JAR: build/libs/witchersbestiary-0.20.0-rc5.jar; 8287034bytes; SHA256 2935655daf621822787a60d26fa95727efd60560a96190f4c530504b7a2a8bc2. Metadata0.20.0-rc5, both dye recipes present, no test classes/logs. RC1–RC4 restored and byte-compared to prebuild backups. Mandatory five-hunt/RC3-active-migration/full rotation multiplayer validation remains NOT TESTED. The work is therefore not a completed Stage20H or public READY candidate.
+
+---
+
 # Stage20H — village-specific renewable contracts
 
 Date: 2026-11-01. Base: 33ca86e. Branch: dev/0.20.0.

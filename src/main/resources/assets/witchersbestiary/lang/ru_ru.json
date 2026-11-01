@@ -532,5 +532,6 @@
   "tracking.witchersbestiary.finding.grave_hag.mist_residue": "Над разрытой землёй сгущается холодная дымка.",
   "tracking.witchersbestiary.finding.grave_hag.remains": "Обглоданные кости. Здесь чудовище кормится.",
   "gui.witchersbestiary.board.refresh": "Новые охоты",
-  "gui.witchersbestiary.board.rotation": "Обновление: через %s дн."
+  "gui.witchersbestiary.board.rotation": "Обновление: через %s дн.",
+  "gui.witchersbestiary.board.legendary": "Легенды"
 }

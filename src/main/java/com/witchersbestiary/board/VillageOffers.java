@@ -18,13 +18,15 @@ public final class VillageOffers extends PersistentState {
     private NbtCompound future;
     public static String identity(net.minecraft.server.world.ServerWorld world, net.minecraft.util.math.BlockPos pos) {
         var chunk=world.getChunkManager().getWorldChunk(pos.getX()>>4,pos.getZ()>>4);
-        if(chunk!=null){var candidates=new TreeSet<String>();for(var ref:chunk.getStructureReferences().entrySet()){
+        if(chunk!=null){var candidates=new TreeMap<String,Long>();for(var ref:chunk.getStructureReferences().entrySet()){
             if(!VisitedVillageBoards.supported(world,ref.getKey()))continue;
-            for(long packed:ref.getValue()){var cp=new net.minecraft.util.math.ChunkPos(packed);var origin=world.getChunkManager().getWorldChunk(cp.x,cp.z);if(origin==null)continue;
-                var start=origin.getStructureStart(ref.getKey());if(start!=null&&start.hasChildren()&&start.getBoundingBox().contains(pos))candidates.add(world.getRegistryKey().getValue()+"/"+world.getRegistryManager().get(net.minecraft.registry.RegistryKeys.STRUCTURE).getId(ref.getKey())+"/"+packed);
-            }}if(!candidates.isEmpty())return candidates.first();}
+            for(long packed:ref.getValue()){
+                // References already contain the durable structure origin: never fetch its chunk.
+                var cp=new net.minecraft.util.math.ChunkPos(packed);long dx=(long)pos.getX()-cp.getCenterX(),dz=(long)pos.getZ()-cp.getCenterZ();candidates.put(world.getRegistryKey().getValue()+"/"+world.getRegistryManager().get(net.minecraft.registry.RegistryKeys.STRUCTURE).getId(ref.getKey())+"/"+packed,dx*dx+dz*dz);
+            }}if(!candidates.isEmpty())return candidates.entrySet().stream().min(Map.Entry.<String,Long>comparingByValue().thenComparing(Map.Entry.comparingByKey())).orElseThrow().getKey();}
         return world.getRegistryKey().getValue()+"/board/"+pos.asLong();
     }
+    public boolean live(UUID offer) {return offer!=null&&villages.values().stream().anyMatch(g->g.offers().stream().anyMatch(o->o.id().equals(offer)));}
     public Generation personal(String village, UUID player, long age, List<String> eligible) {
         var base=current(village,age,eligible);var key=village+"/personal/"+player+"/"+base.id();
         return villages.getOrDefault(key,base);
