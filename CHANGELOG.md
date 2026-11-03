@@ -1,3 +1,7 @@
+# 0.20.0 — Witcher Contracts Update
+
+Persistent village offers, twelve procedural hunt species, two-clue Witcher Senses investigations, renewable personal hunts, separate legendary contracts, visited-village boards, bounded terminal history and two claw-to-black-dye recipes. See [release notes](docs/RELEASE_NOTES_0.20.0.md) for requirements and limitations. Owner-approved RC5 promoted with version-only rebuild; no repeat QA.
+
 # Changelog
 
 ## 0.20.0-dev — Stage 20A–20C.1 (unreleased)
