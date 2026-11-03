@@ -1,5 +1,9 @@
 # Roadmap
 
+## Stage21A — crowns and wallet implemented
+
+64/64 GameTests/build PASS; two native wallet GUIs, transfers and saved-world recovery validated. New contracts pay crowns; existing snapshots retain emeralds. Local0.21.0-dev checkpoint only. [Report](STAGE21A_REPORT.md), [progress](STAGE21_PROGRESS.md). No21B or publication.
+
 ## Stage21 — development started
 
 Working branch dev/0.21.0 from published0.20.0. Currency arithmetic/component foundation only; gameplay not yet integrated. [Progress](STAGE21_PROGRESS.md), [scope](STAGE21_MASTER_PLAN.md). No release or push.
@@ -40,3 +44,7 @@ Two real native clients completed independent Ghoul investigations/combat/reward
 Versioned two-clue routes and separate lair approach, approximate area HUD, bright raised outline, extensible village tag/central chunk candidates and operator repair implemented. Full44 tests/build PASS; natural village and full visual/Moog runtime checks pending. See [report](STAGE20_F_REPORT.md). No push/release/Stage21.
 
 Stage20F two-real-client normal-world investigation-to-reward and two dedicated restarts PASS after bounded repeat. Remaining natural village and visual/Moog requirements prevent full readiness.
+
+## Approved Stage21G controls (future; not implemented)
+
+All five signs, base effects only; no upgrades or alternative forms. Hold rebindable R for a radial selection menu; rebindable G casts the selected sign. No Q/E or mouse-wheel switching. V remains Witcher Senses.

@@ -76,9 +76,9 @@ public final class ContractFoundationTests implements FabricGameTest {
         rejects(c,()->Contracts.claim(p,i.id()));for(int n=0;n<3;n++)i.credit(UUID.randomUUID(),p.getUuid(),definition().target(),System.currentTimeMillis());
         for(int n=0;n<36;n++)p.getInventory().main.set(n,new ItemStack(Items.STONE,64));
         rejects(c,()->Contracts.claim(p,i.id()));c.assertTrue(i.status()==ContractInstance.Status.COMPLETED,"Full inventory leaves claim pending");
-        p.getInventory().clear();int xp=p.totalExperience;Contracts.claim(p,i.id());c.assertTrue(p.totalExperience==xp+30&&p.getInventory().count(Items.EMERALD)==2,"XP and emerald reward");
+        p.getInventory().clear();int xp=p.totalExperience;Contracts.claim(p,i.id());c.assertTrue(p.totalExperience==xp+30&&p.getInventory().count(com.witchersbestiary.economy.Currency.CROWN)==20,"XP and emerald reward");
         c.assertTrue(p.getInventory().count(com.witchersbestiary.registry.ModItems.DROWNER_ESSENCE)==1,"WB material reward");
-        rejects(c,()->Contracts.claim(p,i.id()));c.assertTrue(p.totalExperience==xp+30&&p.getInventory().count(Items.EMERALD)==2,"No repeated delivery");
+        rejects(c,()->Contracts.claim(p,i.id()));c.assertTrue(p.totalExperience==xp+30&&p.getInventory().count(com.witchersbestiary.economy.Currency.CROWN)==20,"No repeated delivery");
         var saved=ContractState.get(p.getServer()).writeNbt(new NbtCompound(),c.getWorld().getRegistryManager());var loaded=ContractState.read(saved,c.getWorld().getRegistryManager());
         rejects(c,()->ContractRewards.claim(loaded,loaded.find(i.id()),p));p.discard();c.complete();
     }

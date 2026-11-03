@@ -1,0 +1,13 @@
+package com.witchersbestiary.client.economy;
+import com.witchersbestiary.economy.*;import net.minecraft.client.gui.*;import net.minecraft.client.gui.screen.ingame.HandledScreen;import net.minecraft.client.gui.widget.*;import net.minecraft.entity.player.PlayerInventory;import net.minecraft.text.Text;
+public final class WalletScreen extends HandledScreen<WalletHandler>{
+ private TextFieldWidget amount;public WalletScreen(WalletHandler h,PlayerInventory inv,Text title){super(h,inv,title);backgroundWidth=300;backgroundHeight=185;}
+ private Text text(String key){return Text.translatable("wallet.witchersbestiary."+key);}
+ private void send(boolean deposit,long value){net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(new WalletPackets.Action(handler.syncId,handler.nonce,deposit,value));}
+ protected void init(){super.init();amount=new TextFieldWidget(textRenderer,x+20,y+65,260,20,text("amount"));amount.setMaxLength(19);amount.setText("64");addDrawableChild(amount);
+  for(int side=0;side<2;side++){final boolean deposit=side==0;for(int i=0;i<4;i++){long n=new long[]{1,10,64,-1}[i];addDrawableChild(ButtonWidget.builder(n<0?text("all"):Text.literal(""+n),b->send(deposit,n)).dimensions(x+15+side*145+i*32,y+100,30,20).build());}addDrawableChild(ButtonWidget.builder(text(deposit?"deposit":"withdraw"),b->{try{long n=Long.parseLong(amount.getText());if(n>0)send(deposit,n);}catch(NumberFormatException invalid){handler.status="rejected";}}).dimensions(x+15+side*145,y+130,125,20).build());}}
+ protected void drawBackground(DrawContext c,float delta,int mx,int my){c.fill(x,y,x+backgroundWidth,y+backgroundHeight,0xff3e2c20);c.fill(x+3,y+3,x+backgroundWidth-3,y+backgroundHeight-3,0xff201c1b);c.fill(x+10,y+48,x+290,y+50,0xffa48340);}
+ protected void drawForeground(DrawContext c,int mx,int my){c.drawText(textRenderer,title,15,13,0xffe7c67f,false);c.drawText(textRenderer,text("balance").copy().append(": "+String.format(java.util.Locale.ROOT,"%,d",handler.balance)),15,32,0xffffd15b,false);c.drawText(textRenderer,text(handler.status.isEmpty()?"amount":handler.status),15,160,0xffe7c67f,false);}
+ public void render(DrawContext c,int mx,int my,float delta){super.render(c,mx,my,delta);drawMouseoverTooltip(c,mx,my);}
+ public static void initialize(){net.minecraft.client.gui.screen.ingame.HandledScreens.register(Currency.SCREEN,WalletScreen::new);net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(WalletPackets.State.ID,(s,c)->c.client().execute(()->{if(c.player().currentScreenHandler instanceof WalletHandler h&&h.syncId==s.sync()){h.balance=s.balance();h.nonce=s.sequence();h.status=s.status();}}));}
+}

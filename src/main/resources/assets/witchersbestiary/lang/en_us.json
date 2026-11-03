@@ -533,5 +533,14 @@
   "tracking.witchersbestiary.finding.grave_hag.remains": "Gnawed bones and marrow stains. This is its feeding ground.",
   "gui.witchersbestiary.board.refresh": "New hunts",
   "gui.witchersbestiary.board.rotation": "Rotation: %s days",
-  "gui.witchersbestiary.board.legendary": "Legends"
+  "gui.witchersbestiary.board.legendary": "Legends",
+  "item.witchersbestiary.witcher_crown": "Witcher Crown",
+  "item.witchersbestiary.witcher_wallet": "Witcher Wallet",
+  "wallet.witchersbestiary.balance": "Balance",
+  "wallet.witchersbestiary.deposit": "Deposit",
+  "wallet.witchersbestiary.withdraw": "Withdraw",
+  "wallet.witchersbestiary.all": "All",
+  "wallet.witchersbestiary.amount": "Crown amount",
+  "wallet.witchersbestiary.ok": "Transaction complete",
+  "wallet.witchersbestiary.rejected": "Rejected: check amount and inventory capacity"
 }

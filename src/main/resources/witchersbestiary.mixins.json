@@ -10,7 +10,8 @@
     "RootPlayerMovementMixin",
     "MonsterAiMixin",
     "ProgressiveHealthAttributeMixin",
-    "VillageNoticeBoardMixin"
+    "VillageNoticeBoardMixin",
+    "CrownPickupMixin"
   ],
   "injectors": {
     "defaultRequire": 1

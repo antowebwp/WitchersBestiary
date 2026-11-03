@@ -1,5 +1,9 @@
 # Progress
 
+## Stage21A — crowns and wallet implemented
+
+64/64 GameTests/build PASS; two native wallet GUIs, transfers and saved-world recovery validated. New contracts pay crowns; existing snapshots retain emeralds. Local0.21.0-dev checkpoint only. [Report](STAGE21A_REPORT.md), [progress](STAGE21_PROGRESS.md). No21B or publication.
+
 ## Stage21 — development started
 
 Working branch dev/0.21.0 from published0.20.0. Currency arithmetic/component foundation only; gameplay not yet integrated. [Progress](STAGE21_PROGRESS.md), [scope](STAGE21_MASTER_PLAN.md). No release or push.

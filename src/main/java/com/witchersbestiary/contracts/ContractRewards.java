@@ -12,6 +12,7 @@ public final class ContractRewards {
         var result = new ArrayList<ItemStack>(); inventory.forEach(s -> result.add(s.copy()));
         for (var grant : reward.items()) {
             var remaining = new ItemStack(Registries.ITEM.get(grant.item()), grant.count());
+            if(remaining.isOf(com.witchersbestiary.economy.Currency.CROWN)){for(var wallet:result)if(wallet.isOf(com.witchersbestiary.economy.Currency.WALLET)&&!remaining.isEmpty()){long balance=com.witchersbestiary.economy.WalletTransactions.balance(wallet);int n=(int)Math.min(remaining.getCount(),Long.MAX_VALUE-balance);wallet.set(com.witchersbestiary.economy.WalletComponents.BALANCE,balance+n);remaining.decrement(n);}}
             for (var slot : result) if (!slot.isEmpty() && ItemStack.areItemsAndComponentsEqual(slot, remaining)) {
                 int amount = Math.min(remaining.getCount(), slot.getMaxCount() - slot.getCount());
                 if (amount > 0) { slot.increment(amount); remaining.decrement(amount); }
@@ -27,10 +28,11 @@ public final class ContractRewards {
         store.writable();
         if (store.find(contract.id()) != contract || !contract.owner().equals(player.getUuid()) || contract.status() != ContractInstance.Status.COMPLETED)
             throw new IllegalStateException("Only the owner can claim a completed, unclaimed contract");
-        var inventory = player.getInventory(); var slots = plan(inventory.main, contract.definition().reward());
+        var inventory = player.getInventory(); var input=new ArrayList<ItemStack>(inventory.main);if(inventory.offHand.get(0).isOf(com.witchersbestiary.economy.Currency.WALLET))input.add(inventory.offHand.get(0));var slots = plan(input, contract.definition().reward());
         // No asynchronous callbacks or item spawning: transition and delivery share one server-thread operation.
         contract.transition(ContractInstance.Status.REWARDED); store.markDirty();
-        for (int i = 0; i < slots.size(); i++) inventory.main.set(i, slots.get(i));
+        for (int i = 0; i < inventory.main.size(); i++) inventory.main.set(i, slots.get(i));
+        if(slots.size()>inventory.main.size())inventory.offHand.set(0,slots.get(inventory.main.size()));
         inventory.markDirty(); player.addExperience(contract.definition().reward().experience()); player.currentScreenHandler.sendContentUpdates();
     }
 }

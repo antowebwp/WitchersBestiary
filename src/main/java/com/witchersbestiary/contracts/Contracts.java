@@ -35,6 +35,7 @@ public final class Contracts {
         var instanceId=UUID.randomUUID();
         var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(offerSeed==null?instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits():offerSeed,com.witchersbestiary.contracts.procedural.ContractSpecies.species(definition.target().getPath())):null;
         if(profile!=null)definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
+        definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
         c.transition(ContractInstance.Status.ACCEPTED); store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }

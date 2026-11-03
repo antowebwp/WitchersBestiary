@@ -34,7 +34,7 @@ for role in ['Server', 'One', 'Two']:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
     if role == 'Server':
-        jvm += ['-Dwitchersbestiary.stage20eServer=true']
+        jvm += ['-Dwitchersbestiary.stage21aNetwork=true'] if os.environ.get('STAGE21A_NETWORK')=='1' else ['-Dwitchersbestiary.stage20eServer=true']
         if os.environ.get('STAGE20G_VILLAGE') == '1': jvm += ['-Dwitchersbestiary.stage20gVillage=true']
         args = ['--nogui']
         (cwd / 'eula.txt').write_text('eula=true\n')
@@ -43,6 +43,11 @@ for role in ['Server', 'One', 'Two']:
         jvm += [f'-Dwitchersbestiary.stage20eClient=WB{role}']
         args = ['--username', f'WB{role}', '--width','960','--height','640']
     if production and role != 'Server': args += data['clientArgs']
+    if role == 'Server' and os.environ.get('STAGE21A_RECOVER_WORLD'):
+        source=Path(os.environ['STAGE21A_RECOVER_WORLD']).resolve()
+        if not source.is_relative_to(BASE.resolve()) or source.name!='world' or source.parent.name!='server': raise RuntimeError('Recovery must use an isolated review world')
+        shutil.copytree(source,cwd/'world')
+        shutil.copyfile(source.parent.parent/'wallet-resume.json',CASE/'wallet-resume.json')
     if role == 'Server' and os.environ.get('STAGE20G_VILLAGE') == '1':
         config=cwd/'server.properties'
         config.write_text(config.read_text().replace('view-distance=4','view-distance=8'))
@@ -74,6 +79,9 @@ try:
     while time.monotonic()-started < 900:
         failures = list(CASE.glob('*.failure.txt')) + list(CASE.glob('*.timeout.txt'))
         if (CASE/'server-failure.json').exists(): failures.append(CASE/'server-failure.json')
+        if os.environ.get('STAGE21A_NETWORK') == '1' and (CASE/'complete.json').exists() and server.poll() is None:
+            try: server.stdin.write(b'stop\n'); server.stdin.flush()
+            except OSError: pass
         if any(p.poll() is not None for r,p,l in processes if r != 'Server') and not (CASE/'complete.json').exists(): raise RuntimeError('A native client exited before completion; inspect its log')
         if failures: raise RuntimeError('Review failure: '+', '.join(str(p) for p in failures))
         if server.poll() is not None:

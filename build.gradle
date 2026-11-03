@@ -579,7 +579,7 @@ tasks.register('verifyReleaseMixins') {
      covered.add(shortName)
     }
    }
-   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin', 'VillageNoticeBoardMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
+   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin', 'VillageNoticeBoardMixin', 'CrownPickupMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
    def client = readJson('witchersbestiary.client.mixins.json')
    def mappings = readJson(client.refmap).mappings['com/witchersbestiary/combat/mixin/RecipeCatalogReloadMixin']
    def selector = 'onSynchronizeRecipes(Lnet/minecraft/network/packet/s2c/play/SynchronizeRecipesS2CPacket;)V'
@@ -853,7 +853,7 @@ tasks.register('stage20ePrepareLaunch') {
   dependsOn tasks.named(sourceName+'Classes')
   destinationDirectory.set(layout.buildDirectory.dir('stage20g-production-harness'))
   archiveClassifier.set('network-'+side.toLowerCase()+'-dev')
-  from(sourceSets[sourceName].output) { include 'com/witchersbestiary/test/Stage20ENetwork'+side+'*.class'; if(side=='Server') include 'data/witchersbestiary/tags/worldgen/structure/stage20g*.json' }
+  from(sourceSets[sourceName].output) { include 'com/witchersbestiary/test/Stage20ENetwork'+side+'*.class'; if(side=='Server') include 'com/witchersbestiary/test/Stage21ANetworkServer*.class'; if(side=='Server') include 'data/witchersbestiary/tags/worldgen/structure/stage20g*.json' }
   from('src/'+sourceName+'/resources/stage20g-production-'+side.toLowerCase()+'.fabric.json') { rename { 'fabric.mod.json' } }
  }
  tasks.register('remapStage20g'+side+'Harness',net.fabricmc.loom.task.RemapJarTask) {

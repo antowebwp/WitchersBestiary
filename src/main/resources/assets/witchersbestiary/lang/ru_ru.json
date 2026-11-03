@@ -533,5 +533,14 @@
   "tracking.witchersbestiary.finding.grave_hag.remains": "Обглоданные кости. Здесь чудовище кормится.",
   "gui.witchersbestiary.board.refresh": "Новые охоты",
   "gui.witchersbestiary.board.rotation": "Обновление: через %s дн.",
-  "gui.witchersbestiary.board.legendary": "Легенды"
+  "gui.witchersbestiary.board.legendary": "Легенды",
+  "item.witchersbestiary.witcher_crown": "Ведьмачья крона",
+  "item.witchersbestiary.witcher_wallet": "Ведьмачий кошелёк",
+  "wallet.witchersbestiary.balance": "Баланс",
+  "wallet.witchersbestiary.deposit": "Внести",
+  "wallet.witchersbestiary.withdraw": "Снять",
+  "wallet.witchersbestiary.all": "Всё",
+  "wallet.witchersbestiary.amount": "Количество крон",
+  "wallet.witchersbestiary.ok": "Операция выполнена",
+  "wallet.witchersbestiary.rejected": "Операция отклонена: проверьте сумму и место"
 }
