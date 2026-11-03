@@ -1,5 +1,9 @@
 # Roadmap
 
+## Stage21 — development started
+
+Working branch dev/0.21.0 from published0.20.0. Currency arithmetic/component foundation only; gameplay not yet integrated. [Progress](STAGE21_PROGRESS.md), [scope](STAGE21_MASTER_PLAN.md). No release or push.
+
 ## Stage20H final fixes — RC5 validation pending
 
 Origin-independent village references, separate legendary category and bounded terminal history implemented. Full native five-hunt/rotation/RC3 migration gates remain; see [report](STAGE20_H_REPORT.md). No release/push/Stage21.
