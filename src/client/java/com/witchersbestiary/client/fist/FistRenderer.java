@@ -1,0 +1,9 @@
+package com.witchersbestiary.client.fist;
+import com.witchersbestiary.fist.FistNpc;import net.minecraft.util.Identifier;import software.bernie.geckolib.model.GeoModel;
+public final class FistRenderer extends software.bernie.geckolib.renderer.GeoEntityRenderer<FistNpc>{
+ public FistRenderer(net.minecraft.client.render.entity.EntityRendererFactory.Context c){super(c,new GeoModel<FistNpc>(){
+  public Identifier getModelResource(FistNpc n){return Identifier.of("witchersbestiary","geo/fighter_"+n.tier+".geo.json");}
+  public Identifier getTextureResource(FistNpc n){return Identifier.of("witchersbestiary","textures/entity/fighter_"+n.tier+".png");}
+  public Identifier getAnimationResource(FistNpc n){return Identifier.of("witchersbestiary","animations/fighter.animation.json");}
+ });shadowRadius=.4f;}
+}

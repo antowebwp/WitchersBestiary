@@ -32,6 +32,7 @@ public final class WitchersBestiary implements ModInitializer {
         com.witchersbestiary.workshop.ModWorkshop.initialize();
         ModItems.initialize();
         com.witchersbestiary.economy.Currency.initialize();
+        com.witchersbestiary.fist.FistFights.initialize();
         com.witchersbestiary.contracts.Contracts.initialize();
         com.witchersbestiary.contracts.tracking.Investigations.initialize();
         com.witchersbestiary.board.NoticeBoards.initialize();

@@ -4,7 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "client-witchersbestiary-refmap.json",
   "client": [
-    "RecipeCatalogReloadMixin"
+    "RecipeCatalogReloadMixin",
+    "PlayerFistPoseMixin",
+    "FistFirstPersonMixin"
   ],
   "injectors": {
     "defaultRequire": 1

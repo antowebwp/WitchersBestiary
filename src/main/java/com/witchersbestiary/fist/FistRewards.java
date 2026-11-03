@@ -1,0 +1,13 @@
+package com.witchersbestiary.fist;
+import net.minecraft.nbt.*;import net.minecraft.registry.RegistryWrapper;import net.minecraft.server.network.ServerPlayerEntity;import net.minecraft.world.PersistentState;import java.util.*;
+/** Pending sums survive logout and NPC removal; NPC stores its first-win reservation. */
+public final class FistRewards extends PersistentState{
+ private final Map<UUID,Long> pending=new HashMap<>();private NbtCompound future;
+ public static final Type<FistRewards> TYPE=new Type<>(FistRewards::new,FistRewards::read,null);
+ public static FistRewards get(net.minecraft.server.MinecraftServer s){return s.getOverworld().getPersistentStateManager().getOrCreate(TYPE,"witchersbestiary_fist_rewards");}
+ public boolean reserve(UUID owner,int amount){if(future!=null)return false;try{pending.put(owner,Math.addExact(pending.getOrDefault(owner,0L),amount));markDirty();return true;}catch(ArithmeticException e){return false;}}
+ public long pending(UUID owner){return pending.getOrDefault(owner,0L);}
+ public boolean claim(ServerPlayerEntity p){long count=pending(p.getUuid());if(future!=null||count==0)return false;int n=(int)Math.min(2304,count);var input=new ArrayList<net.minecraft.item.ItemStack>(p.getInventory().main);if(p.getOffHandStack().isOf(com.witchersbestiary.economy.Currency.WALLET))input.add(p.getOffHandStack());try{var plan=com.witchersbestiary.contracts.ContractRewards.plan(input,new com.witchersbestiary.contracts.ContractDefinition.Reward(0,List.of(new com.witchersbestiary.contracts.ContractDefinition.ItemReward(net.minecraft.util.Identifier.of("witchersbestiary:witcher_crown"),n))));if(count==n)pending.remove(p.getUuid());else pending.put(p.getUuid(),count-n);markDirty();for(int i=0;i<36;i++)p.getInventory().main.set(i,plan.get(i));if(plan.size()>36)p.getInventory().offHand.set(0,plan.get(36));p.getInventory().markDirty();return true;}catch(IllegalStateException e){return false;}}
+ public NbtCompound writeNbt(NbtCompound n,RegistryWrapper.WrapperLookup l){if(future!=null)return future.copy();n.putInt("Schema",1);var list=new NbtList();pending.forEach((id,amount)->{var e=new NbtCompound();e.putUuid("Owner",id);e.putLong("Amount",amount);list.add(e);});n.put("Pending",list);return n;}
+ public static FistRewards read(NbtCompound n,RegistryWrapper.WrapperLookup l){var s=new FistRewards();if(n.getInt("Schema")!=1){s.future=n.copy();return s;}try{var list=n.getList("Pending",10);for(int i=0;i<list.size();i++){var e=list.getCompound(i);long a=e.getLong("Amount");if(a<=0||!e.containsUuid("Owner")||s.pending.putIfAbsent(e.getUuid("Owner"),a)!=null)throw new IllegalArgumentException();}}catch(RuntimeException e){s.pending.clear();s.future=n.copy();}return s;}
+}

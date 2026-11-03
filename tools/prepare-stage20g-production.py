@@ -1,7 +1,7 @@
 """Prepare production-namespace review plans using local caches and unmodified installed CTOV deps."""
 import argparse,json,os,zipfile
 from pathlib import Path
-parser=argparse.ArgumentParser();parser.add_argument('--mods-dir',type=Path,required=True);parser.add_argument('--without-ctov',action='store_true');parser.add_argument('--with-moog',action='store_true');args=parser.parse_args()
+parser=argparse.ArgumentParser();parser.add_argument('--mods-dir',type=Path,required=True);parser.add_argument('--without-ctov',action='store_true');parser.add_argument('--with-moog',action='store_true');parser.add_argument('--with-better-combat',action='store_true');args=parser.parse_args()
 root=Path(__file__).resolve().parents[1];cache=Path.home()/'.gradle/caches';base=root/'build/stage20e-network'
 def one(pattern):
  files=[p for p in cache.rglob(pattern) if p.is_file() and not p.name.endswith(('-sources.jar','-javadoc.jar'))]
@@ -15,6 +15,12 @@ for pattern in ([] if args.without_ctov else ['*ctov*.jar','*lithostitched*.jar'
  optional+=values
 if args.with_moog:
  optional += [p for p in args.mods_dir.glob('*.jar') if 'moog' in p.name.lower()]
+if args.with_better_combat:
+ for candidate in args.mods_dir.glob('*.jar'):
+  if not any(word in candidate.name.lower() for word in ['bettercombat','player-animation','playeranimator','cloth']):continue
+  with zipfile.ZipFile(candidate) as z:
+   if 'fabric.mod.json' in z.namelist() and json.loads(z.read('fabric.mod.json')).get('id') in {'bettercombat','playeranimator','cloth-config'}:optional.append(candidate)
+ optional=list(dict.fromkeys(optional))
 common=one('minecraft-common-intermediary-1.21.1-*.jar');client=one('minecraft-clientonly-intermediary-1.21.1-*.jar');mappings=one('intermediary-1.21.1-v2.jar')
 lines=(root/'.gradle/loom-cache/launch.cfg').read_text().splitlines()
 def configured(flag):return lines[next(n for n,line in enumerate(lines) if line.strip()==flag)+1].strip()

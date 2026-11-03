@@ -1,5 +1,9 @@
 # Progress
 
+## Stage21B — NPC fist fighting implemented
+
+Virtual nonlethal fights, three original animated NPC variants, authoritative inputs/HUD and once-only crowns.69/69 tests/build PASS; two-client Better Combat campaign, restart and unpaid winning rematch verified. NPC placement is manual, no new village worldgen. [Report](STAGE21B_REPORT.md), [guide](FIST_FIGHTING_GUIDE.md). Stage21C not started; no push/release.
+
 ## Stage21A — crowns and wallet implemented
 
 64/64 GameTests/build PASS; two native wallet GUIs, transfers and saved-world recovery validated. New contracts pay crowns; existing snapshots retain emeralds. Local0.21.0-dev checkpoint only. [Report](STAGE21A_REPORT.md), [progress](STAGE21_PROGRESS.md). No21B or publication.

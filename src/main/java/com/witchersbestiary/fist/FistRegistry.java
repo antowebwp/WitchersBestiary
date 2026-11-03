@@ -1,0 +1,7 @@
+package com.witchersbestiary.fist;
+import net.minecraft.entity.*;import net.minecraft.entity.attribute.*;import net.minecraft.registry.*;import net.minecraft.util.Identifier;
+public final class FistRegistry{
+ public static final EntityType<FistNpc> NOVICE=register("novice_fighter",0),EXPERIENCED=register("experienced_fighter",1),CHAMPION=register("champion_fighter",2);
+ private static EntityType<FistNpc> register(String id,int tier){return Registry.register(Registries.ENTITY_TYPE,Identifier.of("witchersbestiary",id),EntityType.Builder.<FistNpc>create((type,w)->new FistNpc(type,w,tier),SpawnGroup.CREATURE).dimensions(.65f,1.9f).maxTrackingRange(8).build("witchersbestiary:"+id));}
+ public static void initialize(){for(var type:java.util.List.of(NOVICE,EXPERIENCED,CHAMPION)){net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry.register(type,net.minecraft.entity.mob.MobEntity.createMobAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH,40).add(EntityAttributes.GENERIC_MOVEMENT_SPEED,.28).add(EntityAttributes.GENERIC_FOLLOW_RANGE,24));var id=Registries.ENTITY_TYPE.getId(type);var egg=Registry.register(Registries.ITEM,Identifier.of("witchersbestiary",id.getPath()+"_spawn_egg"),new net.minecraft.item.SpawnEggItem(type,0x69482f,0xe0c49d,new net.minecraft.item.Item.Settings()));net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents.modifyEntriesEvent(net.minecraft.item.ItemGroups.SPAWN_EGGS).register(e->e.add(egg));}}
+}
