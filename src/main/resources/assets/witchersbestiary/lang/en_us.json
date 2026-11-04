@@ -650,5 +650,7 @@
   "merchant.witchersbestiary.wait": "Please wait before buying again.",
   "entity.witchersbestiary.arcane_merchant": "Arcane Merchant",
   "item.witchersbestiary.arcane_merchant_spawn_egg": "Arcane Merchant Spawn Egg",
-  "alchemy.witchersbestiary.component_effect": "Refines existing monster ingredients"
+  "alchemy.witchersbestiary.component_effect": "Refines existing monster ingredients",
+  "merchant.witchersbestiary.space": "Not enough inventory space",
+  "merchant.witchersbestiary.unavailable": "Merchant or offer is unavailable"
 }

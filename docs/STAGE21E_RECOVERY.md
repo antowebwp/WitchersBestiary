@@ -23,3 +23,13 @@ Required next:
 4 Final docs STAGE21E_REPORT +progress/recovery, localcheckpoints, honestcompletionstatus onlyafter gates.
 
 No files deleted. Prior automatic approval refused test-world deletion (blocked bypolicy); do not bypass/retry through other tools. User game E:/Minecraft/game untouched. Assets accepted before21E unchanged.
+
+## Validation update (23:33 local)
+- Complete combined run build/stage21e-comprehensive.log: ALL94 GameTests PASS, Gradle build PASS,12 release mixins/refmap PASS. Main/client/native compilation PASS. It logged one source encoding diagnostic in description separator; replaced the invalid CP1251 bullet byte with ASCII pipe. No balance/code behavior change.
+- Static assets validator tools/validate-arcane-merchant.py PASS37volumes,12bones, bounded256atlasUV andthreeclips.
+- Merchant replay test strengthened with actual correct server token/sequence: exact one payment/stock decrement despite repeated packet. Added production safe placement/claim test. First failure was template roof above the cleared field (heightmap returned-49 versus intended-58); clear testfield up to20 now. build/stage21e-merchant-fixed.log PASS5/5 (4Merchant+smoke), including placement/anti-duplicate andvalidreplay. No full-suite repeat.
+- MerchantTransactions now returns specific funds/stock/space/unavailable statuses; booleanwrapper retained. These changes and currentMerchantTests were compiled/verified in focusedrun.
+- Native1/2 failed BEFORE trade: clientworld getEntityById(serverMerchantId) staysnull. Entity is SAVED alive (30HP, VILLAGE, persistent) at5.66,129,.5 in world/entities/r.0.0.mca; do NOT infer despawn. Native client open retries/240tick cap added, both actorsconfirmed5/7,129,-2. Need diagnose tracking, not remove money safety.
+- Native3 currentlyrunning exec67022, build/stage21e-native3.log. It adds server merchant-server-debug.json each40ticks (alive/removal/position/worldEntity/PlayerLookup.tracking watchers), with clientmerchant-debug.txt. Check both. Serverfixture spawnEntity now asserts success.
+- Natural campaign is implemented in Stage21ENetworkServer phases300..351, guarded STAGE21E_NATURAL=1 plusSTAGE21E_NETWORK=1. NOTRUN yet. It locates an actual normal-world village using existing testtag, teleports flyingtestviewers (NOterrain/merchantplacement), awaitsproductionvillageclaim, accelerates ONLYsaved wandering timer to test production surface search, tradeswithnaturalwanderer, restarts, checksclaim andonevillagemerchant aftertwoplayerrevisit. No naturalspawnevidenceyet.
+- Current reports only recovery, nofinalstatus. Keep working through native realGUI andnatural gates. Do notcompilewhileJVMsload. No21F/push/release.

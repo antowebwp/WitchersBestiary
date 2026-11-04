@@ -34,6 +34,7 @@ for role in ['Server', 'One', 'Two']:
     for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
+    if os.environ.get('STAGE21E_NATURAL') == '1': jvm += ['-Dwitchersbestiary.stage21eNatural=true']
     if os.environ.get('STAGE21E_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
     if os.environ.get('DUEL_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
     if os.environ.get('CONTRACT_RELIABILITY_REVIEW') == '1': jvm += ['-Dwitchersbestiary.contractReliabilityReview=true']

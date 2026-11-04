@@ -650,5 +650,7 @@
   "merchant.witchersbestiary.wait": "Подождите перед следующей покупкой.",
   "entity.witchersbestiary.arcane_merchant": "Таинственный торговец",
   "item.witchersbestiary.arcane_merchant_spawn_egg": "Яйцо призыва таинственного торговца",
-  "alchemy.witchersbestiary.component_effect": "Переработка компонентов чудовищ"
+  "alchemy.witchersbestiary.component_effect": "Переработка компонентов чудовищ",
+  "merchant.witchersbestiary.space": "Недостаточно места в инвентаре",
+  "merchant.witchersbestiary.unavailable": "Торговец или предложение недоступны"
 }
