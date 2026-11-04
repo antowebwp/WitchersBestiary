@@ -658,5 +658,12 @@
   "alchemy.witchersbestiary.oil_summary": "+%s%% | %s hits | %s",
   "alchemy.witchersbestiary.elixir_summary": "+%s%% | %ss | %s",
   "alchemy.witchersbestiary.clear_summary": "Fiend hypnosis -75% | 180s",
-  "alchemy.witchersbestiary.ingredient_counts": "Counts: available / required."
+  "alchemy.witchersbestiary.ingredient_counts": "Counts: available / required.",
+  "enchantment.witchersbestiary.monsters_bane": "Monster's Bane",
+  "enchantment.witchersbestiary.frost_blade": "Frost Blade",
+  "enchantment.witchersbestiary.blood_harvest": "Blood Harvest",
+  "enchantment.witchersbestiary.runic_resonance": "Runic Resonance",
+  "death.attack.runic_pulse": "%1$s was struck by a runic pulse",
+  "death.attack.runic_pulse.player": "%1$s was struck by %2$s's runic pulse",
+  "tooltip.witchersbestiary.runic_charge": "Runic charge: %s"
 }

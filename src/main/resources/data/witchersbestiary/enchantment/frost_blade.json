@@ -1,0 +1,23 @@
+{
+  "description": {
+    "translate": "enchantment.witchersbestiary.frost_blade"
+  },
+  "supported_items": "#witchersbestiary:enchantable/hunting_swords",
+  "primary_items": "#witchersbestiary:enchantable/hunting_swords",
+  "weight": 3,
+  "max_level": 3,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 8
+  },
+  "max_cost": {
+    "base": 30,
+    "per_level_above_first": 8
+  },
+  "anvil_cost": 3,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {},
+  "exclusive_set": "#witchersbestiary:exclusive_set/thermal"
+}

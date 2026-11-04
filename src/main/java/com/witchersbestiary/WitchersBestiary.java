@@ -27,6 +27,7 @@ public final class WitchersBestiary implements ModInitializer {
         ModEffects.initialize();
         ModLoot.initialize();
         ModDataComponents.initialize();
+        com.witchersbestiary.enchantment.SwordEnchantments.initialize();
         com.witchersbestiary.decor.ModRemains.initialize();
         com.witchersbestiary.artifact.ModArtifacts.initialize();
         com.witchersbestiary.workshop.ModWorkshop.initialize();

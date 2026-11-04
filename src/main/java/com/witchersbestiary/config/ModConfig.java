@@ -26,6 +26,8 @@ public final class ModConfig {
     private static double read(Properties p,String key){try{double v=Double.parseDouble(p.getProperty(key,"1.0"));return Double.isFinite(v)?Math.clamp(v,.25,3):1;}catch(NumberFormatException e){return 1;}}
     private static volatile ProgressiveSettings progressive=ProgressiveSettings.read(new Properties());
     public static ProgressiveSettings progressive(){return progressive;}
+    private static com.witchersbestiary.enchantment.EnchantmentSettings enchantments=new com.witchersbestiary.enchantment.EnchantmentSettings(new Properties());
+    public static com.witchersbestiary.enchantment.EnchantmentSettings enchantments(){return enchantments;}
     public static Path path(){return FabricLoader.getInstance().getConfigDir().resolve("witchersbestiary.properties");}
     public static void saveProgressive(ProgressiveOptions options)throws java.io.IOException{
         var updated=ProgressiveConfigFile.save(path(),options);progressive=updated;
@@ -44,16 +46,16 @@ public final class ModConfig {
             }
             Properties properties=new Properties();try(var in=Files.newInputStream(path)){properties.load(in);}
             // Append only missing progressive keys; preserve all user settings/comments.
-            var defaults=new Properties();defaults.load(new java.io.StringReader(ProgressiveSettings.DEFAULTS));
+            var defaults=new Properties();defaults.load(new java.io.StringReader(ProgressiveSettings.DEFAULTS));defaults.load(new java.io.StringReader(com.witchersbestiary.enchantment.EnchantmentSettings.DEFAULTS));
             defaults.setProperty("water_hagNaturalSpawnEnabled","true");defaults.setProperty("water_hagSpawnWeight","4");defaults.setProperty("water_hagMinGroupSize","1");defaults.setProperty("water_hagMaxGroupSize","2");
-            var additions=new StringBuilder("\n# Progressive difficulty (live server settings)\n");
+            var additions=new StringBuilder("\n# Missing server settings (enchantments require restart)\n");
             boolean missing=false;
             for(String key:new java.util.TreeSet<>(defaults.stringPropertyNames()))if(!properties.containsKey(key)){
                 String value=defaults.getProperty(key);properties.setProperty(key,value);additions.append(key).append('=').append(value).append('\n');missing=true;
             }
             if(missing)try{Files.writeString(path,additions.toString(),StandardOpenOption.APPEND);}
             catch(java.io.IOException e){WitchersBestiary.LOGGER.warn("Could not append progressive defaults; loaded settings remain active",e);}
-            progressive=ProgressiveSettings.read(properties);
+            progressive=ProgressiveSettings.read(properties);enchantments=new com.witchersbestiary.enchantment.EnchantmentSettings(properties);
             natural=Boolean.parseBoolean(properties.getProperty("enableNaturalSpawning","true"));
             bossNatural=Boolean.parseBoolean(properties.getProperty("enableBossNaturalSpawning","true"));
             spawnSettings=new NaturalSpawnSettings(properties);

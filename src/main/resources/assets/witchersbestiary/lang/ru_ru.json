@@ -658,5 +658,12 @@
   "alchemy.witchersbestiary.oil_summary": "+%s%% | %s ударов | %s",
   "alchemy.witchersbestiary.elixir_summary": "+%s%% | %sс | %s",
   "alchemy.witchersbestiary.clear_summary": "Гипноз беса -75% | 180с",
-  "alchemy.witchersbestiary.ingredient_counts": "Числа: есть / нужно."
+  "alchemy.witchersbestiary.ingredient_counts": "Числа: есть / нужно.",
+  "enchantment.witchersbestiary.monsters_bane": "Гроза чудовищ",
+  "enchantment.witchersbestiary.frost_blade": "Морозный клинок",
+  "enchantment.witchersbestiary.blood_harvest": "Кровавая жатва",
+  "enchantment.witchersbestiary.runic_resonance": "Рунический резонанс",
+  "death.attack.runic_pulse": "%1$s поражён руническим импульсом",
+  "death.attack.runic_pulse.player": "%1$s поражён руническим импульсом игрока %2$s",
+  "tooltip.witchersbestiary.runic_charge": "Рунический заряд: %s"
 }

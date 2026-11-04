@@ -16,13 +16,15 @@ import java.util.List;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackOilTooltipMixin {
-    @Inject(method="getTooltip",at=@At("RETURN"))
+    @Inject(method="getTooltip",at=@At("RETURN"),cancellable=true)
     private void witchersbestiary$appendOil(Item.TooltipContext context,PlayerEntity player,TooltipType type,CallbackInfoReturnable<List<Text>> cir){
         ItemStack stack=(ItemStack)(Object)this;
         var category=stack.get(ModDataComponents.OIL_CATEGORY);int hits=stack.getOrDefault(ModDataComponents.OIL_HITS,0);
-        if(category==null||hits<=0)return;
+        boolean runic=player!=null&&com.witchersbestiary.enchantment.SwordEnchantments.level(stack,com.witchersbestiary.enchantment.SwordEnchantments.RUNIC,player)>0;
+        if((category==null||hits<=0)&&!runic)return;
         List<Text> tooltip=new ArrayList<>(cir.getReturnValue());
-        tooltip.add(Text.translatable("tooltip.witchersbestiary.legacy_oil",hits).formatted(Formatting.AQUA));
+        if(category!=null&&hits>0)tooltip.add(Text.translatable("tooltip.witchersbestiary.legacy_oil",hits).formatted(Formatting.AQUA));
+        if(runic)tooltip.add(Text.translatable("tooltip.witchersbestiary.runic_charge",stack.getOrDefault(com.witchersbestiary.enchantment.SwordEnchantments.RUNIC_STATE,com.witchersbestiary.enchantment.RunicState.EMPTY).charges()).formatted(Formatting.LIGHT_PURPLE));
         cir.setReturnValue(tooltip);
     }
 }

@@ -11,7 +11,8 @@
     "MonsterAiMixin",
     "ProgressiveHealthAttributeMixin",
     "VillageNoticeBoardMixin",
-    "CrownPickupMixin"
+    "CrownPickupMixin",
+    "SwordAttackMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,0 +1,22 @@
+{
+  "description": {
+    "translate": "enchantment.witchersbestiary.blood_harvest"
+  },
+  "supported_items": "#witchersbestiary:enchantable/hunting_swords",
+  "primary_items": "#witchersbestiary:enchantable/hunting_swords",
+  "weight": 1,
+  "max_level": 3,
+  "min_cost": {
+    "base": 18,
+    "per_level_above_first": 7
+  },
+  "max_cost": {
+    "base": 38,
+    "per_level_above_first": 7
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}

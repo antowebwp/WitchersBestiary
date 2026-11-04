@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:swords",
+    "#witchersbestiary:enchantable/simply_swords"
+  ]
+}

@@ -10,7 +10,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.OilPreferences, com.witchersbestiary.artifact.ArtifactCooldowns, com.witchersbestiary.accessory.VampireBloodReserve {
+public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.OilPreferences, com.witchersbestiary.artifact.ArtifactCooldowns, com.witchersbestiary.accessory.VampireBloodReserve, com.witchersbestiary.enchantment.SwordEnchantmentState {
+    @org.spongepowered.asm.mixin.Unique private long wb$frostReady,wb$harvestReady,wb$pulseReady;
+    public long bestiary$frostReady(){return wb$frostReady;}public void bestiary$frostReady(long t){wb$frostReady=t;}
+    public long bestiary$harvestReady(){return wb$harvestReady;}public void bestiary$harvestReady(long t){wb$harvestReady=t;}
+    public long bestiary$pulseReady(){return wb$pulseReady;}public void bestiary$pulseReady(long t){wb$pulseReady=t;}
     @org.spongepowered.asm.mixin.Unique private boolean witchersbestiary$autoOils=true;
     public boolean bestiary$autoOils(){return witchersbestiary$autoOils;}
     public void bestiary$autoOils(boolean enabled){witchersbestiary$autoOils=enabled;}
@@ -25,9 +29,9 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
     public float bestiary$bloodDrawn(){return witchersbestiary$bloodDrawn;}
     public void bestiary$bloodDrawn(float amount){witchersbestiary$bloodDrawn=Float.isFinite(amount)?Math.clamp(amount,0,4):4;}
     @Inject(method="writeCustomDataToNbt",at=@At("TAIL"))
-    private void saveBlood(net.minecraft.nbt.NbtCompound n,org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci){n.putBoolean("WitcherAutoOils",witchersbestiary$autoOils);n.putLong("WitcherRootRingReady",witchersbestiary$rootReady);n.putLong("WitcherWolfRingReady",witchersbestiary$wolfReady);if(witchersbestiary$bloodDrawn>0)n.putFloat("WitcherBloodDrawn",witchersbestiary$bloodDrawn);}
+    private void saveBlood(net.minecraft.nbt.NbtCompound n,org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci){n.putLong("WitcherFrostReady",wb$frostReady);n.putLong("WitcherHarvestReady",wb$harvestReady);n.putLong("WitcherPulseReady",wb$pulseReady);n.putBoolean("WitcherAutoOils",witchersbestiary$autoOils);n.putLong("WitcherRootRingReady",witchersbestiary$rootReady);n.putLong("WitcherWolfRingReady",witchersbestiary$wolfReady);if(witchersbestiary$bloodDrawn>0)n.putFloat("WitcherBloodDrawn",witchersbestiary$bloodDrawn);}
     @Inject(method="readCustomDataFromNbt",at=@At("TAIL"))
-    private void loadBlood(net.minecraft.nbt.NbtCompound n,org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci){bestiary$bloodDrawn(n.getFloat("WitcherBloodDrawn"));witchersbestiary$autoOils=!n.contains("WitcherAutoOils")||n.getBoolean("WitcherAutoOils");witchersbestiary$rootReady=n.getLong("WitcherRootRingReady");witchersbestiary$wolfReady=n.getLong("WitcherWolfRingReady");}
+    private void loadBlood(net.minecraft.nbt.NbtCompound n,org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci){wb$frostReady=n.getLong("WitcherFrostReady");wb$harvestReady=n.getLong("WitcherHarvestReady");wb$pulseReady=n.getLong("WitcherPulseReady");bestiary$bloodDrawn(n.getFloat("WitcherBloodDrawn"));witchersbestiary$autoOils=!n.contains("WitcherAutoOils")||n.getBoolean("WitcherAutoOils");witchersbestiary$rootReady=n.getLong("WitcherRootRingReady");witchersbestiary$wolfReady=n.getLong("WitcherWolfRingReady");}
     @Inject(method="tick",at=@At("TAIL"))
     private void rootTick(org.spongepowered.asm.mixin.injection.callback.CallbackInfo ci){com.witchersbestiary.combat.ProgressiveDifficulty.tick((LivingEntity)(Object)this);com.witchersbestiary.combat.RootBinding.tick((LivingEntity)(Object)this);com.witchersbestiary.combat.Stun.sync((LivingEntity)(Object)this);if(com.witchersbestiary.combat.Stun.active((LivingEntity)(Object)this))com.witchersbestiary.combat.Stun.stop((LivingEntity)(Object)this);}
     @Inject(method="travel",at=@At("HEAD"),cancellable=true)
@@ -49,10 +53,13 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
         amount=com.witchersbestiary.accessory.HunterAccessories.protect(victim,source,com.witchersbestiary.artifact.Artifacts.protection(victim,source,amount));
         amount=com.witchersbestiary.equipment.armory.ArmoryCombat.apply(victim,source,amount);
         var oil=Float.isFinite(amount)&&amount>0?com.witchersbestiary.alchemy.InventoryOils.prepare(victim,source):null;
-        float before=victim.getHealth();
+        float before=victim.getHealth(),absorption=victim.getAbsorptionAmount();
+        var enchantmentHit=com.witchersbestiary.enchantment.SwordEnchantments.capture(victim,source);
+        amount=com.witchersbestiary.enchantment.SwordEnchantments.damage(enchantmentHit,amount);
         boolean result=original.call(source,AlchemyDamage.withOil(victim,source,amount,oil));
         float actual=Math.max(0,before-victim.getHealth());
         if(result&&actual>0){com.witchersbestiary.alchemy.InventoryOils.commit(oil);com.witchersbestiary.accessory.HunterAccessories.afterDamage(victim,source,actual);}
+        if(result)com.witchersbestiary.enchantment.SwordEnchantments.after(victim,enchantmentHit,actual+Math.max(0,absorption-victim.getAbsorptionAmount()));
         return result;
     }
 }

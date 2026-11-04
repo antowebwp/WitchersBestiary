@@ -1,0 +1,13 @@
+# Stage 21F recovery — implementation in progress
+
+Branch dev/0.21.0; base checkpoint 9a0988b. Preserve all prior Stage21 work. Do not push/publish or start21G.
+Four vanilla data-driven sword enchantments and authoritative post-damage mechanics are implemented under enchantment/, SwordAttackMixin and the existing LivingEntity damage wrapper. Component-bound Runic charges and entity cooldown NBT persist. Bounded settings extend existing properties. Generated JSON/tag/locale assets are present; no alchemy recipes/progression formulas changed.
+
+First full GameTest run: 108 tests, 103 pass; five new fixture failures. Focused rerun: 11/13 pass after using actual Survival ServerPlayerEntity instead of Minecraft test helper (which overrides isCreative permanently), larger isolated arenas, no-push mobs, and temporarily allowing vanilla sweep only inside the specific Better Combat test. Shield mock lacks playerTick; pending focused2 adds explicit playerTick. Dense crowd test now reports actual hit details. Logs build/stage21f-comprehensive.log, focused.log, focused2.log. Do not repeat full suite without new cause.
+
+Next: resolve remaining focused tests; implement/run Stage21F native server controller + actual table/anvil/BC/SimplySwords clients and restart; validate compatibility with and without optional mods; update report/progress/roadmap and create local checkpoints. Stage21F is NOT complete. No gameplay/native result has yet been claimed.
+
+Java21 C:/Program Files/Java/jdk-21. Focus: ./gradlew.bat runGametest build -Pstage19fProfile=A -Pstage21dCompat -PgameTestClass=SwordEnchantmentTests --console=plain . Local API evidence in build/stage21f-*.txt. Never delete diagnostic worlds or modify E:/Minecraft/game. Prior cleanup auto-review refusal remains binding; no deletion attempted.
+
+## Core checkpoint evidence
+Focused5 with Better Combat: 14/14 required GameTests pass (13 sword tests + Fabric harness check). Dense crowd fixture needed persistence + pumpkin helmets (vanilla daylight damage), real Survival players and explicit playerTick for shield. Core main code needed only SwordItem eligibility fallback for dynamic SS attributes. A further PvP-off/pulse-player test was added after focused5 compilation and must be run (prefer final focused without optional mods). Native Stage21F controller/client actions/production preparation are now implemented but not executed yet. Native controller also has an actual dual-wield case with Rune/Blood on the offhand only. Do not claim native results before reading complete.json and screenshots. Focused5 also invokes build/launch plans/remapped test harnesses.
