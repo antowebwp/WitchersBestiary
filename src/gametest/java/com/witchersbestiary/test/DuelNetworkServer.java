@@ -6,7 +6,7 @@ import net.minecraft.server.*;import net.minecraft.server.network.ServerPlayerEn
 public final class DuelNetworkServer implements ModInitializer {
  private Path dir;private final String[] names={"WBOne","WBTwo"};private final long[] sent=new long[2];private long nonce=System.currentTimeMillis();private int phase,round=1,ticks;private final BlockPos stone=new BlockPos(0,129,0);private DuelSessions.Session duel;private UUID old;private final String[] inventories=new String[2];private final int[] xp=new int[2];private final Map<String,Object> results=new LinkedHashMap<>();
  private void check(boolean value,String message){if(!value)throw new IllegalStateException(message);}
- private void write(String name,Object value)throws Exception{Files.writeString(dir.resolve(name),new GsonBuilder().setPrettyPrinting().create().toJson(value));}
+ private void write(String name,Object value)throws Exception{var target=dir.resolve(name);var temp=target.resolveSibling(name+".tmp");Files.writeString(temp,new GsonBuilder().setPrettyPrinting().create().toJson(value));Files.move(temp,target,StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE);}
  private JsonObject read(String name)throws Exception{return JsonParser.parseString(Files.readString(dir.resolve(name))).getAsJsonObject();}
  private void command(int i,String action,Object...args)throws Exception{var j=new JsonObject();j.addProperty("nonce",++nonce);sent[i]=nonce;j.addProperty("action",action);for(int a=0;a<args.length;a+=2)j.addProperty(args[a].toString(),args[a+1].toString());write(names[i]+".command.json",j);}
  private void use(int i)throws Exception{command(i,"duelUse","x",stone.getX(),"y",stone.getY(),"z",stone.getZ());}
