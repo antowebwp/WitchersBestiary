@@ -637,7 +637,7 @@
   "alchemy.witchersbestiary.inventory": "Inventory",
   "alchemy.witchersbestiary.stored": "Stored inputs",
   "alchemy.witchersbestiary.missing": "Missing: %s",
-  "alchemy.witchersbestiary.ingredient_help": "Any matching ingredient is accepted. Counts: available / required.",
+  "alchemy.witchersbestiary.ingredient_help": "Any recipe alternative is accepted.",
   "alchemy.witchersbestiary.unavailable": "Cannot brew: missing ingredients or output/remainder space. Check the recipe.",
   "alchemy.witchersbestiary.components": "Components",
   "merchant.witchersbestiary.buy": "Buy",
@@ -652,5 +652,11 @@
   "item.witchersbestiary.arcane_merchant_spawn_egg": "Arcane Merchant Spawn Egg",
   "alchemy.witchersbestiary.component_effect": "Refines existing monster ingredients",
   "merchant.witchersbestiary.space": "Not enough inventory space",
-  "merchant.witchersbestiary.unavailable": "Merchant or offer is unavailable"
+  "merchant.witchersbestiary.unavailable": "Merchant or offer is unavailable",
+  "merchant.witchersbestiary.mode.village": "Village trader",
+  "merchant.witchersbestiary.mode.wandering": "Wandering trader",
+  "alchemy.witchersbestiary.oil_summary": "+%s%% | %s hits | %s",
+  "alchemy.witchersbestiary.elixir_summary": "+%s%% | %ss | %s",
+  "alchemy.witchersbestiary.clear_summary": "Fiend hypnosis -75% | 180s",
+  "alchemy.witchersbestiary.ingredient_counts": "Counts: available / required."
 }

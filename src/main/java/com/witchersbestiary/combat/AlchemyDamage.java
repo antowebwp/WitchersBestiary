@@ -8,17 +8,18 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 
 public final class AlchemyDamage {
+    public static final float HUNTER_MULTIPLIER=1.25f;
     private AlchemyDamage() { }
     private static float elixirs(LivingEntity victim, DamageSource source, float amount) {
         if(source.isOf(com.witchersbestiary.equipment.OgroidHammerItem.SLAM))return amount;
         if (victim.getWorld().isClient||!(victim instanceof CategorizedMonster monster)||!(source.getAttacker() instanceof PlayerEntity player))return amount;
         MonsterCategory target=monster.getMonsterCategory();
         float multiplier=1f;
-        if(target==MonsterCategory.RELICT&&player.hasStatusEffect(ModEffects.RELICT_HUNTER))multiplier*=1.25f;
-        if(target==MonsterCategory.NECROPHAGE&&player.hasStatusEffect(ModEffects.NECROPHAGE_HUNTER))multiplier*=1.25f;
-        if(target==MonsterCategory.SPECTER&&player.hasStatusEffect(ModEffects.SPECTER_HUNTER))multiplier*=1.25f;
-        if(target==MonsterCategory.CURSED&&player.hasStatusEffect(ModEffects.CURSED_HUNTER))multiplier*=1.25f;
-        if(target==MonsterCategory.VAMPIRE&&player.hasStatusEffect(ModEffects.VAMPIRE_HUNTER))multiplier*=1.25f;
+        if(target==MonsterCategory.RELICT&&player.hasStatusEffect(ModEffects.RELICT_HUNTER))multiplier*=HUNTER_MULTIPLIER;
+        if(target==MonsterCategory.NECROPHAGE&&player.hasStatusEffect(ModEffects.NECROPHAGE_HUNTER))multiplier*=HUNTER_MULTIPLIER;
+        if(target==MonsterCategory.SPECTER&&player.hasStatusEffect(ModEffects.SPECTER_HUNTER))multiplier*=HUNTER_MULTIPLIER;
+        if(target==MonsterCategory.CURSED&&player.hasStatusEffect(ModEffects.CURSED_HUNTER))multiplier*=HUNTER_MULTIPLIER;
+        if(target==MonsterCategory.VAMPIRE&&player.hasStatusEffect(ModEffects.VAMPIRE_HUNTER))multiplier*=HUNTER_MULTIPLIER;
         return amount*multiplier;
     }
     /** Preview also used by tests/tooling; it never consumes a charge. */

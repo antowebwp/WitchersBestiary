@@ -637,7 +637,7 @@
   "alchemy.witchersbestiary.inventory": "Инвентарь",
   "alchemy.witchersbestiary.stored": "Компоненты",
   "alchemy.witchersbestiary.missing": "Не хватает: %s",
-  "alchemy.witchersbestiary.ingredient_help": "Подходит любой компонент рецепта. Числа: есть / нужно.",
+  "alchemy.witchersbestiary.ingredient_help": "Подходит любой вариант рецепта.",
   "alchemy.witchersbestiary.unavailable": "Приготовление невозможно: не хватает компонентов или места для результата/остатков.",
   "alchemy.witchersbestiary.components": "Компоненты",
   "merchant.witchersbestiary.buy": "Купить",
@@ -652,5 +652,11 @@
   "item.witchersbestiary.arcane_merchant_spawn_egg": "Яйцо призыва таинственного торговца",
   "alchemy.witchersbestiary.component_effect": "Переработка компонентов чудовищ",
   "merchant.witchersbestiary.space": "Недостаточно места в инвентаре",
-  "merchant.witchersbestiary.unavailable": "Торговец или предложение недоступны"
+  "merchant.witchersbestiary.unavailable": "Торговец или предложение недоступны",
+  "merchant.witchersbestiary.mode.village": "Деревенский",
+  "merchant.witchersbestiary.mode.wandering": "Странствующий",
+  "alchemy.witchersbestiary.oil_summary": "+%s%% | %s ударов | %s",
+  "alchemy.witchersbestiary.elixir_summary": "+%s%% | %sс | %s",
+  "alchemy.witchersbestiary.clear_summary": "Гипноз беса -75% | 180с",
+  "alchemy.witchersbestiary.ingredient_counts": "Числа: есть / нужно."
 }

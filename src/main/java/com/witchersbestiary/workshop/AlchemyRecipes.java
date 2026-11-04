@@ -13,13 +13,13 @@ public final class AlchemyRecipes {
  public static boolean consumable(ItemStack stack){return stack.getItem() instanceof HunterElixirItem||stack.getItem() instanceof RelictElixirItem||stack.getItem() instanceof WeaponOilItem;}
  public static List<RecipeEntry<CraftingRecipe>> catalog(World world){return world.getRecipeManager().listAllOfType(RecipeType.CRAFTING).stream().filter(e->(consumable(e.value().getResult(world.getRegistryManager()))||e.id().getNamespace().equals("witchersbestiary")&&e.id().getPath().startsWith("workshop/"))&&!e.value().getIngredients().isEmpty()).sorted(Comparator.comparing(e->e.id().toString())).toList();}
  public static net.minecraft.text.Text description(ItemStack stack){
-  if(stack.getItem() instanceof WeaponOilItem oil)return net.minecraft.text.Text.translatable("tooltip.witchersbestiary.auto_oil_category",net.minecraft.text.Text.translatable("category.witchersbestiary."+oil.category().name().toLowerCase(java.util.Locale.ROOT))).append(" | ").append(net.minecraft.text.Text.translatable("tooltip.witchersbestiary.auto_oil_bonus"));
-  if(stack.getItem() instanceof HunterElixirItem h&&h.effect().equals(com.witchersbestiary.registry.ModEffects.CLEAR_MIND))return net.minecraft.text.Text.translatable("tooltip.witchersbestiary.clear_mind.1");
-  if(consumable(stack)){var category=stack.getItem() instanceof HunterElixirItem h?AlchemyTooltips.category(h.effect()):com.witchersbestiary.combat.MonsterCategory.RELICT;var lines=new java.util.ArrayList<net.minecraft.text.Text>();AlchemyTooltips.append(lines,category,false);return lines.getFirst();}
+  if(stack.getItem() instanceof WeaponOilItem oil)return net.minecraft.text.Text.translatable("alchemy.witchersbestiary.oil_summary",Math.round(InventoryOils.BONUS*100),InventoryOils.CAPACITY,net.minecraft.text.Text.translatable("category.witchersbestiary."+oil.category().name().toLowerCase(java.util.Locale.ROOT)));
+  if(stack.getItem() instanceof HunterElixirItem h&&h.effect().equals(com.witchersbestiary.registry.ModEffects.CLEAR_MIND))return net.minecraft.text.Text.translatable("alchemy.witchersbestiary.clear_summary");
+  if(consumable(stack)){var category=stack.getItem() instanceof HunterElixirItem h?AlchemyTooltips.category(h.effect()):com.witchersbestiary.combat.MonsterCategory.RELICT;return net.minecraft.text.Text.translatable("alchemy.witchersbestiary.elixir_summary",Math.round((com.witchersbestiary.combat.AlchemyDamage.HUNTER_MULTIPLIER-1)*100),RelictElixirItem.DURATION/20,net.minecraft.text.Text.translatable("category.witchersbestiary."+category.name().toLowerCase(java.util.Locale.ROOT)));}
   return net.minecraft.text.Text.translatable("alchemy.witchersbestiary.component_effect");
  }
  public record Plan(List<ItemStack> table,List<ItemStack> player,ItemStack output){}
- public static Plan plan(World world,WorkshopInventory table,PlayerEntity player,RecipeEntry<CraftingRecipe> entry){
+ public static Plan plan(World world,net.minecraft.inventory.Inventory table,PlayerEntity player,RecipeEntry<CraftingRecipe> entry){
   if(!catalog(world).contains(entry))return null;
   var sources=new ArrayList<ItemStack>();for(int i=0;i<3;i++)sources.add(table.getStack(i).copy());for(var s:player.getInventory().main)sources.add(s.copy());
   var ingredients=entry.value().getIngredients();int[] chosen=new int[ingredients.size()];Arrays.fill(chosen,-1);

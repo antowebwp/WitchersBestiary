@@ -21,7 +21,7 @@ for role in ['Server', 'One', 'Two']:
     env = 'server' if role == 'Server' else 'client'
     cwd = CASE / role.lower()
     cwd.mkdir()
-    if role != 'Server': (cwd/'options.txt').write_text('tutorialStep:none\nlang:en_us\nsoundCategory_master:0.0\n')
+    if role != 'Server': (cwd/'options.txt').write_text('tutorialStep:none\nlang:'+('ru_ru' if os.environ.get('STAGE21E_NETWORK')=='1' and role=='Two' else 'en_us')+'\nsoundCategory_master:0.0\n')
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
            f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' else '-Xmx1G']
@@ -34,6 +34,7 @@ for role in ['Server', 'One', 'Two']:
     for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
+    if os.environ.get('STAGE21E_CTOV') == '1': jvm += ['-Dwitchersbestiary.stage21eCtov=true']
     if os.environ.get('STAGE21E_NATURAL') == '1': jvm += ['-Dwitchersbestiary.stage21eNatural=true']
     if os.environ.get('STAGE21E_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
     if os.environ.get('DUEL_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
@@ -62,6 +63,16 @@ for role in ['Server', 'One', 'Two']:
         shutil.copytree(source,cwd/'world')
         marker='fist-resume.json' if os.environ.get('STAGE21B_RECOVER_WORLD') else 'wallet-resume.json'
         if os.environ.get("CONTRACT_RELIABILITY_REVIEW") != "1": shutil.copyfile(source.parent.parent/marker,CASE/marker)
+    if role == 'Server' and os.environ.get('STAGE21E_RECOVER_NATURAL_WORLD'):
+        source=Path(os.environ['STAGE21E_RECOVER_NATURAL_WORLD']).resolve()
+        if not source.is_relative_to(BASE.resolve()) or source.name!='world' or source.parent.name!='server': raise RuntimeError('Natural review recovery must use an isolated world')
+        shutil.copytree(source,cwd/'world')
+    if role == 'Server' and os.environ.get('STAGE21E_RECOVER_WORLD'):
+        source=Path(os.environ['STAGE21E_RECOVER_WORLD']).resolve()
+        if not source.is_relative_to(BASE.resolve()) or source.name!='world' or source.parent.name!='server': raise RuntimeError('Stage21E recovery must use an isolated review world')
+        shutil.copytree(source,cwd/'world')
+        for marker in ['alchemy-resume.json','alchemy-results.json']:
+            shutil.copyfile(source.parent.parent/marker,CASE/marker)
     if role == 'Server' and os.environ.get('DUEL_NETWORK') == '1':
         config=cwd/'server.properties';config.write_text(config.read_text()+'pvp='+os.environ.get('DUEL_PVP','true')+'\n')
     if role == 'Server' and os.environ.get('STAGE20G_VILLAGE') == '1':
