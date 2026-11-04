@@ -16,11 +16,11 @@ for tier in range(3):
  folder=root/'textures/entity';folder.mkdir(parents=True,exist_ok=True);im.save(folder/f'fighter_{tier}.png')
  bones=[]
  def bone(name,parent,pivot,cubes):bones.append({'name':name,**({'parent':parent} if parent else {}),'pivot':pivot,'cubes':[{'origin':o,'size':s,'uv':uv} for o,s,uv in cubes]})
- bone('root',None,[0,0,0],[]);bone('hips','root',[0,12,0],[([-4,10,-2],[8,3,4],[64,32])]);bone('body','hips',[0,12,0],[([-4,12,-2],[8,10,4],[64,0])]);bone('head','body',[0,22,0],[([-4,22,-4],[8,8,8],[0,0]),([-4.5,28,-4.5],[9,3,9],[0,32]),([-5,24,-1],[1,3,2],[0,0]),([4,24,-1],[1,3,2],[0,0])])
+ bone('root',None,[0,0,0],[]);bone('hips','root',[0,12,0],[([-4,10,-2],[8,3,4],[64,32])]);bone('body','hips',[0,12,0],[([-4,13,-2],[8,9,4],[64,0])]);bone('head','body',[0,22,0],[([-4,22,-4],[8,8,8],[0,0]),([-4.5,28,-4.5],[9,3,9],[0,32]),([-5,24,-1],[1,3,2],[0,0]),([4,24,-1],[1,3,2],[0,0])])
  for side,sign in [('left',1),('right',-1)]:
   x=0 if sign==1 else -4;armx=4 if sign==1 else -8
   bone(side+'_leg','hips',[sign*2,12,0],[([x,0,-2],[4,11,4],[0,64]),([x-.2,0,-3],[4.4,3,6],[0,96])])
-  bone(side+'_arm','body',[sign*5,21,0],[([armx,15,-2],[4,7,4],[0,0])]);bone(side+'_forearm',side+'_arm',[sign*6,16,0],[([armx,11,-2],[4,5,4],[64,32]),([armx-.2,10,-2.2],[4.4,2,4.4],[64,32])])
+  bone(side+'_arm','body',[sign*5,21,0],[([armx,16,-2],[4,6,4],[0,0])]);bone(side+'_forearm',side+'_arm',[sign*6,16,0],[([armx,11,-2],[4,5,4],[64,32]),([armx-.2,10,-2.2],[4.4,2,4.4],[64,32])])
  if tier==0:bone('rag_tunic','body',[0,18,0],[([-4.3,12,-2.3],[8.6,7,4.6],[0,32]),([-4.4,11,-2.4],[8.8,1,4.8],[64,96])])
  if tier==1:
   bone('vest','body',[0,20,0],[([-4.6,13,-2.6],[2,9,5.2],[0,96]),([2.6,13,-2.6],[2,9,5.2],[0,96])]);bone('beard','head',[0,24,0],[([-3,22,-4.4],[6,3,1],[0,32])]);bone('bandana','head',[0,28,0],[([-4.6,27,-4.6],[9.2,1.2,9.2],[64,96]),([3,24,4],[1,5,2],[64,96])])

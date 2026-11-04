@@ -13,6 +13,7 @@ public final class FistFightSession {
  public Stage stage=Stage.COUNTDOWN;public int ticks;public boolean playerWon;
  public boolean act(boolean owner,Action action){
   if(stage!=Stage.FIGHTING)return false;var f=owner?player:opponent;
+  if(action==Action.BLOCK&&f.action==Action.BLOCK)return false;
   if(f.cooldown>0||f.action==Action.STAGGER||f.action==Action.QUICK||f.action==Action.HEAVY||f.action==Action.COUNTER)return false;
   double cost=switch(action){case QUICK->8;case HEAVY->24;case DODGE->20;case COUNTER->12;case BLOCK->2;default->0;};
   if(action==Action.COUNTER&&f.counterTicks<=0||f.stamina<cost)return false;
