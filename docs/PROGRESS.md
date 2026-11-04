@@ -1,5 +1,12 @@
 # Progress
 
+## Stage21B fixes + Stage21C — implemented and locally verified (2026-11-04)
+
+Movable persistent right-side HUD, repaired seams on all three original fighters, responsive AI and personal player/NPC reward cooldowns are implemented. Rock Troll has an original articulated reference-guided model, neutral/revenge combat, rock throw/stomp/guard, rare natural spawning and confirmed nonfatal90-crown bouts. Two real native clients independently earned90 for the SAME persisted troll; both balances survived dedicated restarts. Fresh normal-world natural spawning was observed. Final76/76 GameTests, Gradle build and12 release mixin/refmap checks passed. Native four-angle/motion review is documented in the [Stage21C report](STAGE21C_REPORT.md); [Stage21B follow-up](STAGE21B_REPORT.md) and [player guide](FIST_FIGHTING_GUIDE.md).
+
+Development branch dev/0.21.0. Local checkpoints only; no push, release or Stage21D. Older entries below are historical and do not supersede this status.
+
+
 ## Stage21B â€” NPC fist fighting implemented
 
 Virtual nonlethal fights, three original animated NPC variants, authoritative inputs/HUD and once-only crowns.69/69 tests/build PASS; two-client Better Combat campaign, restart and unpaid winning rematch verified. NPC placement is manual, no new village worldgen. [Report](STAGE21B_REPORT.md), [guide](FIST_FIGHTING_GUIDE.md). Stage21C not started; no push/release.

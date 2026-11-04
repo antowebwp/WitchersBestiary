@@ -12,3 +12,8 @@ Local artifact remains0.21.0-dev, not the full Stage21 RC1.21Câ€“21J unimplement
 
 ## Stage21B follow-up, 2026-11-04
 HUD editor/persistence, three fighter geometry seams, responsive AI and personal per-NPC rewards validated. Two native clients each received12 for the same novice; a saved-world training win did not repeat payment. Four-angle/pose review completed for all three original fighters. See STAGE21B_REPORT.md. Stage21C implementation exists; its final native checks remain in progress.
+
+
+## Stage21C — completed local implementation and gameplay verification, 2026-11-04
+
+Neutral troll combat, all five attacks/defence modes, rare natural spawning, egg/loot/bestiary and confirmed nonfatal shared bouts are implemented. Real clients WBOne/WBTwo separately won90crowns against the same persisted troll; dedicated restart reloaded both90. Full76/76 tests and Gradle build passed. The original model was rebuilt around the user's turnaround (40 bones,202 cubes,512 atlas,18 clips), with four idle views and full motion review. See STAGE21C_REPORT.md for evidence and limits. No push/release/Stage21D.
