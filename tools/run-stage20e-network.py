@@ -34,6 +34,7 @@ for role in ['Server', 'One', 'Two']:
     for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
+    if os.environ.get('DUEL_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
     if os.environ.get('CONTRACT_RELIABILITY_REVIEW') == '1': jvm += ['-Dwitchersbestiary.contractReliabilityReview=true']
     if os.environ.get('STAGE21C_MODEL_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cModelOnly=true']
     if os.environ.get('STAGE21C_RESUME_TROLL') == '1': jvm += ['-Dwitchersbestiary.stage21cResumeTroll=true']
@@ -44,14 +45,14 @@ for role in ['Server', 'One', 'Two']:
         source_config=Path(os.environ['STAGE21B_RECOVER_CONFIG'])/role.lower()/'config'
         if source_config.is_dir(): shutil.copytree(source_config,cwd/'config',dirs_exist_ok=True)
     if role == 'Server':
-        jvm += ['-Dwitchersbestiary.contractReliabilityNetwork=true'] if os.environ.get('CONTRACT_RELIABILITY_NETWORK')=='1' else ['-Dwitchersbestiary.stage21aNetwork=true'] if os.environ.get('STAGE21A_NETWORK')=='1' else ['-Dwitchersbestiary.stage21bNetwork=true'] if os.environ.get('STAGE21B_NETWORK')=='1' else ['-Dwitchersbestiary.stage20eServer=true']
+        jvm += ['-Dwitchersbestiary.duelNetwork=true'] if os.environ.get('DUEL_NETWORK')=='1' else ['-Dwitchersbestiary.contractReliabilityNetwork=true'] if os.environ.get('CONTRACT_RELIABILITY_NETWORK')=='1' else ['-Dwitchersbestiary.stage21aNetwork=true'] if os.environ.get('STAGE21A_NETWORK')=='1' else ['-Dwitchersbestiary.stage21bNetwork=true'] if os.environ.get('STAGE21B_NETWORK')=='1' else ['-Dwitchersbestiary.stage20eServer=true']
         if os.environ.get('STAGE20G_VILLAGE') == '1': jvm += ['-Dwitchersbestiary.stage20gVillage=true']
         args = ['--nogui']
         (cwd / 'eula.txt').write_text('eula=true\n')
         (cwd / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=25583\nonline-mode=false\nenforce-secure-profile=false\nview-distance=4\nsimulation-distance=4\nmax-players=2\nlevel-name=world\nlevel-seed=202001\nlevel-type=minecraft\\:normal\ngenerate-structures=true\nspawn-protection=0\ndifficulty=normal\nenable-rcon=false\n')
     else:
         jvm += [f'-Dwitchersbestiary.stage20eClient=WB{role}']
-        args = ['--username', f'WB{role}', '--width','960','--height','640']
+        args = ['--username', f'WB{role}', '--width','1280' if os.environ.get('DUEL_NETWORK')=='1' and role=='Two' else '960','--height','900' if os.environ.get('DUEL_NETWORK')=='1' and role=='Two' else '640']
     if production and role != 'Server': args += data['clientArgs']
     if role == 'Server' and (os.environ.get('STAGE21A_RECOVER_WORLD') or os.environ.get('STAGE21B_RECOVER_WORLD')):
         source=Path(os.environ.get('STAGE21A_RECOVER_WORLD') or os.environ['STAGE21B_RECOVER_WORLD']).resolve()
@@ -59,6 +60,8 @@ for role in ['Server', 'One', 'Two']:
         shutil.copytree(source,cwd/'world')
         marker='fist-resume.json' if os.environ.get('STAGE21B_RECOVER_WORLD') else 'wallet-resume.json'
         if os.environ.get("CONTRACT_RELIABILITY_REVIEW") != "1": shutil.copyfile(source.parent.parent/marker,CASE/marker)
+    if role == 'Server' and os.environ.get('DUEL_NETWORK') == '1':
+        config=cwd/'server.properties';config.write_text(config.read_text()+'pvp='+os.environ.get('DUEL_PVP','true')+'\n')
     if role == 'Server' and os.environ.get('STAGE20G_VILLAGE') == '1':
         config=cwd/'server.properties'
         config.write_text(config.read_text().replace('view-distance=4','view-distance=8'))
@@ -90,7 +93,7 @@ try:
     while time.monotonic()-started < 900:
         failures = list(CASE.glob('*.failure.txt')) + list(CASE.glob('*.timeout.txt'))
         if (CASE/'server-failure.json').exists(): failures.append(CASE/'server-failure.json')
-        if (os.environ.get('CONTRACT_RELIABILITY_NETWORK') == '1' or os.environ.get('STAGE21A_NETWORK') == '1' or os.environ.get('STAGE21B_NETWORK') == '1') and (CASE/'complete.json').exists() and server.poll() is None:
+        if (os.environ.get('DUEL_NETWORK') == '1' or os.environ.get('CONTRACT_RELIABILITY_NETWORK') == '1' or os.environ.get('STAGE21A_NETWORK') == '1' or os.environ.get('STAGE21B_NETWORK') == '1') and (CASE/'complete.json').exists() and server.poll() is None:
             try: server.stdin.write(b'stop\n'); server.stdin.flush()
             except OSError: pass
         if any(p.poll() is not None for r,p,l in processes if r != 'Server') and not (CASE/'complete.json').exists(): raise RuntimeError('A native client exited before completion; inspect its log')

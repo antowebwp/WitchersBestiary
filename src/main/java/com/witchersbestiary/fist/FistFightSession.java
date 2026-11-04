@@ -2,6 +2,10 @@ package com.witchersbestiary.fist;
 
 /** Server-owned virtual combat. Never writes Minecraft health or inventory. */
 public final class FistFightSession {
+ public enum Type { PLAYER_VS_NPC, PLAYER_VS_PLAYER }
+ public final Type type;
+ public FistFightSession(){this(Type.PLAYER_VS_NPC);}
+ public FistFightSession(Type type){this.type=type;}
  public enum Action { IDLE, QUICK, HEAVY, BLOCK, DODGE, COUNTER, STAGGER, KNOCKOUT, VICTORY }
  public enum Stage { COUNTDOWN, FIGHTING, FINISHED, CANCELLED }
  public static final class Fighter {

@@ -880,3 +880,10 @@ tasks.named('processGametestResources') {
   }
  }
 }
+
+// Narrow existing Better Combat stack for Stage21D verification; never included in release archives.
+if(project.hasProperty('stage21dCompat')) {
+ dependencies { modRuntimeOnly fileTree(dir:'build/stage21d-compat',include:'*.jar'); ['bettercombat-fabric-2.3.2+1.21.1.jar','player-animation-lib-fabric-2.0.4+1.21.1.jar','cloth-config-15.0.140-fabric.jar'].each { name ->
+  def jar=file('build/stage20e-compat/mods/'+name);if(!jar.exists())throw new GradleException('Missing isolated Stage21D compatibility dependency: '+name);modRuntimeOnly files(jar)
+ } }
+}
