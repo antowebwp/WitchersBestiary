@@ -21,6 +21,7 @@ for role in ['Server', 'One', 'Two']:
     env = 'server' if role == 'Server' else 'client'
     cwd = CASE / role.lower()
     cwd.mkdir()
+    if role != 'Server': (cwd/'options.txt').write_text('tutorialStep:none\nlang:en_us\nsoundCategory_master:0.0\n')
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
            f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' else '-Xmx1G']
@@ -33,6 +34,7 @@ for role in ['Server', 'One', 'Two']:
     for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
+    if os.environ.get('CONTRACT_RELIABILITY_REVIEW') == '1': jvm += ['-Dwitchersbestiary.contractReliabilityReview=true']
     if os.environ.get('STAGE21C_MODEL_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cModelOnly=true']
     if os.environ.get('STAGE21C_RESUME_TROLL') == '1': jvm += ['-Dwitchersbestiary.stage21cResumeTroll=true']
     if os.environ.get('STAGE21C_NATURAL_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cNaturalOnly=true']
@@ -56,7 +58,7 @@ for role in ['Server', 'One', 'Two']:
         if not source.is_relative_to(BASE.resolve()) or source.name!='world' or source.parent.name!='server': raise RuntimeError('Recovery must use an isolated review world')
         shutil.copytree(source,cwd/'world')
         marker='fist-resume.json' if os.environ.get('STAGE21B_RECOVER_WORLD') else 'wallet-resume.json'
-        shutil.copyfile(source.parent.parent/marker,CASE/marker)
+        if os.environ.get("CONTRACT_RELIABILITY_REVIEW") != "1": shutil.copyfile(source.parent.parent/marker,CASE/marker)
     if role == 'Server' and os.environ.get('STAGE20G_VILLAGE') == '1':
         config=cwd/'server.properties'
         config.write_text(config.read_text().replace('view-distance=4','view-distance=8'))

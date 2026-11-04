@@ -39,6 +39,7 @@ public final class SwampLord {
  public static void validateAccept(ServerPlayerEntity p,Identifier id){if((id.equals(ID)||id.equals(GraveDevourer.ID)||com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(id))&&ContractState.get(p.getServer()).ownedBy(p.getUuid()).stream().anyMatch(c->c.hunt!=null&&c.status()==ContractInstance.Status.ACCEPTED))throw new IllegalStateException("One active hunt per player");}
  /** No world generation or chunk tickets: validate a complete route before a board acceptance is stored. */
  public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c){
+  if(p.getServerWorld().getDifficulty()==net.minecraft.world.Difficulty.PEACEFUL)return false;
   if(c.procedural!=null){var type=com.witchersbestiary.contracts.procedural.ContractSpecies.type(c.procedural.species());var trial=type.create(p.getServerWorld());if(trial==null||!trial.getType().equals(type)||!(trial instanceof com.witchersbestiary.contracts.procedural.ContractTargetAccess)&&!(trial instanceof DrownerEntity)&&!(trial instanceof com.witchersbestiary.entity.monster.GhoulEntity)&&!(trial instanceof com.witchersbestiary.entity.monster.FogletEntity))return false;}
   c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),p.getBlockPos());
   c.investigation=new com.witchersbestiary.contracts.tracking.ContractInvestigation(c.id(),c.owner(),c.hunt.dimension);
