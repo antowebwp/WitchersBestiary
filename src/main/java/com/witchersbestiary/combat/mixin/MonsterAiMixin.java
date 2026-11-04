@@ -7,7 +7,14 @@ import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.*;
 
 @Mixin(MobEntity.class)
-public abstract class MonsterAiMixin implements com.witchersbestiary.contracts.procedural.ContractTargetAccess, com.witchersbestiary.lure.LureGoalAccess {
+public abstract class MonsterAiMixin implements ProgressiveEntityAccess, com.witchersbestiary.contracts.procedural.ContractTargetAccess, com.witchersbestiary.lure.LureGoalAccess {
+    @org.spongepowered.asm.mixin.Unique private long witcher$progressivePhase=-1;
+    public long witcher$progressivePhase(){return witcher$progressivePhase;}
+    public void witcher$progressivePhase(long phase){witcher$progressivePhase=Math.max(0,phase);}
+    @Inject(method="writeCustomDataToNbt",at=@At("TAIL"))
+    private void witcher$saveProgression(net.minecraft.nbt.NbtCompound n,CallbackInfo ci){if(witcher$progressivePhase>=0)n.putLong("WitcherContractProgressivePhase",witcher$progressivePhase);}
+    @Inject(method="readCustomDataFromNbt",at=@At("TAIL"))
+    private void witcher$readProgression(net.minecraft.nbt.NbtCompound n,CallbackInfo ci){witcher$progressivePhase=n.contains("WitcherContractProgressivePhase")?Math.max(0,n.getLong("WitcherContractProgressivePhase")):n.containsUuid("WbHunt")||n.containsUuid("WitcherNamedContract")?0:-1;}
     @org.spongepowered.asm.mixin.Unique private java.util.UUID witcher$contract;
     @org.spongepowered.asm.mixin.Unique private com.witchersbestiary.contracts.procedural.ProceduralCombat witcher$combat;
     public java.util.UUID witcher$contract(){return witcher$contract;}

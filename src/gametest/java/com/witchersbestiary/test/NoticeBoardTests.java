@@ -15,8 +15,10 @@ import net.minecraft.util.math.*;
 import java.util.*;
 
 public final class NoticeBoardTests implements FabricGameTest {
- private static final String ARENA="witchersbestiary:notice_board_arena";
- private BlockPos floor(TestContext c){for(int x=0;x<16;x++)for(int z=0;z<16;z++)c.setBlockState(new BlockPos(x,1,z),Blocks.GRASS_BLOCK);return c.getAbsolutePos(new BlockPos(7,2,7));}
+ private void prepareHuntField(TestContext c){var w=c.getWorld();for(int x=0;x<48;x++)for(int z=0;z<48;z++){c.setBlockState(new net.minecraft.util.math.BlockPos(x,1,z),net.minecraft.block.Blocks.GRASS_BLOCK);for(int y=2;y<15;y++)c.setBlockState(new net.minecraft.util.math.BlockPos(x,y,z),net.minecraft.block.Blocks.AIR);}var at=c.getAbsolutePos(new net.minecraft.util.math.BlockPos(30,2,24));w.setBlockState(c.getAbsolutePos(new net.minecraft.util.math.BlockPos(47,1,17)),net.minecraft.block.Blocks.WATER.getDefaultState());var forest=w.getRegistryManager().get(net.minecraft.registry.RegistryKeys.BIOME).getEntry(net.minecraft.world.biome.BiomeKeys.FOREST).orElseThrow();for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++){var chunk=w.getChunkManager().getWorldChunk((at.getX()>>4)+x,(at.getZ()>>4)+z);if(chunk!=null)chunk.populateBiomes((a,b,d,s)->forest,w.getChunkManager().getNoiseConfig().getMultiNoiseSampler());}}
+
+ private static final String ARENA="witchersbestiary:village_board_arena";
+ private BlockPos floor(TestContext c){prepareHuntField(c);for(int x=0;x<=4;x++)for(int z=44;z<=48;z++)c.setBlockState(new BlockPos(x,1,z),Blocks.GRASS_BLOCK);return c.getAbsolutePos(new BlockPos(2,2,46));}
  private net.minecraft.server.network.ServerPlayerEntity player(TestContext c,BlockPos root){var p=c.createMockCreativeServerPlayerInWorld();p.teleport(c.getWorld(),root.getX()+.5,root.getY(),root.getZ()-2,0,0);return p;}
  @GameTest(templateName=ARENA,batchId="stage20b",tickLimit=20)
  public void registrationPlacementRotationAndPersistence(TestContext c){var w=c.getWorld();var root=floor(c);c.assertTrue(Registries.BLOCK.get(NoticeBoards.ID)==NoticeBoards.BLOCK&&Registries.ITEM.get(NoticeBoards.ID)==NoticeBoards.ITEM,"Registry");

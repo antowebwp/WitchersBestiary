@@ -12,6 +12,7 @@ public final class ContractState extends PersistentState {
     public static final Type<ContractState> TYPE = new Type<>(ContractState::new, ContractState::read, null);
     private final Map<UUID, ContractInstance> contracts = new LinkedHashMap<>();
     private final Map<UUID, List<ContractInstance>> owners = new HashMap<>();
+    private final Map<UUID,UUID> tracking=new HashMap<>();
     private final List<NbtCompound> quarantined = new ArrayList<>();
     private NbtCompound futureSchema;
     public static ContractState get(MinecraftServer server) {
@@ -20,6 +21,8 @@ public final class ContractState extends PersistentState {
     public Collection<ContractInstance> all() { return Collections.unmodifiableCollection(contracts.values()); }
     public List<ContractInstance> ownedBy(UUID player) { return Collections.unmodifiableList(owners.getOrDefault(player, List.of())); }
     public ContractInstance find(UUID id) { return contracts.get(id); }
+    public UUID tracked(UUID owner){return tracking.get(owner);}
+    public void track(UUID owner,UUID instance){writable();if(instance==null){if(tracking.remove(owner)!=null)markDirty();return;}var c=find(instance);if(c==null||!c.owner().equals(owner)||c.status()!=ContractInstance.Status.ACCEPTED&&c.status()!=ContractInstance.Status.COMPLETED)throw new IllegalArgumentException("Invalid tracking owner/status");if(!instance.equals(tracking.put(owner,instance)))markDirty();}
     public boolean readOnly() { return futureSchema != null; }
     public void writable() { if (futureSchema != null) throw new IllegalStateException("Unsupported future contract schema; state preserved read-only"); }
     public void add(ContractInstance c) {
@@ -38,7 +41,7 @@ public final class ContractState extends PersistentState {
     @Override public NbtCompound writeNbt(NbtCompound n, RegistryWrapper.WrapperLookup lookup) {
         if (futureSchema != null) return futureSchema.copy();
         n.putInt("Schema", SCHEMA); var list = new NbtList();
-        contracts.values().forEach(c -> list.add(c.toNbt())); quarantined.forEach(c -> list.add(c.copy())); n.put("Contracts", list); return n;
+        contracts.values().forEach(c -> list.add(c.toNbt())); quarantined.forEach(c -> list.add(c.copy())); n.put("Contracts", list);var selected=new NbtList();tracking.forEach((owner,id)->{var item=new NbtCompound();item.putUuid("Owner",owner);item.putUuid("Contract",id);selected.add(item);});n.put("Tracking",selected);return n;
     }
     public static ContractState read(NbtCompound n, RegistryWrapper.WrapperLookup lookup) {
         var state = new ContractState();
@@ -52,6 +55,7 @@ public final class ContractState extends PersistentState {
             try { var c = ContractInstance.fromNbt(entry); if (state.contracts.putIfAbsent(c.id(), c) != null) throw new IllegalArgumentException("Duplicate instance"); state.owners.computeIfAbsent(c.owner(), key -> new ArrayList<>()).add(c); }
             catch (RuntimeException e) { state.quarantined.add(entry.copy()); com.witchersbestiary.WitchersBestiary.LOGGER.error("Quarantined unreadable contract record: {}", e.getMessage()); }
         }
+        var selected=n.getList("Tracking",NbtElement.COMPOUND_TYPE);for(int i=0;i<selected.size();i++){var item=selected.getCompound(i);if(!item.containsUuid("Owner")||!item.containsUuid("Contract"))continue;var c=state.find(item.getUuid("Contract"));if(c!=null&&c.owner().equals(item.getUuid("Owner"))&&(c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED))state.tracking.put(c.owner(),c.id());}
         return state;
     }
 }

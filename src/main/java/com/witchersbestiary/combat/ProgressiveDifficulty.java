@@ -21,7 +21,6 @@ public final class ProgressiveDifficulty {
         });
     }
     public static boolean eligible(LivingEntity e){
-        if(com.witchersbestiary.contracts.procedural.ProceduralHunts.binding(e)!=null)return false;
         if(!(e instanceof CategorizedMonster)||!Registries.ENTITY_TYPE.getId(e.getType()).getNamespace().equals("witchersbestiary"))return false;
         if(!(e instanceof net.minecraft.entity.mob.HostileEntity) && !(e instanceof InfernalBasiliskEntity))return false;
         if(e instanceof TameableEntity pet && pet.isTamed())return false;
@@ -32,9 +31,16 @@ public final class ProgressiveDifficulty {
         return !ModConfig.progressive().excluded().contains(Registries.ENTITY_TYPE.getId(e.getType()).toString());
     }
     public static long steps(LivingEntity e){
-        if(!(e.getWorld() instanceof ServerWorld w)||!eligible(e))return 0;
-        return ModConfig.progressive().steps(w.getServer().getOverworld().getTimeOfDay()/24000L);
+        if(!(e.getWorld() instanceof ServerWorld w)||!eligible(e)||!ModConfig.progressive().enabled())return 0;
+        long current=ModConfig.progressive().steps(w.getServer().getOverworld().getTimeOfDay()/24000L);
+        if(com.witchersbestiary.contracts.procedural.ProceduralHunts.binding(e)!=null&&e instanceof ProgressiveEntityAccess saved){
+            if(saved.witcher$progressivePhase()<0)saved.witcher$progressivePhase(current);
+            return saved.witcher$progressivePhase();
+        }
+        return current;
     }
+    public static double scaledHealth(LivingEntity e,double base){return ModConfig.progressive().health(base,steps(e),ModConfig.progressive().elites().contains(Registries.ENTITY_TYPE.getId(e.getType()).toString()));}
+    public static String describe(LivingEntity e){var contract=com.witchersbestiary.contracts.procedural.ProceduralHunts.combat(e);var health=e.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);return Registries.ENTITY_TYPE.getId(e.getType())+" source="+(com.witchersbestiary.contracts.procedural.ProceduralHunts.binding(e)==null?"natural":"contract")+" phase="+steps(e)+" rarity="+(contract==null?"none/legendary":contract.profile.tier())+" maxHealth="+e.getMaxHealth()+" effectiveAttack="+((e.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE)==null?0:e.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE))*ModConfig.progressive().damage(steps(e)))+" modifiers="+(health==null?"none":health.getModifiers());}
     public static void tick(LivingEntity e){
         if(!e.getWorld().isClient && e instanceof CategorizedMonster && (e.age+e.getId())%20==0)refresh(e);
     }
@@ -59,6 +65,7 @@ public final class ProgressiveDifficulty {
     /** Called only by MobEntity.initialize for fresh spawns, never by chunk/NBT loading. */
     public static void freshSpawn(LivingEntity e){
         if(!(e instanceof CategorizedMonster))return;
+        if(e.getWorld() instanceof ServerWorld world&&com.witchersbestiary.contracts.procedural.ProceduralHunts.binding(e)!=null&&e instanceof ProgressiveEntityAccess saved&&saved.witcher$progressivePhase()<0)saved.witcher$progressivePhase(eligible(e)?ModConfig.progressive().steps(world.getServer().getOverworld().getTimeOfDay()/24000L):0);
         boolean full=e.getHealth()>=e.getMaxHealth();refresh(e);if(full)e.setHealth(e.getMaxHealth());
     }
     public static float damage(DamageSource source,float amount){

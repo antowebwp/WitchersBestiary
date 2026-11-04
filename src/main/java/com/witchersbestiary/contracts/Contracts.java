@@ -21,7 +21,10 @@ public final class Contracts {
     public static final ContractDefinitions DEFINITIONS = new ContractDefinitions();
     private Contracts() {}
     public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId) {return assign(player,definitionId,null);}
-    public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {
+    public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {return assign(player,definitionId,offerSeed,false);}
+    /** Player-facing boards only commit a hunt after both clues and its lair are validated. */
+    public static ContractInstance assignPrepared(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {return assign(player,definitionId,offerSeed,true);}
+    private static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed, boolean requireRoute) {
         com.witchersbestiary.contracts.hunt.SwampLord.validateAccept(player,definitionId);
         var definition = DEFINITIONS.find(definitionId);
         if (definition == null) throw new IllegalArgumentException("Missing/invalid contract definition: " + definitionId);
@@ -37,7 +40,12 @@ public final class Contracts {
         if(profile!=null)definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
         definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
-        c.transition(ContractInstance.Status.ACCEPTED); store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
+        c.transition(ContractInstance.Status.ACCEPTED);
+        if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c)){
+            player.sendMessage(Text.translatable("contract.witchersbestiary.no_safe_route"),false);
+            throw new IllegalStateException("No safe loaded hunt area with two clues; contract not accepted");
+        }
+        store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
     /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */
     public static ServerPlayerEntity killer(LivingEntity victim, DamageSource damage) {
@@ -70,12 +78,25 @@ public final class Contracts {
     public static void claim(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); var c = store.find(instance);
         if (c == null || DEFINITIONS.find(c.definition().id()) == null) throw new IllegalStateException("Contract or its definition is unavailable");
-        ContractRewards.claim(store, c, player);
+        ContractRewards.claim(store, c, player);if(instance.equals(store.tracked(player.getUuid())))store.track(player.getUuid(),null);com.witchersbestiary.contracts.tracking.Investigations.refresh(player);
     }
     public static void cancel(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); store.writable(); var c = store.find(instance);
         if (c == null || !c.owner().equals(player.getUuid())) throw new IllegalArgumentException("Contract not owned by player");
         c.transition(ContractInstance.Status.CANCELLED); if(c.hunt!=null)c.hunt.status=com.witchersbestiary.contracts.hunt.SwampHunt.Status.CANCELLED;if(c.investigation!=null)c.investigation.stage=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.CANCELLED; store.markDirty();
+        if(instance.equals(store.tracked(player.getUuid())))store.track(player.getUuid(),null);
+        if(c.hunt!=null)com.witchersbestiary.contracts.hunt.SwampLord.cancelSearch(player);
+        com.witchersbestiary.contracts.tracking.Investigations.refresh(player);
+    }
+    public static UUID abandonActive(ServerPlayerEntity player) {
+        var store=ContractState.get(player.getServer());store.writable();
+        var selected=com.witchersbestiary.contracts.tracking.Investigations.activeContract(player);
+        if(selected==null||selected.status()!=ContractInstance.Status.ACCEPTED){
+            var accepted=store.ownedBy(player.getUuid()).stream().filter(c->c.status()==ContractInstance.Status.ACCEPTED).toList();
+            if(accepted.size()!=1)throw new IllegalStateException(accepted.isEmpty()?"No active contract to abandon":"Multiple active contracts; no contract was changed");
+            selected=accepted.getFirst();
+        }
+        UUID id=selected.id();cancel(player,id);return id;
     }
     private static int command(ServerCommandSource source, Runnable action) {
         try { action.run(); return 1; }
@@ -85,7 +106,10 @@ public final class Contracts {
         com.witchersbestiary.contracts.hunt.SwampLord.initialize();
         ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(DEFINITIONS);
         ServerLivingEntityEvents.AFTER_DEATH.register(Contracts::onDeath);
+        CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> dispatcher.register(literal("wbcontract")
+            .then(literal("abandon").executes(context -> {var player=context.getSource().getPlayerOrThrow();return command(context.getSource(),()->{var id=abandonActive(player);context.getSource().sendFeedback(()->Text.translatable("contract.witchersbestiary.abandoned",id.toString()),false);});}))));
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) -> dispatcher.register(literal("wbcontracts").requires(s -> s.hasPermissionLevel(2))
+            .then(literal("difficulty").then(argument("target",EntityArgumentType.entity()).executes(c->{var entity=EntityArgumentType.getEntity(c,"target");if(!(entity instanceof LivingEntity living)){c.getSource().sendError(Text.literal("Target must be living"));return 0;}c.getSource().sendFeedback(()->Text.literal(com.witchersbestiary.combat.ProgressiveDifficulty.describe(living)),false);return 1;})))
             .then(literal("list").executes(c -> { DEFINITIONS.all().values().stream().sorted(Comparator.comparing(d -> d.id().toString())).forEach(d -> c.getSource().sendFeedback(() -> Text.literal(d.id() + " target=" + d.target() + " kills=" + d.required()), false)); return DEFINITIONS.all().size(); }))
             .then(literal("assign").then(argument("player", EntityArgumentType.player()).then(argument("definition", StringArgumentType.word()).suggests((c,b) -> { DEFINITIONS.all().keySet().forEach(id -> b.suggest(id.toString())); return b.buildFuture(); }).executes(c -> {
                 var player = EntityArgumentType.getPlayer(c,"player"); return command(c.getSource(), () -> { var instance = assign(player, Identifier.of(StringArgumentType.getString(c,"definition"))); c.getSource().sendFeedback(() -> Text.literal("Assigned " + instance.id()), true); }); }))))

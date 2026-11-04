@@ -96,7 +96,7 @@ public final class KatakanEntity extends HostileEntity implements GeoEntity,Cate
         setVelocity(Vec3d.ZERO);velocityModified=true;cooldown=20;stunTicks=killed?12:0;if(killed)Stun.apply(this,12);attack="";batHurtTicks=0;
         triggerAnim("action",killed?"hurt":"transform");playSound(SoundEvents.ENTITY_BAT_TAKEOFF,.8f,.6f);
     }
-    private float beastHealthCap(){var contract=com.witchersbestiary.contracts.procedural.ProceduralHunts.combat(this);if(contract!=null)return (float)contract.profile.health();return (float)com.witchersbestiary.config.ModConfig.progressive().health(80,com.witchersbestiary.combat.ProgressiveDifficulty.steps(this),com.witchersbestiary.config.ModConfig.progressive().elites().contains("witchersbestiary:katakan"));}
+    private float beastHealthCap(){var contract=com.witchersbestiary.contracts.procedural.ProceduralHunts.combat(this);return (float)com.witchersbestiary.combat.ProgressiveDifficulty.scaledHealth(this,contract==null?80:contract.profile.health());}
     private void tickBat(ServerWorld world){
         if(getTarget()==null||!getTarget().isAlive()){endBatForm(false);return;}
         if(world.getTime()>=nextHeal&&world.getTime()<=batUntil){beastHealth=Math.min(beastHealthCap(),beastHealth+1);nextHeal=world.getTime()+20;}

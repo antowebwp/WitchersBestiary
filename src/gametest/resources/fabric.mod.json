@@ -17,12 +17,15 @@
       "com.witchersbestiary.test.BlackDyeRecipeTests",
       "com.witchersbestiary.test.VillageOfferTests",
       "com.witchersbestiary.test.WalletTests",
-      "com.witchersbestiary.test.FistFightTests"
+      "com.witchersbestiary.test.FistFightTests",
+      "com.witchersbestiary.test.ContractHotfixTests",
+      "com.witchersbestiary.test.ProgressiveContractTests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer",
       "com.witchersbestiary.test.Stage21ANetworkServer",
-      "com.witchersbestiary.test.Stage21BNetworkServer"
+      "com.witchersbestiary.test.Stage21BNetworkServer",
+      "com.witchersbestiary.test.ContractReliabilityNetworkServer"
     ]
   },
   "depends": {

@@ -217,7 +217,7 @@ public final class WerewolfEntity extends HostileEntity implements GeoEntity, Ca
         n.putInt("DodgeCooldown",dodgeCooldown);n.putInt("InterruptCooldown",interruptCooldown);n.putInt("CombatCooldown",combatCooldown);
     }
     @Override public void readCustomDataFromNbt(NbtCompound n){
-        super.readCustomDataFromNbt(n);applyForm(n.getBoolean("HumanForm"));dataTracker.set(TRANSFORM,MathHelper.clamp(n.getInt("TransformTicks"),0,30));transformTarget=n.getBoolean("TransformTarget");dataTracker.set(PHASE,MathHelper.clamp(n.getInt("WerewolfPhase"),1,3));
+        super.readCustomDataFromNbt(n);float savedHealth=n.contains("Health")?n.getFloat("Health"):getHealth();applyForm(n.getBoolean("HumanForm"));setHealth(Math.clamp(savedHealth,0f,getMaxHealth()));dataTracker.set(TRANSFORM,MathHelper.clamp(n.getInt("TransformTicks"),0,30));transformTarget=n.getBoolean("TransformTarget");dataTracker.set(PHASE,MathHelper.clamp(n.getInt("WerewolfPhase"),1,3));
         rageTicks=MathHelper.clamp(n.getInt("RageTicks"),0,240);rageHeals=MathHelper.clamp(n.getInt("RageHeals"),0,4);
         biteCooldown=n.getInt("BiteCooldown");leapCooldown=n.getInt("LeapCooldown");chargeCooldown=n.getInt("ChargeCooldown");
         dodgeCooldown=n.getInt("DodgeCooldown");interruptCooldown=n.getInt("InterruptCooldown");combatCooldown=n.getInt("CombatCooldown");

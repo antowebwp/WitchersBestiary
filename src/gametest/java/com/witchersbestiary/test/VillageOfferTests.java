@@ -5,6 +5,8 @@ import net.minecraft.test.*;
 import net.minecraft.nbt.NbtCompound;
 import java.util.*;
 public final class VillageOfferTests implements FabricGameTest {
+ private void prepareHuntField(TestContext c){var w=c.getWorld();for(int x=0;x<48;x++)for(int z=0;z<48;z++){c.setBlockState(new net.minecraft.util.math.BlockPos(x,1,z),net.minecraft.block.Blocks.GRASS_BLOCK);for(int y=2;y<15;y++)c.setBlockState(new net.minecraft.util.math.BlockPos(x,y,z),net.minecraft.block.Blocks.AIR);}var at=c.getAbsolutePos(new net.minecraft.util.math.BlockPos(30,2,24));w.setBlockState(c.getAbsolutePos(new net.minecraft.util.math.BlockPos(47,1,17)),net.minecraft.block.Blocks.WATER.getDefaultState());var forest=w.getRegistryManager().get(net.minecraft.registry.RegistryKeys.BIOME).getEntry(net.minecraft.world.biome.BiomeKeys.FOREST).orElseThrow();for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++){var chunk=w.getChunkManager().getWorldChunk((at.getX()>>4)+x,(at.getZ()>>4)+z);if(chunk!=null)chunk.populateBiomes((a,b,d,s)->forest,w.getChunkManager().getNoiseConfig().getMultiNoiseSampler());}}
+
  @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE,batchId="stage20h")
  public void rotationPersistenceAndIsolation(TestContext c){
   var state=new VillageOffers();var pool=List.of("a","b","c","d","e","f");
@@ -25,9 +27,9 @@ public final class VillageOfferTests implements FabricGameTest {
   var personal=state.refresh("A",p,24000,pool,o->true);
   c.assertTrue(!base.id().equals(personal.id())&&base.equals(state.personal("A",other,24000,pool)),"Personal refresh leaves peer unchanged");c.complete();
  }
- @GameTest(templateName="witchersbestiary:notice_board_arena",batchId="stage20h-integration",tickLimit=40)
+ @GameTest(templateName="witchersbestiary:village_board_arena",batchId="stage20h-integration",tickLimit=40)
  public void boardAcceptanceOwnershipAndReplay(TestContext c){
-  var w=c.getWorld();var root=c.getAbsolutePos(new net.minecraft.util.math.BlockPos(7,2,7));
+  var w=c.getWorld();prepareHuntField(c);var root=c.getAbsolutePos(new net.minecraft.util.math.BlockPos(2,2,46));
   for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++)w.setBlockState(root.add(x,-1,z),net.minecraft.block.Blocks.GRASS_BLOCK.getDefaultState());
   c.assertTrue(com.witchersbestiary.board.NoticeBoardBlock.place(w,root,net.minecraft.util.math.Direction.NORTH),"Board placed");
   var p=c.createMockCreativeServerPlayerInWorld();var q=c.createMockCreativeServerPlayerInWorld();

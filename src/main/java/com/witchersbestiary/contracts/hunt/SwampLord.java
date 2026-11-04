@@ -32,24 +32,49 @@ public final class SwampLord {
  public static boolean named(ContractInstance c){return c.definition().id().equals(ID)||c.definition().id().equals(GraveDevourer.ID)||com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(c.definition().id());}
  public static void accepted(ServerPlayerEntity p,ContractInstance c){
   if(!named(c))return;
-  c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),p.getBlockPos());
+  if(c.hunt==null)c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),p.getBlockPos());
   com.witchersbestiary.contracts.tracking.Investigations.accepted(p,c);
   ContractState.get(p.getServer()).markDirty();enqueue(p,c);p.sendMessage(Text.translatable(c.procedural!=null?"hunt.witchersbestiary.proc.started":c.definition().id().equals(GraveDevourer.ID)?"hunt.witchersbestiary.grave_started":"hunt.witchersbestiary.started"),false);
  }
  public static void validateAccept(ServerPlayerEntity p,Identifier id){if((id.equals(ID)||id.equals(GraveDevourer.ID)||com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(id))&&ContractState.get(p.getServer()).ownedBy(p.getUuid()).stream().anyMatch(c->c.hunt!=null&&c.status()==ContractInstance.Status.ACCEPTED))throw new IllegalStateException("One active hunt per player");}
- private static void enqueue(ServerPlayerEntity p,ContractInstance c){
+ /** No world generation or chunk tickets: validate a complete route before a board acceptance is stored. */
+ public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c){
+  if(c.procedural!=null){var type=com.witchersbestiary.contracts.procedural.ContractSpecies.type(c.procedural.species());var trial=type.create(p.getServerWorld());if(trial==null||!trial.getType().equals(type)||!(trial instanceof com.witchersbestiary.contracts.procedural.ContractTargetAccess)&&!(trial instanceof DrownerEntity)&&!(trial instanceof com.witchersbestiary.entity.monster.GhoulEntity)&&!(trial instanceof com.witchersbestiary.entity.monster.FogletEntity))return false;}
+  c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),p.getBlockPos());
+  c.investigation=new com.witchersbestiary.contracts.tracking.ContractInvestigation(c.id(),c.owner(),c.hunt.dimension);
+  for(int probe=0;probe<128;probe++)if(prepareCandidate(p,c,probe))return true;
+  return false;
+ }
+ public static boolean recoverSavedRoute(ServerPlayerEntity p,ContractInstance c){
+  if(c.status()!=ContractInstance.Status.ACCEPTED||c.hunt==null||c.hunt.target!=null||c.hunt.status==SwampHunt.Status.DEAD||!c.hunt.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString())||c.investigation!=null&&c.investigation.stage!=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.SEARCHING)return false;
+  var at=c.investigation!=null&&c.investigation.lair!=null?c.investigation.lair:c.hunt.position;
+  if(at==null)return false;
+  boolean safe=c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(p.getServerWorld(),c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(p.getServerWorld(),at,true):safe(p.getServerWorld(),at,true);
+  return safe&&com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at);
+ }
+ public static void cancelSearch(ServerPlayerEntity p){var q=QUEUES.get(p.getServer());if(q!=null)q.cancel(p.getUuid());}
+ private static boolean prepareCandidate(ServerPlayerEntity p,ContractInstance c,int probe){
   final int min=Math.max(48,Math.min(999,Integer.getInteger("witchersbestiary.huntMinRadius",150))),max=Math.max(min+1,Math.min(1000,Integer.getInteger("witchersbestiary.huntMaxRadius",500)));
+  // Prefer the original distant territory, then try a loaded neighbourhood of the current player.
+  // The old origin-only 150..500 ring could lie entirely outside the server's loaded view distance.
+  boolean nearby=probe>=64;int n=probe%64;double angle=n*2.399963229728653;
+  int radius=nearby?48+Math.floorMod(n*17,81):min+Math.floorMod(n*73,max-min);
+  var origin=nearby?p.getBlockPos():c.hunt.origin;
+  int x=origin.getX()+(int)(Math.cos(angle)*radius),z=origin.getZ()+(int)(Math.sin(angle)*radius);
+  var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
+  var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
+  if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
+  return com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at);
+ }
+ private static void enqueue(ServerPlayerEntity p,ContractInstance c){
   var h=c.hunt;if(h==null||h.target!=null||c.status()!=ContractInstance.Status.ACCEPTED||c.investigation!=null&&c.investigation.stage!=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.SEARCHING)return;
   QUEUES.computeIfAbsent(p.getServer(),s->new HuntSearchQueue()).enqueue(new HuntSearchQueue.Search(){int probes;
    public UUID owner(){return p.getUuid();}
    public HuntSearchQueue.Outcome step(){
     if(p.isRemoved()||c.status()!=ContractInstance.Status.ACCEPTED||!p.getServerWorld().getRegistryKey().getValue().toString().equals(h.dimension))return HuntSearchQueue.Outcome.CANCELLED;
-    if(++probes>128){h.status=SwampHunt.Status.WAITING;ContractState.get(p.getServer()).markDirty();return HuntSearchQueue.Outcome.WAITING;}
-    int n=h.attempts++;double angle=n*2.399963229728653;int radius=min+Math.floorMod(n*73,max-min);int x=h.origin.getX()+(int)(Math.cos(angle)*radius),z=h.origin.getZ()+(int)(Math.sin(angle)*radius);
-    var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return HuntSearchQueue.Outcome.CONTINUE;
-    var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
-    if(!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true))||p.squaredDistanceTo(at.toCenterPos())<48*48)return HuntSearchQueue.Outcome.CONTINUE;
-    return com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at)?HuntSearchQueue.Outcome.FOUND:HuntSearchQueue.Outcome.CONTINUE;
+    if(probes>=128){h.status=SwampHunt.Status.WAITING;ContractState.get(p.getServer()).markDirty();p.sendMessage(Text.translatable("contract.witchersbestiary.search_failed"),false);return HuntSearchQueue.Outcome.WAITING;}
+    if(probes==0&&recoverSavedRoute(p,c))return HuntSearchQueue.Outcome.FOUND;
+    int probe=probes++;h.attempts++;return prepareCandidate(p,c,probe)?HuntSearchQueue.Outcome.FOUND:HuntSearchQueue.Outcome.CONTINUE;
    }
   });
  }
