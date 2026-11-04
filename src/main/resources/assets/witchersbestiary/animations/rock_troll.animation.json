@@ -863,7 +863,7 @@
       }
     },
     "animation.fighter.death": {
-      "animation_length": 2,
+      "animation_length": 1,
       "bones": {
         "root": {
           "rotation": {
@@ -872,7 +872,7 @@
               0,
               0
             ],
-            "1.2": [
+            ".8": [
               80,
               0,
               0
@@ -884,7 +884,7 @@
               0,
               0
             ],
-            "1.2": [
+            ".8": [
               0,
               -4,
               0

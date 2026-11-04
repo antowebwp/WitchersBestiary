@@ -11,7 +11,7 @@ public final class RockTrollEntity extends FistNpc {
  private java.util.UUID alertedTarget;
  private int attackTicks, recovery, lastAttack=-1, attack=-1;
  public RockTrollEntity(EntityType<? extends net.minecraft.entity.mob.PathAwareEntity> type,World world){super(type,world,2);}
- @Override public void configureBout(FistFightSession fight){super.configureBout(fight);fight.opponent.health=180;fight.opponent.maxStamina=140;fight.opponent.stamina=140;fight.opponent.heavyDamageMultiplier=1.4;}
+ @Override public void configureBout(FistFightSession fight){super.configureBout(fight);fight.player.maxStamina=140;fight.player.stamina=140;fight.opponent.health=180;fight.opponent.maxStamina=140;fight.opponent.stamina=140;fight.opponent.heavyDamageMultiplier=1.4;}
  @Override public int winReward(){return 90;}
  @Override protected void initGoals(){super.initGoals();targetSelector.add(1,new net.minecraft.entity.ai.goal.RevengeGoal(this));}
  @Override protected ActionResult interactMob(PlayerEntity p,Hand hand){if(getTarget()!=null)return ActionResult.PASS;return super.interactMob(p,hand);}
