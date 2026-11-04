@@ -17,3 +17,8 @@ HUD editor/persistence, three fighter geometry seams, responsive AI and personal
 ## Stage21C — completed local implementation and gameplay verification, 2026-11-04
 
 Neutral troll combat, all five attacks/defence modes, rare natural spawning, egg/loot/bestiary and confirmed nonfatal shared bouts are implemented. Real clients WBOne/WBTwo separately won90crowns against the same persisted troll; dedicated restart reloaded both90. Full76/76 tests and Gradle build passed. The original model was rebuilt around the user's turnaround (40 bones,202 cubes,512 atlas,18 clips), with four idle views and full motion review. See STAGE21C_REPORT.md for evidence and limits. No push/release/Stage21D.
+
+## Contract reliability hotfix - 0.21.0-dev (2026-11-04)
+
+Confirmed GUI abandonment, pre-acceptance two-clue route validation, saved-route recovery, immediate/persistent tracking with40..60-block new clue spacing, and per-target contract progressive phase are implemented. One83-scenario combined run plus necessary related repeats completed; corrected classes passed6/6,7/7 and3/3. Native two-client Katakan investigation/kill/reward/cancel/restart and clean HUD/confirmation review passed. Stage21B/C preserved; no21D, push or release. See [hotfix report](CONTRACT_RELIABILITY_HOTFIX.md) and [player guide](RENEWABLE_CONTRACTS_GUIDE.md). Historical status entries do not supersede this follow-up.
+

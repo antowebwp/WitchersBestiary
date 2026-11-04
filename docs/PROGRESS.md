@@ -1,5 +1,10 @@
 # Progress
 
+## Contract reliability hotfix - 0.21.0-dev (2026-11-04)
+
+Confirmed GUI abandonment, pre-acceptance two-clue route validation, saved-route recovery, immediate/persistent tracking with40..60-block new clue spacing, and per-target contract progressive phase are implemented. One83-scenario combined run plus necessary related repeats completed; corrected classes passed6/6,7/7 and3/3. Native two-client Katakan investigation/kill/reward/cancel/restart and clean HUD/confirmation review passed. Stage21B/C preserved; no21D, push or release. See [hotfix report](CONTRACT_RELIABILITY_HOTFIX.md) and [player guide](RENEWABLE_CONTRACTS_GUIDE.md). Historical status entries below do not supersede this follow-up.
+
+
 ## Stage21B fixes + Stage21C — implemented and locally verified (2026-11-04)
 
 Movable persistent right-side HUD, repaired seams on all three original fighters, responsive AI and personal player/NPC reward cooldowns are implemented. Rock Troll has an original articulated reference-guided model, neutral/revenge combat, rock throw/stomp/guard, rare natural spawning and confirmed nonfatal90-crown bouts. Two real native clients independently earned90 for the SAME persisted troll; both balances survived dedicated restarts. Fresh normal-world natural spawning was observed. Final76/76 GameTests, Gradle build and12 release mixin/refmap checks passed. Native four-angle/motion review is documented in the [Stage21C report](STAGE21C_REPORT.md); [Stage21B follow-up](STAGE21B_REPORT.md) and [player guide](FIST_FIGHTING_GUIDE.md).
