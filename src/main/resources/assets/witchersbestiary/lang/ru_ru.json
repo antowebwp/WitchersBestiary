@@ -549,7 +549,7 @@
   "item.witchersbestiary.experienced_fighter_spawn_egg": "Яйцо призыва: Опытный боец",
   "entity.witchersbestiary.champion_fighter": "Чемпион",
   "item.witchersbestiary.champion_fighter_spawn_egg": "Яйцо призыва: Чемпион",
-  "fist.witchersbestiary.invite": "Shift+ПКМ: подтвердить поединок с пустыми руками. /wbfight cancel — отмена. Первая победа оплачивается, повторы — тренировка.",
+  "fist.witchersbestiary.invite": "Повторите взаимодействие пустыми руками крадучись для подтверждения. /wbfight cancel — отказ. Каждый игрок может получить награду за этого соперника раз в игровые сутки; остальные реванши — тренировочные.",
   "fist.witchersbestiary.win": "Победа нокаутом! /wbfight claim — получить невостребованные кроны.",
   "fist.witchersbestiary.lose": "Вы проиграли поединок. Обычное здоровье сохранено.",
   "fist.witchersbestiary.cancelled": "Поединок прекращён.",

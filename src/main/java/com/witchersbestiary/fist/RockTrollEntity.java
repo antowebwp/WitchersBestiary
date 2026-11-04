@@ -8,6 +8,7 @@ import net.minecraft.util.*;
 
 /** Neutral territorial fighter. All combat effects are resolved on the server. */
 public final class RockTrollEntity extends FistNpc {
+ private java.util.UUID alertedTarget;
  private int attackTicks, recovery, lastAttack=-1, attack=-1;
  public RockTrollEntity(EntityType<? extends net.minecraft.entity.mob.PathAwareEntity> type,World world){super(type,world,2);}
  @Override public void configureBout(FistFightSession fight){super.configureBout(fight);fight.opponent.health=180;fight.opponent.maxStamina=140;fight.opponent.stamina=140;fight.opponent.heavyDamageMultiplier=1.4;}
@@ -18,10 +19,11 @@ public final class RockTrollEntity extends FistNpc {
  @Override public void tick(){
   super.tick();if(getWorld().isClient)return;
   if(FistFights.busy(this)){attack=-1;attackTicks=0;recovery=30;setTarget(null);return;}
-  var target=getTarget();if(target==null||!target.isAlive()||squaredDistanceTo(target)>1024){setTarget(null);if(attack>=0)pose("idle",0);attack=-1;attackTicks=0;return;}
+  var target=getTarget();if(target==null||!target.isAlive()||squaredDistanceTo(target)>1024){setTarget(null);alertedTarget=null;if(attack>=0)pose("idle",0);attack=-1;attackTicks=0;return;}
+  if(!target.getUuid().equals(alertedTarget)){alertedTarget=target.getUuid();recovery=20;getNavigation().stop();pose("alert",20);}
   getLookControl().lookAt(target,25,25);
   if(recovery>0){recovery--;return;}
-  if(attack<0){double d=squaredDistanceTo(target);if(d>144){getNavigation().startMovingTo(target,.85);return;}int choice=random.nextInt(5);if(choice==lastAttack)choice=(choice+1)%5;attack=d>16?2:choice;lastAttack=attack;attackTicks=0;getNavigation().stop();pose(new String[]{"quick","heavy","throw","stomp","block"}[attack],0);}
+  if(attack<0){double d=squaredDistanceTo(target);if(d>144||d>16&&lastAttack==2){getNavigation().startMovingTo(target,.85);return;}int choice=random.nextInt(5);if(choice==lastAttack)choice=(choice+1)%5;attack=d>16?2:choice;lastAttack=attack;attackTicks=0;getNavigation().stop();pose(new String[]{"wild_quick","wild_heavy","throw","stomp","block"}[attack],0);}
   attackTicks++;
   int contact=attack==0?8:attack==1?18:attack==2?20:attack==3?22:30;
   if(attackTicks==contact&&attack!=4){

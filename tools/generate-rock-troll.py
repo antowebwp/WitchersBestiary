@@ -35,6 +35,13 @@ for i in range(130):
 d.rectangle((100,0,110,8),fill=(37,32,22))
 im.save(root/'textures/entity/rock_troll.png')
 a=json.loads((root/'animations/fighter.animation.json').read_text())
+import copy
+for name,factor in [('quick',2),('heavy',18/14)]:
+ clip=copy.deepcopy(a['animations']['animation.fighter.'+name]);clip['loop']=False;clip['animation_length']*=factor
+ for channels in clip['bones'].values():
+  for channel,value in list(channels.items()):
+   if isinstance(value,dict):channels[channel]={str(round(float(t)*factor,5)):v for t,v in value.items()}
+ a['animations']['animation.fighter.wild_'+name]=clip
 for k,seconds in [('throw',2),('stomp',2),('alert',1),('death',2)]:
  a['animations']['animation.fighter.'+k]={'animation_length':seconds,'bones':{'body':{'rotation':{'0':[0,0,0],'.6':[-20,0,0],'1.0':[25,0,0],'1.8':[0,0,0]}},'right_arm':{'rotation':{'0':[0,0,0],'.6':[-130,0,0],'1.0':[30,0,0],'1.8':[0,0,0]}}}}
 a['animations']['animation.fighter.death']={'animation_length':2,'bones':{'root':{'rotation':{'0':[0,0,0],'1.2':[80,0,0]},'position':{'0':[0,0,0],'1.2':[0,-4,0]}}}}

@@ -32,6 +32,15 @@ public final class FistFightTests implements FabricGameTest{
   var troll=c.spawnEntity(FistRegistry.ROCK_TROLL,3,2,3);var p=player(c,troll);c.assertTrue(troll.getTarget()==null&&troll.winReward()==90,"Neutral registered troll with separate reward");
   FistFights.invite(p,troll);c.assertTrue(FistFights.confirm(p,troll),"Shared confirmation works");var f=FistFights.active(p).fight();c.assertTrue(f.opponent.health==180&&f.opponent.maxStamina==140&&f.opponent.heavyDamageMultiplier>1,"Troll bout balance");float hp=troll.getHealth();for(int i=0;i<60;i++)f.tick();f.opponent.health=1;f.act(true,FistFightSession.Action.QUICK);for(int i=0;i<4;i++)f.tick();f.hit(true,true,true);FistFights.tick(p.getServer());c.assertTrue(troll.isAlive()&&troll.getHealth()==hp&&troll.pose().equals("knockout"),"Nonfatal troll knockout");c.assertTrue(p.getInventory().count(com.witchersbestiary.economy.Currency.CROWN)==90,"Troll pays crowns");p.discard();troll.discard();c.complete();
  }
+ @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE,batchId="stage21c")
+ public void trollMountainAndCaveSpawnIntegration(TestContext c){
+  var registry=c.getWorld().getRegistryManager().get(net.minecraft.registry.RegistryKeys.BIOME);
+  for(var key:java.util.List.of(net.minecraft.world.biome.BiomeKeys.STONY_PEAKS,net.minecraft.world.biome.BiomeKeys.DRIPSTONE_CAVES)){
+   var biome=registry.getEntry(key).orElseThrow();c.assertTrue(biome.isIn(RockTrollSpawns.HABITATS),"Extensible habitat includes "+key.getValue());
+   c.assertTrue(biome.value().getSpawnSettings().getSpawnEntries(net.minecraft.entity.SpawnGroup.CREATURE).getEntries().stream().anyMatch(e->e.type==FistRegistry.ROCK_TROLL),"Natural spawn list includes troll in "+key.getValue());
+  }
+  c.assertTrue(!com.witchersbestiary.contracts.procedural.ContractSpecies.ENTITIES.containsValue("rock_troll"),"Troll excluded from procedural hunts");c.complete();
+ }
  private FistFightSession started(){var f=new FistFightSession();for(int i=0;i<60;i++)f.tick();return f;}
  @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE,batchId="stage21b")
  public void quickHeavyBlockAndCounter(TestContext c){var f=started();c.assertTrue(f.act(true,FistFightSession.Action.QUICK)&&f.act(false,FistFightSession.Action.BLOCK),"Actions accepted");for(int i=0;i<4;i++)f.tick();double hp=f.opponent.health;c.assertTrue(f.hit(true,true,true)&&f.opponent.health<hp&&f.opponent.health>hp-9,"Frontal block reduces damage");double once=f.opponent.health;c.assertTrue(!f.hit(true,true,true)&&f.opponent.health==once,"One contact per attack");c.assertTrue(f.opponent.counterTicks>0&&f.act(false,FistFightSession.Action.COUNTER),"Timely block counter window");for(int i=0;i<5;i++)f.tick();c.assertTrue(f.hit(false,true,true)&&f.player.health<100,"Counter damages virtual health");var heavy=started();heavy.act(true,FistFightSession.Action.HEAVY);for(int i=0;i<13;i++)heavy.tick();c.assertTrue(!heavy.contact(true),"Heavy has fourteen tick preparation");heavy.tick();heavy.hit(true,true,false);c.assertTrue(heavy.opponent.health==78,"Heavy contact damage");c.complete();}

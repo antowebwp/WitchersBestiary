@@ -33,6 +33,13 @@ for role in ['Server', 'One', 'Two']:
     for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
+    if os.environ.get('STAGE21C_RESUME_TROLL') == '1': jvm += ['-Dwitchersbestiary.stage21cResumeTroll=true']
+    if os.environ.get('STAGE21C_NATURAL_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cNaturalOnly=true']
+    if os.environ.get('STAGE21C_BOUT_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cBoutOnly=true']
+    if os.environ.get('STAGE21B_HUD_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21bHudOnly=true']
+    if role != 'Server' and os.environ.get('STAGE21B_RECOVER_CONFIG'):
+        source_config=Path(os.environ['STAGE21B_RECOVER_CONFIG'])/role.lower()/'config'
+        if source_config.is_dir(): shutil.copytree(source_config,cwd/'config',dirs_exist_ok=True)
     if role == 'Server':
         jvm += ['-Dwitchersbestiary.stage21aNetwork=true'] if os.environ.get('STAGE21A_NETWORK')=='1' else ['-Dwitchersbestiary.stage21bNetwork=true'] if os.environ.get('STAGE21B_NETWORK')=='1' else ['-Dwitchersbestiary.stage20eServer=true']
         if os.environ.get('STAGE20G_VILLAGE') == '1': jvm += ['-Dwitchersbestiary.stage20gVillage=true']

@@ -549,7 +549,7 @@
   "item.witchersbestiary.experienced_fighter_spawn_egg": "Experienced Fighter Spawn Egg",
   "entity.witchersbestiary.champion_fighter": "Champion",
   "item.witchersbestiary.champion_fighter_spawn_egg": "Champion Spawn Egg",
-  "fist.witchersbestiary.invite": "Sneak-right-click with empty hands to confirm. /wbfight cancel to decline. First defeat pays; rematches are training.",
+  "fist.witchersbestiary.invite": "Sneak-right-click with empty hands to confirm. /wbfight cancel to decline. Each player can earn a prize from this opponent once per in-game day; other rematches are training.",
   "fist.witchersbestiary.win": "Knockout victory! /wbfight claim collects pending crowns.",
   "fist.witchersbestiary.lose": "You lost the bout. Your normal health was preserved.",
   "fist.witchersbestiary.cancelled": "Bout cancelled.",

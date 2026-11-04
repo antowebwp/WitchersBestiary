@@ -577,6 +577,132 @@
         }
       }
     },
+    "animation.fighter.wild_quick": {
+      "loop": false,
+      "animation_length": 1.0,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": {
+            "0.0": [
+              -60,
+              0,
+              15
+            ],
+            "0.26": [
+              -70,
+              -20,
+              15
+            ],
+            "0.4": [
+              -95,
+              15,
+              -5
+            ],
+            "1.0": [
+              -60,
+              0,
+              15
+            ]
+          }
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": {
+            "0.0": [
+              -70,
+              0,
+              0
+            ],
+            "0.4": [
+              0,
+              0,
+              0
+            ],
+            "1.0": [
+              -70,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.wild_heavy": {
+      "loop": false,
+      "animation_length": 1.8,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": {
+            "0.0": [
+              -60,
+              0,
+              15
+            ],
+            "0.585": [
+              -135,
+              -20,
+              10
+            ],
+            "0.9": [
+              -95,
+              15,
+              -5
+            ],
+            "1.8": [
+              -60,
+              0,
+              15
+            ]
+          }
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": {
+            "0.0": [
+              -70,
+              0,
+              0
+            ],
+            "0.9": [
+              0,
+              0,
+              0
+            ],
+            "1.8": [
+              -70,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
     "animation.fighter.throw": {
       "animation_length": 2,
       "bones": {
