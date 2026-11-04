@@ -20,14 +20,17 @@
       "com.witchersbestiary.test.FistFightTests",
       "com.witchersbestiary.test.ContractHotfixTests",
       "com.witchersbestiary.test.ProgressiveContractTests",
-      "com.witchersbestiary.test.DuelTests"
+      "com.witchersbestiary.test.DuelTests",
+      "com.witchersbestiary.test.AlchemyTableTests",
+      "com.witchersbestiary.test.MerchantTests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer",
       "com.witchersbestiary.test.Stage21ANetworkServer",
       "com.witchersbestiary.test.Stage21BNetworkServer",
       "com.witchersbestiary.test.ContractReliabilityNetworkServer",
-      "com.witchersbestiary.test.DuelNetworkServer"
+      "com.witchersbestiary.test.DuelNetworkServer",
+      "com.witchersbestiary.test.Stage21ENetworkServer"
     ]
   },
   "depends": {

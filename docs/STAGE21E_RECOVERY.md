@@ -1,0 +1,25 @@
+# Stage21E recovery — WORK IN PROGRESS
+
+User attachment: C:/Users/lifak/.codex/attachments/50a5ad12-bc72-4b53-a718-83527f6152f2/Вставленный текст.txt. File actually ends mid-section11 ("Не позволя"); implemented supplied requirements, do not invent future-stage items. User explicitly authorized Stage21E, no21F/push/release. Base d08e65b, dev/0.21.0. All previous stages/hotfix preserved.
+
+Implemented:
+- Existing alchemy_workbench ID and four-slot WorkshopInventory NBT unchanged. New AlchemyRecipes obtains real RecipeManager crafting definitions:6existing elixirs,8oils,3legacy refinements (17total). No new consumables/balance changes. Bounded bipartite ingredient matching on copies of existing3inputs+player36slots; checks actual matches/craft/remainders/outputcapacity then single commit. Legacy process preserved. New compact300x238 browser, category cycle Elixirs/Oils/Components, paginated recipe rows, actual item tooltip/effect description, ingredients available/required and missing tooltip, brew and existingoutput/storage slots, normal36inventory+shiftmove. Server ScreenHandler checks live current handler, distance, player state, recipe-list reload consistency and4tick click limit.
+- Initial AlchemyTableTests2cases+smoke3/3 PASS build/stage21e-alchemy-tests.log: ALL17recipes exactconsumption/replay, fulloutputrollback, two-player sources, existing NBT, invaliddistance/index.
+- One ArcaneMerchant entity with VILLAGE/WANDERING, shared MerchantHandler, randomsessionUUID+sequence C2S, copied-inventory transactions using existing CrownBalance/WalletTransactions/WalletComponents. Physicalcrowns+allmainwallets+offhandwallet/coins. Exactpayment thenoutputcapacitycheck, no partial debit/drops. Durable merchant offers/mode/stock/price/home/lifetime/restockNBT. Villagestock2-dayrefresh, wandering3UUID-deterministicrareoffersplusordinary, noresell, no trophy/futureitems.
+- Loaded-only MerchantSpawns reuses VisitedVillageBoards.supported tag and same structure/origin key as boards; MerchantLedger durable UUIDclaim prevents respawn/dupe evenunloaded. Up to12attempts/village with1200tickspacing,9candidates/attempt. Wander12000tickinterval,max1loadedworld wanderer,12surfacecandidates40..64blocksfromaliveplayer. Natural3x3floor/no paths/fluid/solidblocks/border/entity checks. No structures/worldedits/camps/tickets. VillagehomeboundedAI, wandering48kloadedticklifetime onlydespawns >48fromplayer andnottrading. Idle/walk/tradeGeckoLib+headlook; original source tools/generate-arcane-merchant.py12bones37volumes256atlas. NativevisualQA STILL REQUIRED.
+- MerchantTests3cases covermixedcoins/multiplewalletsoffhand, insufficient/fullbagrollback, sharedlaststock, foreignsession/distance, persistedoffers/ledger. Replaynoncefullproof should strengthen later ifneeded.
+
+Currently running ONE combined94-test run +build+nativeprep: build/stage21e-comprehensive.log exec76554. Main/client/testcompilation passed prior. Inspect finalresult. Correctfailures and rerun onlyrelated class.
+
+Native harness prepared, NOT YET RUN:
+- Stage21ENetworkServer registeredtestmain guarded witchersbestiary.stage21eNetwork. tools/run-stage20e-network.py STAGE21E_NETWORK=1 selectsserver; bothclientsactualGUI2/3 andnormalBetterCombat runtimeusing-Pstage21dCompat.
+- Sourceclientactions merchantOpen/View/Buy, alchemyOpen/Brew/Take added. AllactualGUIclicks, noresult/price/HPedits. Campaign bothplayers100crowns(2physical+98wallet), buyoil52each, sharedstock4->2, rejectsecondinsufficient, sharedtablebothcursedelixirrecipes->2outputs, actualoutputshiftclick, modelscreenshot, sameworldrestartchecksstockwalletinventoryandblock.
+- After PASScombined/prep: JAVA_HOME Java21; STAGE21E_NETWORK=1 python tools/run-stage20e-network.py. Avoid compiling into live classdirs while nativeJVMsload. Native current-bug risk: merchantBuy blindly clicks nextpage atstep5 ifofferindex>=5 evenifalreadyonpage1 frompreviouspurchase; secondinsufficient should be ignoredanyway but check UI accurately. Stage21E serverfixturevillage merchant canwander away a little; actorswithin6initially.
+
+Required next:
+1 Combinedresults/fixes, launch native campaign and fix actual errors through success+restart. Inspect alchemyGUI at2scales and merchantgeometry/headlook/idlewalktrade. Add missingvalidationasset script.
+2 Actual natural village/wandering spawn proof (currenttestfixturemerchants are NOT natural proof). CTOV existingtag supports; Moog unconfirmed, do notclaimcompatibility untested. Can reuse oldStage20Gnativefixturelocator as test-only locate. Need preserve anti-duplicate/restartproof.
+3 Improve merchant rejection reasons (currently generic server rejected; GUI already disables outofstock/funds withspecifictooltip), strengthennonce/replay tests ifnecessary. No finalreportyet.
+4 Final docs STAGE21E_REPORT +progress/recovery, localcheckpoints, honestcompletionstatus onlyafter gates.
+
+No files deleted. Prior automatic approval refused test-world deletion (blocked bypolicy); do not bypass/retry through other tools. User game E:/Minecraft/game untouched. Assets accepted before21E unchanged.

@@ -19,6 +19,7 @@ import net.minecraft.world.event.GameEvent;
 public final class HunterElixirItem extends Item {
     private final net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> effect;
     public HunterElixirItem(Settings settings,net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> effect){super(settings);this.effect=effect;}
+    public net.minecraft.registry.entry.RegistryEntry<net.minecraft.entity.effect.StatusEffect> effect(){return effect;}
     @Override public void appendTooltip(ItemStack stack,TooltipContext context,java.util.List<net.minecraft.text.Text> lines,net.minecraft.item.tooltip.TooltipType type){if(effect.equals(com.witchersbestiary.registry.ModEffects.CLEAR_MIND)){lines.add(net.minecraft.text.Text.translatable("tooltip.witchersbestiary.clear_mind.1").formatted(net.minecraft.util.Formatting.AQUA));lines.add(net.minecraft.text.Text.translatable("tooltip.witchersbestiary.clear_mind.2").formatted(net.minecraft.util.Formatting.GRAY));return;}AlchemyTooltips.append(lines,AlchemyTooltips.category(effect),false);}
     @Override public UseAction getUseAction(ItemStack stack){return UseAction.DRINK;}
     @Override public int getMaxUseTime(ItemStack stack,LivingEntity user){return 32;}

@@ -8,6 +8,7 @@ import net.minecraft.client.render.entity.DrownedEntityRenderer;
 
 public final class WitchersBestiaryClient implements ClientModInitializer {
     @Override public void onInitializeClient() {
+        com.witchersbestiary.client.merchant.MerchantClient.initialize();
         com.witchersbestiary.client.board.NoticeBoardClient.initialize();
         com.witchersbestiary.client.economy.WalletScreen.initialize();
         com.witchersbestiary.client.fist.FistClient.initialize();
