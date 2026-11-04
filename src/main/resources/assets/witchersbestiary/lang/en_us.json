@@ -569,5 +569,15 @@
   "fist.witchersbestiary.action.stagger": "Staggered",
   "fist.witchersbestiary.action.knockout": "Knockout",
   "fist.witchersbestiary.action.victory": "Victory",
-  "fist.witchersbestiary.stamina": "Stamina: %s"
+  "fist.witchersbestiary.stamina": "Stamina: %s",
+  "fist.hud.title": "Fist fight HUD",
+  "fist.hud.scale": "Scale +",
+  "fist.hud.reset": "Reset",
+  "fist.hud.preview": "Drag to move",
+  "fist.hud.scale_value": "Scale: %s%%",
+  "fist.hud.position.0": "Top right",
+  "fist.hud.position.1": "Bottom right",
+  "fist.hud.position.2": "Top left",
+  "fist.hud.position.3": "Bottom left",
+  "fist.hud.position.4": "Custom"
 }

@@ -569,5 +569,15 @@
   "fist.witchersbestiary.action.stagger": "Оглушение",
   "fist.witchersbestiary.action.knockout": "Нокаут",
   "fist.witchersbestiary.action.victory": "Победа",
-  "fist.witchersbestiary.stamina": "Выносливость: %s"
+  "fist.witchersbestiary.stamina": "Выносливость: %s",
+  "fist.hud.title": "HUD кулачного боя",
+  "fist.hud.scale": "Масштаб +",
+  "fist.hud.reset": "Сброс",
+  "fist.hud.preview": "Перетащите панель",
+  "fist.hud.scale_value": "Масштаб: %s%%",
+  "fist.hud.position.0": "Справа сверху",
+  "fist.hud.position.1": "Справа снизу",
+  "fist.hud.position.2": "Слева сверху",
+  "fist.hud.position.3": "Слева снизу",
+  "fist.hud.position.4": "Произвольно"
 }
