@@ -9,3 +9,6 @@ Three original GeckoLib NPC variants, server-owned virtual fights, confirmation/
 Physical crowns, bound component wallet/GUI, atomic transfers, pickup and new-contract rewards preserving old emerald snapshots.64prior tests retained in the69-test regression. See [report](STAGE21A_REPORT.md).
 
 Local artifact remains0.21.0-dev, not the full Stage21 RC1.21C–21J unimplemented; no push/publication. Current21B safe cleanup freed approximately264.2MiB; previous blocked files untouched.
+
+## Stage21B follow-up, 2026-11-04
+HUD editor/persistence, three fighter geometry seams, responsive AI and personal per-NPC rewards validated. Two native clients each received12 for the same novice; a saved-world training win did not repeat payment. Four-angle/pose review completed for all three original fighters. See STAGE21B_REPORT.md. Stage21C implementation exists; its final native checks remain in progress.

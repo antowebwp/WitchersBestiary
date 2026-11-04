@@ -73,3 +73,15 @@ SHA256 f27590d308fc9e62d839711cf07111e1ecfd2ad69fa4451d0f52efeda6102399
 Metadata0.21.0-dev and production resources inspected; test controllers/classes and logs excluded. This is not the full0.21.0 RC1. Published0.20.0 and RC artifacts restored/hash-checked; the21A dev checkpoint is backed up separately. v0.19.0 and v0.20.0 tags and protected directories unchanged. No push/publication.
 
 Current-stage safe cleanup succeeded with checked absolute paths and no forced process termination: run-20261104-013520 (138616841bytes), run-20261104-021844 (138430161bytes). Total277047002bytes, approximately264.2MiB. Summary:build/stage21b-cleanup.json; parent logs and successful evidence worlds/screenshots retained. Previously blocked Stage21A files, global caches, sources, releases and user worlds were not touched.
+
+## Stage21B fixes — verified follow-up, 2026-11-04
+
+This section supersedes the earlier global first-win reward and fixed left-side HUD descriptions.
+
+Personal reward reservations now use player UUID + exact NPC UUID, with a persisted24000-tick cooldown and duplicate-safe server completion. run-20261104-131805 paid12 crowns EACH to two real native clients defeating the SAME novice. run-20261104-132621 verified a real rematch victory after dedicated restart without another payout; balances/session reset were checked from saved world state. Pending/full-bag and persistence regressions passed GameTests.
+
+HUD defaults to top right; /wbconfig opens its position/drag/scale/reset editor. Real-client drag and110% scale captures, Properties saves and new-JVM reload checks passed (run132621 and follow-ups). Placement clamps above the hotbar and within the viewport.
+
+The original fighter assets were retained. Coplanar side surfaces overlapped at hips/body y12..13, upper arm/forearm y15..16, and hips/legs y10..11. The generator trims those hidden overlaps to joint boundaries. All three models were reviewed from four directions and combat poses in run-20261104-141402 (frames30/120/210/300); the waist interference is gone. Prior run133119 model captures are excluded because a saved test troll overlapped staged humans; the isolated review fixture now clears its own staging area.
+
+AI decisions are faster, approach speed increased, repeated guard cannot reset timely-block age, and recovery retreat is no longer cancelled by the proximity stop. Novice remains beatable; experienced/champion retain stronger decisions and can defeat the real test client. Full73 tests passed under -Pstage19fProfile=A, then the touched FistFightTests class passed11/11 after adding habitat coverage. No push/release.
