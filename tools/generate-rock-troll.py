@@ -44,8 +44,9 @@ for name,factor in [('quick',2),('heavy',18/14)]:
  a['animations']['animation.fighter.wild_'+name]=clip
 for k,seconds in [('throw',2),('stomp',2),('alert',1),('death',2)]:
  a['animations']['animation.fighter.'+k]={'animation_length':seconds,'bones':{'body':{'rotation':{'0':[0,0,0],'.6':[-20,0,0],'1.0':[25,0,0],'1.8':[0,0,0]}},'right_arm':{'rotation':{'0':[0,0,0],'.6':[-130,0,0],'1.0':[30,0,0],'1.8':[0,0,0]}}}}
-a['animations']['animation.fighter.death']={'animation_length':1,'bones':{'root':{'rotation':{'0':[0,0,0],'.8':[80,0,0]},'position':{'0':[0,0,0],'.8':[0,-4,0]}}}}
+a['animations']['animation.fighter.death']={'animation_length':1,'bones':{'root':{'rotation':{'0':[0,0,0],'.8':[80,0,0]},'position':{'0':[0,0,0],'.2':[0,2,0],'.4':[0,3.5,0],'.6':[0,5,0],'.8':[0,6,0]}}}}
 a['animations']['animation.fighter.stomp']={'animation_length':2,'bones':{'right_leg':{'rotation':{'0':[0,0,0],'.7':[-50,0,0],'1.1':[15,0,0],'1.5':[0,0,0]}},'body':{'rotation':{'0':[0,0,0],'.7':[-12,0,0],'1.1':[15,0,0],'1.7':[0,0,0]}}}}
+a['animations']['animation.fighter.knockout']={'loop':False,'animation_length':1.5,'bones':{'root':{'rotation':{'0':[0,0,0],'.5':[0,0,85],'1.5':[0,0,85]},'position':{'0':[0,0,0],'.5':[0,15,0],'1.5':[0,15,0]}},'left_arm':{'rotation':{'0':[0,0,0],'.35':[0,0,-80]}},'right_arm':{'rotation':{'0':[0,0,0],'.35':[0,0,25]}},'left_forearm':{'rotation':{'0':[0,0,0],'.35':[-15,0,0]}},'right_forearm':{'rotation':{'0':[0,0,0],'.35':[-15,0,0]}}}}
 (root/'animations/rock_troll.animation.json').write_text(json.dumps(a,indent=2)+'\n')
 (root/'models/item/rock_troll_spawn_egg.json').write_text('{"parent":"minecraft:item/template_spawn_egg"}\n')
 for lang,name in [('en_us','Rock Troll'),('ru_ru','Скальный тролль')]:

@@ -6,6 +6,7 @@ public final class FistFightSession {
  public enum Stage { COUNTDOWN, FIGHTING, FINISHED, CANCELLED }
  public static final class Fighter {
   public double health=100,stamina=100,maxStamina=100,heavyDamageMultiplier=1;public Action action=Action.IDLE;
+  public int quickContact=4,heavyContact=14,quickLength=10,heavyLength=28;
   public boolean hitResolved,recovering;public int actionTicks,cooldown,counterTicks,regenDelay,combo;
  }
  private final java.util.Random random=new java.util.Random();
@@ -31,10 +32,10 @@ public final class FistFightSession {
   f.actionTicks++;if(f.cooldown>0)f.cooldown--;if(f.counterTicks>0)f.counterTicks--;if(f.regenDelay>0)f.regenDelay--;
   if(f.action==Action.BLOCK){f.stamina=Math.max(0,f.stamina-.65);if(f.stamina==0){f.action=Action.STAGGER;f.actionTicks=0;f.cooldown=18;}}
   else if(f.regenDelay==0)f.stamina=Math.min(f.maxStamina,f.stamina+.65);
-  int length=switch(f.action){case QUICK->10;case HEAVY->28;case COUNTER->14;case DODGE->10;case STAGGER->18;default->Integer.MAX_VALUE;};
+  int length=switch(f.action){case QUICK->f.quickLength;case HEAVY->f.heavyLength;case COUNTER->14;case DODGE->10;case STAGGER->18;default->Integer.MAX_VALUE;};
   if(f.actionTicks>=length){f.action=Action.IDLE;f.actionTicks=0;}
  }
- public boolean contact(boolean owner){var f=owner?player:opponent;return stage==Stage.FIGHTING&&f.actionTicks==switch(f.action){case QUICK->4;case HEAVY->14;case COUNTER->5;default->-1;};}
+ public boolean contact(boolean owner){var f=owner?player:opponent;return stage==Stage.FIGHTING&&f.actionTicks==switch(f.action){case QUICK->f.quickContact;case HEAVY->f.heavyContact;case COUNTER->5;default->-1;};}
  public boolean hit(boolean owner,boolean reachable,boolean defenderFacing){
   if(!contact(owner)||!reachable)return false;var attack=owner?player:opponent;var target=owner?opponent:player;
   if(attack.hitResolved)return false;attack.hitResolved=true;
@@ -44,7 +45,7 @@ public final class FistFightSession {
    if(target.stamina>=drain){target.stamina-=drain;damage*=.25;if(timely)target.counterTicks=14;}
    else{target.stamina=0;target.action=Action.STAGGER;target.actionTicks=0;target.cooldown=18;damage*=.8;}}
   if(attack.action==Action.QUICK){attack.combo=Math.min(2,attack.combo+1);if(attack.combo==2){damage+=2;attack.combo=0;}}else attack.combo=0;
-  if(attack.action==Action.COUNTER||attack.action==Action.QUICK&&target.action==Action.HEAVY&&target.actionTicks<14&&random.nextInt(5)==0){target.action=Action.STAGGER;target.actionTicks=0;target.cooldown=18;}
+  if(attack.action==Action.COUNTER||attack.action==Action.QUICK&&target.action==Action.HEAVY&&target.actionTicks<target.heavyContact&&random.nextInt(5)==0){target.action=Action.STAGGER;target.actionTicks=0;target.cooldown=18;}
   target.health=Math.max(0,target.health-damage);target.regenDelay=25;
   if(target.health==0){stage=Stage.FINISHED;playerWon=owner;target.action=Action.KNOCKOUT;attack.action=Action.VICTORY;}
   return true;

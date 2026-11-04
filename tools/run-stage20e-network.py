@@ -33,6 +33,7 @@ for role in ['Server', 'One', 'Two']:
     for env,key in [('STAGE20G_VILLAGE_ID','stage20gVillageId'),('STAGE20G_VILLAGE_TAG','stage20gVillageTag')]:
         if os.environ.get(env): jvm += [f'-Dwitchersbestiary.{key}={os.environ[env]}']
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
+    if os.environ.get('STAGE21C_MODEL_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cModelOnly=true']
     if os.environ.get('STAGE21C_RESUME_TROLL') == '1': jvm += ['-Dwitchersbestiary.stage21cResumeTroll=true']
     if os.environ.get('STAGE21C_NATURAL_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cNaturalOnly=true']
     if os.environ.get('STAGE21C_BOUT_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage21cBoutOnly=true']
