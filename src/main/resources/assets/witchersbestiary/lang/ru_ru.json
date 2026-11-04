@@ -579,5 +579,7 @@
   "fist.hud.position.1": "Справа снизу",
   "fist.hud.position.2": "Слева сверху",
   "fist.hud.position.3": "Слева снизу",
-  "fist.hud.position.4": "Произвольно"
+  "fist.hud.position.4": "Произвольно",
+  "entity.witchersbestiary.rock_troll": "Скальный тролль",
+  "item.witchersbestiary.rock_troll_spawn_egg": "Скальный тролль — яйцо призыва"
 }

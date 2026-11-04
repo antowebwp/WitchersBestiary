@@ -579,5 +579,7 @@
   "fist.hud.position.1": "Bottom right",
   "fist.hud.position.2": "Top left",
   "fist.hud.position.3": "Bottom left",
-  "fist.hud.position.4": "Custom"
+  "fist.hud.position.4": "Custom",
+  "entity.witchersbestiary.rock_troll": "Rock Troll",
+  "item.witchersbestiary.rock_troll_spawn_egg": "Rock Troll Spawn Egg"
 }

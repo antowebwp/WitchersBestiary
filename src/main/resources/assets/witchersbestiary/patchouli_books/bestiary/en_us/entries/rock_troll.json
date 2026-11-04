@@ -1,0 +1,17 @@
+{
+  "name": "Rock Troll",
+  "category": "witchersbestiary:ogroids",
+  "icon": "witchersbestiary:rock_troll_spawn_egg",
+  "pages": [
+    {
+      "type": "patchouli:entity",
+      "entity": "witchersbestiary:rock_troll",
+      "scale": 0.6,
+      "text": "Rock Troll"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A neutral mountain ogroid. Retaliates when attacked. Watch the wind-up before heavy punches, thrown rocks and ground stomps. Its frontal guard reduces damage. Interact with empty hands, then sneak-interact to confirm a nonfatal fist fight. Victories award 90 crowns with a personal one-day cooldown for this troll. Rematches remain available for training."
+    }
+  ]
+}

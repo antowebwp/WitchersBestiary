@@ -5,7 +5,7 @@ public final class FistFightSession {
  public enum Action { IDLE, QUICK, HEAVY, BLOCK, DODGE, COUNTER, STAGGER, KNOCKOUT, VICTORY }
  public enum Stage { COUNTDOWN, FIGHTING, FINISHED, CANCELLED }
  public static final class Fighter {
-  public double health=100,stamina=100,maxStamina=100;public Action action=Action.IDLE;
+  public double health=100,stamina=100,maxStamina=100,heavyDamageMultiplier=1;public Action action=Action.IDLE;
   public boolean hitResolved,recovering;public int actionTicks,cooldown,counterTicks,regenDelay,combo;
  }
  private final java.util.Random random=new java.util.Random();
@@ -39,7 +39,7 @@ public final class FistFightSession {
   if(!contact(owner)||!reachable)return false;var attack=owner?player:opponent;var target=owner?opponent:player;
   if(attack.hitResolved)return false;attack.hitResolved=true;
   if(target.action==Action.DODGE&&target.actionTicks<=6){target.counterTicks=12;return false;}
-  double damage=switch(attack.action){case HEAVY->22;case COUNTER->16;default->9;};
+  double damage=switch(attack.action){case HEAVY->22*attack.heavyDamageMultiplier;case COUNTER->16;default->9;};
   if(target.action==Action.BLOCK&&defenderFacing){boolean timely=target.actionTicks<=6;double drain=attack.action==Action.HEAVY?28:10;
    if(target.stamina>=drain){target.stamina-=drain;damage*=.25;if(timely)target.counterTicks=14;}
    else{target.stamina=0;target.action=Action.STAGGER;target.actionTicks=0;target.cooldown=18;damage*=.8;}}

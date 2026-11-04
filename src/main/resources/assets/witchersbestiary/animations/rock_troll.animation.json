@@ -1,0 +1,771 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.fighter.idle": {
+      "loop": true,
+      "animation_length": 2,
+      "bones": {
+        "body": {
+          "rotation": {
+            "0": [
+              1,
+              0,
+              0
+            ],
+            "1": [
+              -1,
+              0,
+              0
+            ],
+            "2": [
+              1,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.walk": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "left_leg": {
+          "rotation": {
+            "0": [
+              25,
+              0,
+              0
+            ],
+            ".5": [
+              -25,
+              0,
+              0
+            ],
+            "1": [
+              25,
+              0,
+              0
+            ]
+          }
+        },
+        "right_leg": {
+          "rotation": {
+            "0": [
+              -25,
+              0,
+              0
+            ],
+            ".5": [
+              25,
+              0,
+              0
+            ],
+            "1": [
+              -25,
+              0,
+              0
+            ]
+          }
+        },
+        "left_arm": {
+          "rotation": {
+            "0": [
+              -25,
+              0,
+              0
+            ],
+            ".5": [
+              25,
+              0,
+              0
+            ],
+            "1": [
+              -25,
+              0,
+              0
+            ]
+          }
+        },
+        "right_arm": {
+          "rotation": {
+            "0": [
+              25,
+              0,
+              0
+            ],
+            ".5": [
+              -25,
+              0,
+              0
+            ],
+            "1": [
+              25,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.stance": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": [
+            -60,
+            0,
+            15
+          ]
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.fighter.combat_walk": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": [
+            -60,
+            0,
+            15
+          ]
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "left_leg": {
+          "rotation": {
+            "0": [
+              25,
+              0,
+              0
+            ],
+            ".5": [
+              -25,
+              0,
+              0
+            ],
+            "1": [
+              25,
+              0,
+              0
+            ]
+          }
+        },
+        "right_leg": {
+          "rotation": {
+            "0": [
+              -25,
+              0,
+              0
+            ],
+            ".5": [
+              25,
+              0,
+              0
+            ],
+            "1": [
+              -25,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.quick": {
+      "loop": true,
+      "animation_length": 0.5,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": {
+            "0": [
+              -60,
+              0,
+              15
+            ],
+            "0.13": [
+              -70,
+              -20,
+              15
+            ],
+            "0.2": [
+              -95,
+              15,
+              -5
+            ],
+            "0.5": [
+              -60,
+              0,
+              15
+            ]
+          }
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": {
+            "0": [
+              -70,
+              0,
+              0
+            ],
+            "0.2": [
+              0,
+              0,
+              0
+            ],
+            "0.5": [
+              -70,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.counter": {
+      "loop": true,
+      "animation_length": 0.7,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": {
+            "0": [
+              -60,
+              0,
+              15
+            ],
+            "0.1625": [
+              -70,
+              -20,
+              15
+            ],
+            "0.25": [
+              -95,
+              15,
+              -5
+            ],
+            "0.7": [
+              -60,
+              0,
+              15
+            ]
+          }
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": {
+            "0": [
+              -70,
+              0,
+              0
+            ],
+            "0.25": [
+              0,
+              0,
+              0
+            ],
+            "0.7": [
+              -70,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.heavy": {
+      "loop": true,
+      "animation_length": 1.4,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": {
+            "0": [
+              -60,
+              0,
+              15
+            ],
+            "0.45499999999999996": [
+              -135,
+              -20,
+              10
+            ],
+            "0.7": [
+              -95,
+              15,
+              -5
+            ],
+            "1.4": [
+              -60,
+              0,
+              15
+            ]
+          }
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": {
+            "0": [
+              -70,
+              0,
+              0
+            ],
+            "0.7": [
+              0,
+              0,
+              0
+            ],
+            "1.4": [
+              -70,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.block": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -90,
+            0,
+            -25
+          ]
+        },
+        "right_arm": {
+          "rotation": [
+            -90,
+            0,
+            25
+          ]
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "animation.fighter.dodge": {
+      "loop": true,
+      "animation_length": 0.5,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -60,
+            0,
+            -15
+          ]
+        },
+        "right_arm": {
+          "rotation": [
+            -60,
+            0,
+            15
+          ]
+        },
+        "left_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "right_forearm": {
+          "rotation": [
+            -70,
+            0,
+            0
+          ]
+        },
+        "body": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".15": [
+              12,
+              0,
+              25
+            ],
+            ".5": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.stagger": {
+      "loop": true,
+      "animation_length": 0.9,
+      "bones": {
+        "body": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".2": [
+              -25,
+              0,
+              5
+            ],
+            ".9": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.knockout": {
+      "loop": true,
+      "animation_length": 1.5,
+      "bones": {
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".5": [
+              0,
+              0,
+              85
+            ],
+            "1.5": [
+              0,
+              0,
+              85
+            ]
+          },
+          "position": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".5": [
+              0,
+              8,
+              0
+            ],
+            "1.5": [
+              0,
+              8,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.victory": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "left_arm": {
+          "rotation": [
+            -165,
+            0,
+            -20
+          ]
+        },
+        "right_arm": {
+          "rotation": [
+            -165,
+            0,
+            20
+          ]
+        }
+      }
+    },
+    "animation.fighter.throw": {
+      "animation_length": 2,
+      "bones": {
+        "body": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".6": [
+              -20,
+              0,
+              0
+            ],
+            "1.0": [
+              25,
+              0,
+              0
+            ],
+            "1.8": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "right_arm": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".6": [
+              -130,
+              0,
+              0
+            ],
+            "1.0": [
+              30,
+              0,
+              0
+            ],
+            "1.8": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.stomp": {
+      "animation_length": 2,
+      "bones": {
+        "right_leg": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".7": [
+              -50,
+              0,
+              0
+            ],
+            "1.1": [
+              15,
+              0,
+              0
+            ],
+            "1.5": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "body": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".7": [
+              -12,
+              0,
+              0
+            ],
+            "1.1": [
+              15,
+              0,
+              0
+            ],
+            "1.7": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.alert": {
+      "animation_length": 1,
+      "bones": {
+        "body": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".6": [
+              -20,
+              0,
+              0
+            ],
+            "1.0": [
+              25,
+              0,
+              0
+            ],
+            "1.8": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        "right_arm": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            ".6": [
+              -130,
+              0,
+              0
+            ],
+            "1.0": [
+              30,
+              0,
+              0
+            ],
+            "1.8": [
+              0,
+              0,
+              0
+            ]
+          }
+        }
+      }
+    },
+    "animation.fighter.death": {
+      "animation_length": 2,
+      "bones": {
+        "root": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1.2": [
+              80,
+              0,
+              0
+            ]
+          },
+          "position": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "1.2": [
+              0,
+              -4,
+              0
+            ]
+          }
+        }
+      }
+    }
+  }
+}
