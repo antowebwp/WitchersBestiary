@@ -600,5 +600,8 @@
   "tracking.witchersbestiary.target_dimension": "Измерение: %s",
   "tracking.witchersbestiary.dimension.minecraft:overworld": "Верхний мир",
   "tracking.witchersbestiary.dimension.minecraft:the_nether": "Нижний мир",
-  "tracking.witchersbestiary.dimension.minecraft:the_end": "Край"
+  "tracking.witchersbestiary.dimension.minecraft:the_end": "Край",
+  "contract.witchersbestiary.unclaimed": "У отслеживаемого заказа есть неполученная награда. Сначала заберите её.",
+  "contract.witchersbestiary.no_active": "Нет активного контракта для отказа.",
+  "contract.witchersbestiary.ambiguous": "Выберите нужный активный заказ на доске. Ни один контракт не изменён."
 }

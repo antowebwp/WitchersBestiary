@@ -600,5 +600,8 @@
   "tracking.witchersbestiary.target_dimension": "Dimension: %s",
   "tracking.witchersbestiary.dimension.minecraft:overworld": "Overworld",
   "tracking.witchersbestiary.dimension.minecraft:the_nether": "The Nether",
-  "tracking.witchersbestiary.dimension.minecraft:the_end": "The End"
+  "tracking.witchersbestiary.dimension.minecraft:the_end": "The End",
+  "contract.witchersbestiary.unclaimed": "Your tracked contract has an unclaimed reward. Claim it first.",
+  "contract.witchersbestiary.no_active": "No active contract to abandon.",
+  "contract.witchersbestiary.ambiguous": "Select the intended active order at a board. No contract was changed."
 }

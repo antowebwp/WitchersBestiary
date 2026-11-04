@@ -93,6 +93,7 @@ public final class ContractHotfixTests implements FabricGameTest {
   own=ContractInstance.fromNbt(own.toNbt());c.assertTrue(own.status()==ContractInstance.Status.CANCELLED,"Cancellation persisted");
   var completed=waiting(p);completed.credit(UUID.randomUUID(),p.getUuid(),completed.definition().target(),System.currentTimeMillis());store.add(completed);
   var reopened=new com.witchersbestiary.board.BoardScreenHandler(713,p.getInventory(),root);p.currentScreenHandler=reopened;c.assertTrue(!reopened.cancel(p,completed.id())&&completed.status()==ContractInstance.Status.COMPLETED,"Unclaimed completed contract cannot be abandoned");
+  Investigations.accepted(p,completed);var unrelated=waiting(p);store.add(unrelated);boolean protectedReward=false;try{Contracts.abandonActive(p);}catch(IllegalStateException expected){protectedReward=true;}c.assertTrue(protectedReward&&completed.status()==ContractInstance.Status.COMPLETED&&unrelated.status()==ContractInstance.Status.ACCEPTED,"Command cannot silently abandon a different contract while tracked reward is unclaimed");
   p.currentScreenHandler=p.playerScreenHandler;q.currentScreenHandler=q.playerScreenHandler;p.discard();q.discard();c.complete();
  }
  @GameTest(templateName="witchersbestiary:village_board_arena",batchId="contract-hotfix-recovery",tickLimit=40)

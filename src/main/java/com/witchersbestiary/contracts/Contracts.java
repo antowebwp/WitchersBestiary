@@ -91,16 +91,17 @@ public final class Contracts {
     public static UUID abandonActive(ServerPlayerEntity player) {
         var store=ContractState.get(player.getServer());store.writable();
         var selected=com.witchersbestiary.contracts.tracking.Investigations.activeContract(player);
-        if(selected==null||selected.status()!=ContractInstance.Status.ACCEPTED){
+        if(selected!=null&&selected.status()!=ContractInstance.Status.ACCEPTED)throw new IllegalStateException("contract.witchersbestiary.unclaimed");
+        if(selected==null){
             var accepted=store.ownedBy(player.getUuid()).stream().filter(c->c.status()==ContractInstance.Status.ACCEPTED).toList();
-            if(accepted.size()!=1)throw new IllegalStateException(accepted.isEmpty()?"No active contract to abandon":"Multiple active contracts; no contract was changed");
+            if(accepted.size()!=1)throw new IllegalStateException(accepted.isEmpty()?"contract.witchersbestiary.no_active":"contract.witchersbestiary.ambiguous");
             selected=accepted.getFirst();
         }
         UUID id=selected.id();cancel(player,id);return id;
     }
     private static int command(ServerCommandSource source, Runnable action) {
         try { action.run(); return 1; }
-        catch (IllegalArgumentException | IllegalStateException e) { source.sendError(Text.literal(e.getMessage())); return 0; }
+        catch (IllegalArgumentException | IllegalStateException e) { source.sendError(e.getMessage()!=null&&e.getMessage().startsWith("contract.witchersbestiary.")?Text.translatable(e.getMessage()):Text.literal(String.valueOf(e.getMessage()))); return 0; }
     }
     public static void initialize() {
         com.witchersbestiary.contracts.hunt.SwampLord.initialize();
