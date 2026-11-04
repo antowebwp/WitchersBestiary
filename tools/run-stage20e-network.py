@@ -48,7 +48,7 @@ for role in ['Server', 'One', 'Two']:
         source_config=Path(os.environ['STAGE21B_RECOVER_CONFIG'])/role.lower()/'config'
         if source_config.is_dir(): shutil.copytree(source_config,cwd/'config',dirs_exist_ok=True)
     if role == 'Server':
-        jvm += ['-Dwitchersbestiary.stage21eNetwork=true'] if os.environ.get('STAGE21E_NETWORK')=='1' else ['-Dwitchersbestiary.duelNetwork=true'] if os.environ.get('DUEL_NETWORK')=='1' else ['-Dwitchersbestiary.contractReliabilityNetwork=true'] if os.environ.get('CONTRACT_RELIABILITY_NETWORK')=='1' else ['-Dwitchersbestiary.stage21aNetwork=true'] if os.environ.get('STAGE21A_NETWORK')=='1' else ['-Dwitchersbestiary.stage21bNetwork=true'] if os.environ.get('STAGE21B_NETWORK')=='1' else ['-Dwitchersbestiary.stage20eServer=true']
+        jvm += ['-Dwitchersbestiary.stage21fNetwork=true'] if os.environ.get('STAGE21F_NETWORK')=='1' else ['-Dwitchersbestiary.stage21eNetwork=true'] if os.environ.get('STAGE21E_NETWORK')=='1' else ['-Dwitchersbestiary.duelNetwork=true'] if os.environ.get('DUEL_NETWORK')=='1' else ['-Dwitchersbestiary.contractReliabilityNetwork=true'] if os.environ.get('CONTRACT_RELIABILITY_NETWORK')=='1' else ['-Dwitchersbestiary.stage21aNetwork=true'] if os.environ.get('STAGE21A_NETWORK')=='1' else ['-Dwitchersbestiary.stage21bNetwork=true'] if os.environ.get('STAGE21B_NETWORK')=='1' else ['-Dwitchersbestiary.stage20eServer=true']
         if os.environ.get('STAGE20G_VILLAGE') == '1': jvm += ['-Dwitchersbestiary.stage20gVillage=true']
         args = ['--nogui']
         (cwd / 'eula.txt').write_text('eula=true\n')
@@ -106,7 +106,7 @@ try:
     while time.monotonic()-started < 900:
         failures = list(CASE.glob('*.failure.txt')) + list(CASE.glob('*.timeout.txt'))
         if (CASE/'server-failure.json').exists(): failures.append(CASE/'server-failure.json')
-        if (os.environ.get('STAGE21E_NETWORK') == '1' or os.environ.get('DUEL_NETWORK') == '1' or os.environ.get('CONTRACT_RELIABILITY_NETWORK') == '1' or os.environ.get('STAGE21A_NETWORK') == '1' or os.environ.get('STAGE21B_NETWORK') == '1') and (CASE/'complete.json').exists() and server.poll() is None:
+        if (os.environ.get('STAGE21F_NETWORK') == '1' or os.environ.get('STAGE21E_NETWORK') == '1' or os.environ.get('DUEL_NETWORK') == '1' or os.environ.get('CONTRACT_RELIABILITY_NETWORK') == '1' or os.environ.get('STAGE21A_NETWORK') == '1' or os.environ.get('STAGE21B_NETWORK') == '1') and (CASE/'complete.json').exists() and server.poll() is None:
             try: server.stdin.write(b'stop\n'); server.stdin.flush()
             except OSError: pass
         if any(p.poll() is not None for r,p,l in processes if r != 'Server') and not (CASE/'complete.json').exists(): raise RuntimeError('A native client exited before completion; inspect its log')

@@ -22,7 +22,8 @@
       "com.witchersbestiary.test.ProgressiveContractTests",
       "com.witchersbestiary.test.DuelTests",
       "com.witchersbestiary.test.AlchemyTableTests",
-      "com.witchersbestiary.test.MerchantTests"
+      "com.witchersbestiary.test.MerchantTests",
+      "com.witchersbestiary.test.SwordEnchantmentTests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer",
@@ -30,7 +31,8 @@
       "com.witchersbestiary.test.Stage21BNetworkServer",
       "com.witchersbestiary.test.ContractReliabilityNetworkServer",
       "com.witchersbestiary.test.DuelNetworkServer",
-      "com.witchersbestiary.test.Stage21ENetworkServer"
+      "com.witchersbestiary.test.Stage21ENetworkServer",
+      "com.witchersbestiary.test.Stage21FNetworkServer"
     ]
   },
   "depends": {

@@ -1,3 +1,7 @@
+# Active continuation: Stage21F
+
+Stage21A–E and contract hotfix progress is preserved. Stage21F is currently under native verification; read [STAGE21F_RECOVERY.md](STAGE21F_RECOVERY.md) first. Historical21B/C recovery follows.
+
 # Current recovery - Contract Reliability Hotfix complete
 
 2026-11-04. Branch dev/0.21.0. Current source checkpoints58571ec,007e274,4eb3912. Original Stage21B/C and user changes preserved. No push/release/reset/clean, no21D, no modification of E:/Minecraft/game or published0.20.0.

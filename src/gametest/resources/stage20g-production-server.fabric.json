@@ -8,7 +8,8 @@
       "com.witchersbestiary.test.Stage20ENetworkServer",
       "com.witchersbestiary.test.Stage21ANetworkServer",
       "com.witchersbestiary.test.Stage21BNetworkServer",
-      "com.witchersbestiary.test.Stage21ENetworkServer"
+      "com.witchersbestiary.test.Stage21ENetworkServer",
+      "com.witchersbestiary.test.Stage21FNetworkServer"
     ]
   },
   "depends": {
