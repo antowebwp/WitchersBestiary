@@ -7,4 +7,5 @@ public final class FistRenderer extends software.bernie.geckolib.renderer.GeoEnt
   public Identifier getTextureResource(FistNpc n){return Identifier.of("witchersbestiary",n instanceof com.witchersbestiary.fist.RockTrollEntity?"textures/entity/rock_troll.png":"textures/entity/fighter_"+n.tier+".png");}
   public Identifier getAnimationResource(FistNpc n){return Identifier.of("witchersbestiary",n instanceof com.witchersbestiary.fist.RockTrollEntity?"animations/rock_troll.animation.json":"animations/fighter.animation.json");}
  });shadowRadius=troll?.85f:.4f;}
+ @Override protected float getDeathMaxRotation(FistNpc npc){return npc instanceof com.witchersbestiary.fist.RockTrollEntity?0:super.getDeathMaxRotation(npc);}
 }
