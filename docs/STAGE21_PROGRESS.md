@@ -1,5 +1,10 @@
 # Stage21 progress
 
+## Stage21D — completed local implementation and verification (2026-11-04)
+
+Duel Stone, original volume model/recipe/loot, voluntary two-player consent/countdown, shared virtual fists and stamina, remote poses, nonfatal KO, confirmed surrender, arena grace and lifecycle cleanup implemented. Two real Better Combat clients completed full100VHP KO/rematch/surrender/boundary/disconnect/stone destruction and same-world dedicated restart; no realHP/inventory/crowns/XP loss. Separate pvp=false two-client campaign safely refused both. Existing83 tests passed in the one combined89-test run; all6 new duel scenarios passed on corrected targeted rerun (7/7 with smoke). Final build and12 mixin/refmap checks PASS. [Stage21D report](STAGE21D_REPORT.md) records evidence, controls and protection-adapter limitations. Stage21A/B/C and contract hotfix preserved. Stage21E remains unimplemented; no push or release. Older entries are historical and do not supersede this status.
+
+
 ## Stage21B — completed NPC-fighting scope
 
 Three original GeckoLib NPC variants, server-owned virtual fights, confirmation/countdown, quick/heavy/guard/dodge/counter, stamina, knockout, HUD and once-per-NPC crown prizes implemented.69/69 required GameTests and build PASS. Two native clients with Better Combat completed independent bouts, victory/defeat, wallet payouts and restart; a winning rematch paid nothing. Final HUD/knockout reviewed. NPCs are placed with eggs/operator summon; settlement worldgen is not added. [Report](STAGE21B_REPORT.md), [player guide](FIST_FIGHTING_GUIDE.md).
@@ -14,7 +19,7 @@ Local artifact remains0.21.0-dev, not the full Stage21 RC1.21C–21J unimplement
 HUD editor/persistence, three fighter geometry seams, responsive AI and personal per-NPC rewards validated. Two native clients each received12 for the same novice; a saved-world training win did not repeat payment. Four-angle/pose review completed for all three original fighters. See STAGE21B_REPORT.md. Stage21C implementation exists; its final native checks remain in progress.
 
 
-## Stage21C � completed local implementation and gameplay verification, 2026-11-04
+## Stage21C � completed local implementation and gameplay verification, 2026-11-04
 
 Neutral troll combat, all five attacks/defence modes, rare natural spawning, egg/loot/bestiary and confirmed nonfatal shared bouts are implemented. Real clients WBOne/WBTwo separately won90crowns against the same persisted troll; dedicated restart reloaded both90. Full76/76 tests and Gradle build passed. The original model was rebuilt around the user's turnaround (40 bones,202 cubes,512 atlas,18 clips), with four idle views and full motion review. See STAGE21C_REPORT.md for evidence and limits. No push/release/Stage21D.
 

@@ -1,11 +1,16 @@
 # Progress
 
+## Stage21D â€” completed local implementation and verification (2026-11-04)
+
+Duel Stone, original volume model/recipe/loot, voluntary two-player consent/countdown, shared virtual fists and stamina, remote poses, nonfatal KO, confirmed surrender, arena grace and lifecycle cleanup implemented. Two real Better Combat clients completed full100VHP KO/rematch/surrender/boundary/disconnect/stone destruction and same-world dedicated restart; no realHP/inventory/crowns/XP loss. Separate pvp=false two-client campaign safely refused both. Existing83 tests passed in the one combined89-test run; all6 new duel scenarios passed on corrected targeted rerun (7/7 with smoke). Final build and12 mixin/refmap checks PASS. [Stage21D report](STAGE21D_REPORT.md) records evidence, controls and protection-adapter limitations. Stage21A/B/C and contract hotfix preserved. Stage21E remains unimplemented; no push or release. Older entries are historical and do not supersede this status.
+
+
 ## Contract reliability hotfix - 0.21.0-dev (2026-11-04)
 
 Confirmed GUI abandonment, pre-acceptance two-clue route validation, saved-route recovery, immediate/persistent tracking with40..60-block new clue spacing, and per-target contract progressive phase are implemented. One83-scenario combined run plus necessary related repeats completed; corrected classes passed6/6,7/7 and3/3. Native two-client Katakan investigation/kill/reward/cancel/restart and clean HUD/confirmation review passed. Stage21B/C preserved; no21D, push or release. See [hotfix report](CONTRACT_RELIABILITY_HOTFIX.md) and [player guide](RENEWABLE_CONTRACTS_GUIDE.md). Historical status entries below do not supersede this follow-up.
 
 
-## Stage21B fixes + Stage21C — implemented and locally verified (2026-11-04)
+## Stage21B fixes + Stage21C ï¿½ implemented and locally verified (2026-11-04)
 
 Movable persistent right-side HUD, repaired seams on all three original fighters, responsive AI and personal player/NPC reward cooldowns are implemented. Rock Troll has an original articulated reference-guided model, neutral/revenge combat, rock throw/stomp/guard, rare natural spawning and confirmed nonfatal90-crown bouts. Two real native clients independently earned90 for the SAME persisted troll; both balances survived dedicated restarts. Fresh normal-world natural spawning was observed. Final76/76 GameTests, Gradle build and12 release mixin/refmap checks passed. Native four-angle/motion review is documented in the [Stage21C report](STAGE21C_REPORT.md); [Stage21B follow-up](STAGE21B_REPORT.md) and [player guide](FIST_FIGHTING_GUIDE.md).
 
