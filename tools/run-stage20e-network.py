@@ -24,7 +24,7 @@ for role in ['Server', 'One', 'Two']:
     if role != 'Server': (cwd/'options.txt').write_text('tutorialStep:none\nlang:'+('ru_ru' if (os.environ.get('STAGE21E_NETWORK')=='1' or os.environ.get('STAGE21G_NETWORK')=='1') and role=='Two' else 'en_us')+'\nsoundCategory_master:0.0\n')
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
-           f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' else '-Xmx1G']
+           f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' or os.environ.get('STAGE21I_NETWORK')=='1' else '-Xmx1G']
     if production:
         jvm=[a for a in jvm if not a.startswith('-Dfabric.dli.')] + ['-Dfabric.development=false']
         mods=cwd/'mods';mods.mkdir()
@@ -36,6 +36,10 @@ for role in ['Server', 'One', 'Two']:
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
     if os.environ.get('STAGE21E_CTOV') == '1': jvm += ['-Dwitchersbestiary.stage21eCtov=true']
     if os.environ.get('STAGE21E_NATURAL') == '1': jvm += ['-Dwitchersbestiary.stage21eNatural=true']
+    if os.environ.get('STAGE21I_PHASE'): jvm += ['-Dwitchersbestiary.stage21iPhase='+os.environ['STAGE21I_PHASE']]
+    if os.environ.get('STAGE21I_SIGN_START'): jvm += ['-Dwitchersbestiary.stage21iSignStart='+os.environ['STAGE21I_SIGN_START']]
+    if os.environ.get('STAGE21I_MATRIX'): jvm += ['-Dwitchersbestiary.stage21iMatrix='+os.environ['STAGE21I_MATRIX']]
+    if os.environ.get('STAGE21I_AXII_ONLY')=='1': jvm += ['-Dwitchersbestiary.stage21iAxiiOnly=true']
     if os.environ.get('STAGE21I_NETWORK')=='1': jvm += ['-Dwitchersbestiary.stage21i=true']
     if os.environ.get('STAGE21I_STANDALONE')=='1': jvm += ['-Dwitchersbestiary.stage21iStandalone=true']
     if os.environ.get('COMBINED_HOTFIX')=='1': jvm += ['-Dwitchersbestiary.combinedHotfix=true']

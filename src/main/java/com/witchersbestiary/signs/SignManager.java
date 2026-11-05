@@ -18,8 +18,9 @@ public final class SignManager {
  public static boolean allowed(ServerPlayerEntity p){return p.isAlive()&&!p.isSpectator()&&!com.witchersbestiary.fist.FistFights.busy(p);}
  /** Hostility is a relationship/classification, never a mod-specific target whitelist. */
  public static boolean enemy(ServerPlayerEntity p,LivingEntity e){
-  if(e==p||!e.isAlive()||e.getWorld()!=p.getWorld()||e.isInvulnerable()||p.isTeammate(e)||e.isTeammate(p)||com.witchersbestiary.fist.FistFights.busy(e)||e instanceof net.minecraft.village.Merchant||e instanceof net.minecraft.entity.Ownable owned&&owned.getOwner() instanceof net.minecraft.entity.player.PlayerEntity||e instanceof TameableEntity pet&&pet.isTamed()||e instanceof AbstractHorseEntity horse&&horse.isTame()||e instanceof PassiveEntity&&(!(e instanceof MobEntity mob)||mob.getTarget()!=p)||e instanceof net.minecraft.entity.decoration.ArmorStandEntity)return false;
+  if(e==p||!e.isAlive()||e.getWorld()!=p.getWorld()||e.isInvulnerable()||p.isTeammate(e)||e.isTeammate(p)||com.witchersbestiary.fist.FistFights.busy(e)||e instanceof net.minecraft.village.Merchant||e instanceof net.minecraft.entity.Ownable owned&&owned.getOwner() instanceof net.minecraft.entity.player.PlayerEntity||e instanceof TameableEntity pet&&pet.isTamed()||e instanceof AbstractHorseEntity horse&&horse.isTame()||e instanceof net.minecraft.entity.decoration.ArmorStandEntity)return false;
   if(e instanceof net.minecraft.entity.player.PlayerEntity other)return !other.isCreative()&&!other.isSpectator()&&p.getServer().isPvpEnabled()&&p.shouldDamagePlayer(other);
+  if(e instanceof PassiveEntity&&!(e instanceof Monster)&&e.getType().getSpawnGroup()!=SpawnGroup.MONSTER&&(!(e instanceof MobEntity mob)||mob.getTarget()!=p))return false;
   boolean provoked=e.getAttacker()==p||e instanceof MobEntity m&&m.getTarget()==p;
   if(e instanceof Angerable angry)return provoked||angry.shouldAngerAt(p);
   if(e instanceof PiglinEntity)return provoked;

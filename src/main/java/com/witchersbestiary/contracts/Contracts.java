@@ -44,7 +44,6 @@ public final class Contracts {
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
         c.transition(ContractInstance.Status.ACCEPTED);
         if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c,board)){
-            player.sendMessage(Text.translatable("contract.witchersbestiary.no_safe_route"),false);
             throw new IllegalStateException("No safe loaded hunt area within 350 blocks with two clues; contract not accepted");
         }
         store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;

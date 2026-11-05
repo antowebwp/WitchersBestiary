@@ -590,7 +590,7 @@
   "gui.witchersbestiary.board.cancel_back": "Вернуться",
   "gui.witchersbestiary.board.cancel_title": "Отказ от контракта",
   "gui.witchersbestiary.board.cancel_warning": "Прогресс этого заказа будет потерян. Награда не выдаётся. Отменить выбранный контракт?",
-  "gui.witchersbestiary.board.no_safe_route": "Не удалось подготовить район охоты. Попробуйте другой заказ или подходящую местность.",
+  "gui.witchersbestiary.board.no_safe_route": "В радиусе 350 блоков от доски не найдена безопасная площадка для этой охоты. Контракт не принят.",
   "gui.witchersbestiary.board.recovery_unavailable": "Восстановить маршрут пока нельзя. Можно отказаться от заказа.",
   "tracking.witchersbestiary.hint.unavailable": "Маршрут недоступен — можно отказаться через доску",
   "gui.witchersbestiary.board.unavailable": "Невозможно принять",

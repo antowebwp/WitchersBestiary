@@ -23,29 +23,45 @@ public final class Investigations {
  public static boolean safeClue(ServerWorld w,BlockPos at){
   for(int dx=-1;dx<=1;dx+=2)for(int dz=-1;dz<=1;dz+=2)if(w.getChunkManager().getWorldChunk((at.getX()+dx)>>4,(at.getZ()+dz)>>4)==null)return false;
   if(w.isOutOfHeightLimit(at.up())||!w.getWorldBorder().contains(at)||!w.getFluidState(at).isEmpty())return false;
-  var floor=w.getBlockState(at.down());return (floor.isIn(BlockTags.DIRT)||floor.isIn(BlockTags.SAND)||floor.isIn(BlockTags.BASE_STONE_OVERWORLD))&&w.isSpaceEmpty(new Box(at).expand(.25,0,.25).stretch(0,.35,0));
+  var floor=w.getBlockState(at.down());return (naturalFloor(floor)||floor.isOf(net.minecraft.block.Blocks.SNOW)&&naturalFloor(w.getBlockState(at.down(2)))&&w.getBlockState(at.down(2)).isSideSolidFullSquare(w,at.down(2),net.minecraft.util.math.Direction.UP))&&w.isSpaceEmpty(new Box(at).expand(.25,0,.25).stretch(0,.35,0));
  }
+ private static boolean naturalFloor(net.minecraft.block.BlockState s){return s.isIn(BlockTags.DIRT)||s.isIn(BlockTags.SAND)||s.isIn(BlockTags.BASE_STONE_OVERWORLD)||s.isOf(net.minecraft.block.Blocks.GRAVEL)||s.isOf(net.minecraft.block.Blocks.SNOW_BLOCK)||s.isOf(net.minecraft.block.Blocks.ICE)||s.isOf(net.minecraft.block.Blocks.PACKED_ICE)||s.isOf(net.minecraft.block.Blocks.BLUE_ICE);}
+ private static double footing(ServerWorld w,BlockPos at){var shape=w.getBlockState(at.down()).getCollisionShape(w,at.down());return at.getY()-1+(shape.isEmpty()?0:shape.getMax(net.minecraft.util.math.Direction.Axis.Y));}
  private static double horizontal(BlockPos a,BlockPos b){double x=a.getX()-b.getX(),z=a.getZ()-b.getZ();return x*x+z*z;}
- public static boolean prepare(ServerPlayerEntity p,ContractInstance c,BlockPos lair){
+ public static boolean prepare(ServerPlayerEntity p,ContractInstance c,BlockPos lair){return prepare(p,c,lair,new RouteBudget());}
+ public static boolean prepare(ServerPlayerEntity p,ContractInstance c,BlockPos lair,RouteBudget budget){
   if(c.status()!=ContractInstance.Status.ACCEPTED||c.hunt==null||c.hunt.target!=null||!c.hunt.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString()))return false;
   if(c.investigation!=null&&c.investigation.stage!=ContractInvestigation.Stage.SEARCHING)return true;
-  var w=p.getServerWorld();var positions=routePositions(w,c,lair);if(positions.size()!=2)return false;
+  var w=p.getServerWorld();var positions=routePositions(w,c,lair,budget);if(positions.size()!=2)return false;
   var investigation=new ContractInvestigation(c.id(),c.owner(),c.hunt.dimension);investigation.routeVersion=3;investigation.lair=lair.toImmutable();var clues=new ArrayList<ContractClue>(positions.size());var ids=new UUID[positions.size()];for(int i=0;i<ids.length;i++)ids[i]=UUID.randomUUID();String kind=c.definition().target().getPath();
   for(int i=0;i<ids.length;i++){ContractClue.Type type=switch(kind){case "drowner"->i==ids.length-1?ContractClue.Type.REMAINS:ContractClue.Type.FOOTPRINTS;case "ghoul","grave_hag","katakan"->i==ids.length-1?ContractClue.Type.REMAINS:i%2==0?ContractClue.Type.CLAW_MARKS:ContractClue.Type.BLOOD_TRACE;case "leshen","fiend","endrega_warrior","werewolf","griffin"->i%2==0?ContractClue.Type.CLAW_MARKS:ContractClue.Type.BLOOD_TRACE;default->i%2==0?ContractClue.Type.MIST_RESIDUE:ContractClue.Type.FOOTPRINTS;};clues.add(new ContractClue(ids[i],c.id(),c.owner(),type,positions.get(i),c.hunt.dimension,i,i+1<ids.length?ids[i+1]:null));}
   investigation.clues=List.copyOf(clues);investigation.stage=ContractInvestigation.Stage.TRACKING;c.investigation=investigation;c.hunt.position=clues.getFirst().position;c.hunt.status=SwampHunt.Status.TRACKING;ContractState.get(w.getServer()).markDirty();return true;
  }
  /** New v3 routes keep two logical clues 40..60 blocks apart; existing saved routes are untouched. */
  private static BlockPos clueSurface(ServerWorld w,int x,int z){var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return null;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);return safeClue(w,at)?at:null;}
- private static boolean traversable(ServerWorld w,BlockPos first,BlockPos second,boolean strict){if(Math.abs(first.getY()-second.getY())>12)return false;var previous=first;int samples=strict?Math.max(1,(int)Math.ceil(Math.sqrt(horizontal(first,second))/2)):8;for(int step=1;step<=samples;step++){int x=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getX(),second.getX())),z=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getZ(),second.getZ()));var at=clueSurface(w,x,z);if(at==null||Math.abs(at.getY()-previous.getY())>(strict?1:4))return false;previous=at;}return true;}
- private static List<BlockPos> routePositions(ServerWorld w,ContractInstance c,BlockPos lair){
+ /** Shared across one acceptance: bounded detours never multiply by candidate count. */
+ public static final class RouteBudget {private int remaining=768;private final Map<Long,BlockPos> points=new HashMap<>();}
+ private static boolean headroom(ServerWorld w,BlockPos at){double y=footing(w,at);return w.isSpaceEmpty(new Box(at.getX()+.2,y,at.getZ()+.2,at.getX()+.8,y+1.8,at.getZ()+.8));}
+ private static long pointKey(int x,int z){return ((long)x<<32)^(z&0xffffffffL);}
+ private static BlockPos walkPoint(ServerWorld w,int x,int z,RouteBudget budget){long key=pointKey(x,z);if(budget.points.containsKey(key))return budget.points.get(key);if(budget.remaining<=0)return null;budget.remaining--;var at=clueSurface(w,x,z);if(at!=null&&!headroom(w,at))at=null;budget.points.put(key,at);return at;}
+ private record Walk(BlockPos position,double cost,double score){}
+ private static boolean detour(ServerWorld w,BlockPos first,BlockPos second,RouteBudget budget){
+  var start=walkPoint(w,first.getX(),first.getZ(),budget);var end=walkPoint(w,second.getX(),second.getZ(),budget);if(start==null||end==null)return false;
+  var open=new PriorityQueue<Walk>(Comparator.comparingDouble(Walk::score));var distance=new HashMap<Long,Double>();open.add(new Walk(start,0,Math.sqrt(horizontal(start,end))));distance.put(pointKey(start.getX(),start.getZ()),0.0);int visited=0;
+  while(!open.isEmpty()&&budget.remaining>0&&visited++<512){var node=open.poll();var at=node.position();if(node.cost()>distance.getOrDefault(pointKey(at.getX(),at.getZ()),Double.POSITIVE_INFINITY))continue;if(at.getX()==end.getX()&&at.getZ()==end.getZ())return true;
+   for(int dx=-1;dx<=1;dx++)for(int dz=-1;dz<=1;dz++){if(dx==0&&dz==0)continue;int x=at.getX()+dx,z=at.getZ()+dz;if(x<Math.min(start.getX(),end.getX())-12||x>Math.max(start.getX(),end.getX())+12||z<Math.min(start.getZ(),end.getZ())-12||z>Math.max(start.getZ(),end.getZ())+12)continue;var next=walkPoint(w,x,z,budget);if(next==null||Math.abs(footing(w,next)-footing(w,at))>1.25)continue;if(dx!=0&&dz!=0){var sideA=walkPoint(w,x,at.getZ(),budget);var sideB=walkPoint(w,at.getX(),z,budget);if(sideA==null||sideB==null||Math.abs(footing(w,sideA)-footing(w,at))>1.25||Math.abs(footing(w,sideB)-footing(w,at))>1.25)continue;}double cost=node.cost()+(dx==0||dz==0?1:1.4143)+Math.abs(footing(w,next)-footing(w,at))*.2;long key=pointKey(x,z);if(cost<distance.getOrDefault(key,Double.POSITIVE_INFINITY)){distance.put(key,cost);open.add(new Walk(next,cost,cost+Math.sqrt(horizontal(next,end))));}}
+  }return false;
+ }
+ private static boolean traversable(ServerWorld w,BlockPos first,BlockPos second,boolean strict,RouteBudget budget){if(!strict&&Math.abs(first.getY()-second.getY())>12)return false;if(strict&&(!headroom(w,first)||!headroom(w,second)))return false;var previous=first;boolean direct=true;int samples=strict?Math.max(1,(int)Math.ceil(Math.sqrt(horizontal(first,second)))):8;for(int step=1;step<=samples;step++){int x=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getX(),second.getX())),z=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getZ(),second.getZ()));var at=clueSurface(w,x,z);if(at==null||strict&&!headroom(w,at)||(strict?Math.abs(footing(w,at)-footing(w,previous))>1.25:Math.abs(at.getY()-previous.getY())>4)){direct=false;break;}previous=at;}return direct||strict&&detour(w,first,second,budget);}
+ private static List<BlockPos> routePositions(ServerWorld w,ContractInstance c,BlockPos lair,RouteBudget budget){
   double preferred=Math.atan2(c.hunt.origin.getZ()-lair.getZ(),c.hunt.origin.getX()-lair.getX());int attempts=0;
   for(int near:new int[]{18,6})for(int turn:new int[]{0,1,-1,2,-2,3,-3,4}){
    double angle=preferred+turn*Math.PI/4;var second=clueSurface(w,lair.getX()+(int)Math.round(Math.cos(angle)*near),lair.getZ()+(int)Math.round(Math.sin(angle)*near));
-   if(second==null||!traversable(w,lair,second,c.procedural!=null))continue;
+   if(second==null||!traversable(w,lair,second,c.procedural!=null,budget))continue;
    for(int distance:new int[]{50,42,58})for(int branch:new int[]{0,1,-1,2,-2,3,-3,4}){
     if(++attempts>256)return List.of();double bearing=preferred+branch*Math.PI/4;
     var first=clueSurface(w,second.getX()+(int)Math.round(Math.cos(bearing)*distance),second.getZ()+(int)Math.round(Math.sin(bearing)*distance));if(first==null)continue;if(c.procedural!=null&&(horizontal(first,c.hunt.origin)>350*350||horizontal(second,c.hunt.origin)>350*350||horizontal(lair,c.hunt.origin)>350*350))continue;
-    double gap=first.toCenterPos().subtract(second.toCenterPos()).horizontalLength();if(gap>=40&&gap<=60&&traversable(w,first,second,c.procedural!=null))return List.of(first,second);
+    double gap=first.toCenterPos().subtract(second.toCenterPos()).horizontalLength();if(gap>=40&&gap<=60&&traversable(w,first,second,c.procedural!=null,budget))return List.of(first,second);
    }
   }return List.of();
  }
