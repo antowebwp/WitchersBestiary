@@ -697,5 +697,13 @@
   "sign.energy": "Мало концентрации",
   "sign.hud.status": "%sс  Квен %s  Ирден %sс",
   "compat.witchersbestiary.skill_tree_dodge": "Конфликт K со Skill Tree: уклонение перенесено на %s. Настройте клавиши при необходимости.",
-  "compat.witchersbestiary.skill_tree_conflict": "K занят деревом навыков и уклонением: переназначьте одну клавишу в настройках."
+  "compat.witchersbestiary.skill_tree_conflict": "K занят деревом навыков и уклонением: переназначьте одну клавишу в настройках.",
+  "book.signs.learn": "Изучить",
+  "book.signs.known": "Изучен",
+  "book.signs.controls": "Удерживайте %s, чтобы выбрать знак. Нажмите %s, чтобы применить его.",
+  "book.signs.description.igni": "Направленный огонь и короткое горение.",
+  "book.signs.description.aard": "Ударная волна отбрасывает врагов.",
+  "book.signs.description.quen": "Барьер поглощает до 8 HP урона.",
+  "book.signs.description.yrden": "Ловушка замедляет врагов и ослабляет спектральную защиту.",
+  "book.signs.description.axii": "Временно подавляет агрессию противника."
 }

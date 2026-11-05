@@ -697,5 +697,13 @@
   "sign.energy": "Low concentration",
   "sign.hud.status": "%ss  Quen %s  Yrden %ss",
   "compat.witchersbestiary.skill_tree_dodge": "Skill Tree shares K: fist dodge moved to %s. You can rebind it in Controls.",
-  "compat.witchersbestiary.skill_tree_conflict": "Skill tree and dodge share K; rebind one in Controls."
+  "compat.witchersbestiary.skill_tree_conflict": "Skill tree and dodge share K; rebind one in Controls.",
+  "book.signs.learn": "Learn",
+  "book.signs.known": "Learned",
+  "book.signs.controls": "Hold %s to select a sign. Press %s to cast.",
+  "book.signs.description.igni": "Directed fire and brief burning.",
+  "book.signs.description.aard": "A shock wave pushes enemies back.",
+  "book.signs.description.quen": "A barrier absorbs up to 8 HP damage.",
+  "book.signs.description.yrden": "A trap slows enemies and weakens spectral resistance.",
+  "book.signs.description.axii": "Temporarily suppresses enemy aggression."
 }

@@ -45,9 +45,10 @@ def bone(n,parent,pivot,cubes):
 bone('root',None,[0,0,0],[])
 bone('hips','root',[0,16,0],[cube([-8,11,-5],[16,11,11],'core')])
 bone('body','hips',[0,18,0],[cube([-11,20,-5.5],[22,11,13],'core'),cube([-12,30,-5],[24,8,14],'core')])
+# Recess hidden core faces by0.25: cap/core y40 and foot/core z5 must not be coplanar.
 # Low forward head nestles into the dome instead of sitting on a human neck.
 bone('neck','body',[0,34,0],[cube([-6,31,-7],[12,6,10],'core')])
-bone('head','neck',[0,35,-5],[cube([-7,35,-9],[14,7,10],'skin'),cube([-8,39,-10],[16,3,11],'mossstone'),cube([-8,32,-11],[3,7,6],'stone',[-5,0,-5]),cube([5,32,-11],[3,7,6],'stone',[-5,0,5]),cube([-5,31,-10.5],[10,5,1.5],'mouth'),cube([-2.5,35.5,-14],[5,4,5],'skin'),cube([-7,38.2,-12],[6,2.5,3],'edge',[0,0,-7]),cube([1,38.2,-12],[6,2.5,3],'edge',[0,0,7]),cube([-10,35,-6],[2.3,4,4],'skin',[0,0,-8]),cube([7.7,35,-6],[2.3,4,4],'skin',[0,0,8])])
+bone('head','neck',[0,35,-5],[cube([-7,35,-9],[14,6.75,9.75],'skin'),cube([-8,39,-10],[16,3,11],'mossstone'),cube([-8,32,-11],[3,7,6],'stone',[-5,0,-5]),cube([5,32,-11],[3,7,6],'stone',[-5,0,5]),cube([-5,31,-10.5],[10,5,1.5],'mouth'),cube([-2.5,35.5,-14],[5,4,5],'skin'),cube([-7,38.2,-12],[6,2.5,3],'edge',[0,0,-7]),cube([1,38.2,-12],[6,2.5,3],'edge',[0,0,7]),cube([-10,35,-6],[2.3,4,4],'skin',[0,0,-8]),cube([7.7,35,-6],[2.3,4,4],'skin',[0,0,8])])
 bone('eyes','head',[0,37,-10],[cube([-5,37,-11.2],[2,1,1],'mouth'),cube([3,37,-11.2],[2,1,1],'mouth'),cube([-4.6,37.2,-11.35],[.7,.55,.4],'eye'),cube([3.9,37.2,-11.35],[.7,.55,.4],'eye')])
 bone('jaw','head',[0,32,-7],[cube([-6.5,28.8,-12.5],[13,3,7],'stone'),cube([-7,30,-13.1],[2,5,3],'edge',[0,0,-7]),cube([5,30,-13.1],[2,5,3],'edge',[0,0,7]),cube([-5.8,32.5,-13.4],[1.5,5,1.8],'tooth',[0,0,-8]),cube([4.3,32.5,-13.4],[1.5,5,1.8],'tooth',[0,0,8])]+[cube([x,31.6,-13],[1.6,1.8,1.6],'tooth') for x in [-3.5,-1.2,1.2,3.5]])
 # A forward crest bridges the rear shelves into a dome over the low face.
@@ -78,7 +79,7 @@ for row,(y,width,depth) in enumerate([(22,23,7),(28,27,9),(34,29,10),(39,23,9),(
  bone('hump_'+str(row),'body',[0,y+2,8],tiles)
 for side,sgn in [('left',1),('right',-1)]:
  x=2 if sgn==1 else -9
- bone(side+'_leg','hips',[sgn*5.5,13,0],[cube([x,3,-3],[7,10,8],'core'),cube([x-.3,6,-5],[7.6,5,3],'stone',[-5,0,sgn*4]),cube([x-.7,1,-7],[8.4,3.5,12],'stone')]+[cube([x-.65+k*2.15,0,-7.8],[1.9,2.7,3.6],'edge') for k in range(4)])
+ bone(side+'_leg','hips',[sgn*5.5,13,0],[cube([x,3,-3],[7,10,7.75],'core'),cube([x-.3,6,-5],[7.6,5,3],'stone',[-5,0,sgn*4]),cube([x-.7,1,-7],[8.4,3.5,12],'stone')]+[cube([x-.65+k*2.15,0,-7.8],[1.9,2.7,3.6],'edge') for k in range(4)])
  ax=13 if sgn==1 else -23
  bone(side+'_arm','body',[sgn*14,32,0],[cube([ax,23,-4],[10,10,10],'core'),cube([ax-.6,24,-5.4],[11.2,7.4,4],'stone',[0,0,sgn*10])])
  fx=14 if sgn==1 else -24

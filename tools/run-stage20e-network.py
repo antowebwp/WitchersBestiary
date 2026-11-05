@@ -36,6 +36,7 @@ for role in ['Server', 'One', 'Two']:
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
     if os.environ.get('STAGE21E_CTOV') == '1': jvm += ['-Dwitchersbestiary.stage21eCtov=true']
     if os.environ.get('STAGE21E_NATURAL') == '1': jvm += ['-Dwitchersbestiary.stage21eNatural=true']
+    if os.environ.get('COMBINED_HOTFIX')=='1': jvm += ['-Dwitchersbestiary.combinedHotfix=true']
     if os.environ.get('STAGE21H_PROFILE'): jvm += ['-Dwitchersbestiary.stage21h='+os.environ['STAGE21H_PROFILE']]
     if os.environ.get('STAGE21G_VISUAL') == '1': jvm += ['-Dwitchersbestiary.stage21gVisual=true','-Dwitchersbestiary.duelReview=true']
     if os.environ.get('STAGE21E_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']

@@ -1,0 +1,15 @@
+{
+  "name": "Igni",
+  "category": "witchersbestiary:signs",
+  "icon": "witchersbestiary:bestiary",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "witchersbestiary:sign_igni"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Learning is free. Hold R to select a sign, press G to cast it. Rebind these keys in Controls."
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+> 2026-11-05 combined hotfix supersedes lesson-recipe instructions: all five signs are now freely learned in the existing Bestiary. Legacy item IDs remain save-compatible. See COMBINED_HOTFIX_REPORT.md for geometry, native two-player/restart evidence and targeted 42/42 checks.
+
 # Stage21G — COMPLETE
 All mandatory implementation and available checks completed. See STAGE21G_REPORT.md for mechanics, controls, recipes, state policies, compatibility and evidence.
 
