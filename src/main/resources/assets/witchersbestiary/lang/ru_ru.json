@@ -665,5 +665,21 @@
   "enchantment.witchersbestiary.runic_resonance": "Рунический резонанс",
   "death.attack.runic_pulse": "%1$s поражён руническим импульсом",
   "death.attack.runic_pulse.player": "%1$s поражён руническим импульсом игрока %2$s",
-  "tooltip.witchersbestiary.runic_charge": "Рунический заряд: %s"
+  "tooltip.witchersbestiary.runic_charge": "Рунический заряд: %s",
+  "sign.witchersbestiary.igni": "Игни",
+  "item.witchersbestiary.sign_lesson_igni": "Учебная запись: Игни",
+  "sign.witchersbestiary.aard": "Аард",
+  "item.witchersbestiary.sign_lesson_aard": "Учебная запись: Аард",
+  "sign.witchersbestiary.quen": "Квен",
+  "item.witchersbestiary.sign_lesson_quen": "Учебная запись: Квен",
+  "sign.witchersbestiary.yrden": "Ирден",
+  "item.witchersbestiary.sign_lesson_yrden": "Учебная запись: Ирден",
+  "sign.witchersbestiary.axii": "Аксий",
+  "item.witchersbestiary.sign_lesson_axii": "Учебная запись: Аксий",
+  "sign.witchersbestiary.learned": "Изучен знак: %s",
+  "sign.witchersbestiary.unavailable": "Знаки сейчас недоступны",
+  "key.witchersbestiary.sign_menu": "Меню знаков (удерживать)",
+  "key.witchersbestiary.sign_cast": "Применить знак",
+  "key.witchersbestiary.sign_hud": "Настройки HUD знаков",
+  "death.attack.witcher_sign": "%1$s поражён ведьмачьим знаком"
 }

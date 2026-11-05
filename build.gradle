@@ -853,7 +853,7 @@ tasks.register('stage20ePrepareLaunch') {
   dependsOn tasks.named(sourceName+'Classes')
   destinationDirectory.set(layout.buildDirectory.dir('stage20g-production-harness'))
   archiveClassifier.set('network-'+side.toLowerCase()+'-dev')
-  from(sourceSets[sourceName].output) { include 'com/witchersbestiary/test/Stage20ENetwork'+side+'*.class'; if(side=='Server') include 'com/witchersbestiary/test/Stage21ANetworkServer*.class', 'com/witchersbestiary/test/Stage21BNetworkServer*.class', 'com/witchersbestiary/test/Stage21ENetworkServer*.class', 'com/witchersbestiary/test/Stage21FNetworkServer*.class'; if(side=='Server') include 'data/witchersbestiary/tags/worldgen/structure/stage20g*.json' }
+  from(sourceSets[sourceName].output) { include 'com/witchersbestiary/test/Stage20ENetwork'+side+'*.class'; if(side=='Server') include 'com/witchersbestiary/test/Stage21ANetworkServer*.class', 'com/witchersbestiary/test/Stage21BNetworkServer*.class', 'com/witchersbestiary/test/Stage21ENetworkServer*.class', 'com/witchersbestiary/test/Stage21FNetworkServer*.class', 'com/witchersbestiary/test/Stage21GNetworkServer*.class'; if(side=='Server') include 'data/witchersbestiary/tags/worldgen/structure/stage20g*.json' }
   from('src/'+sourceName+'/resources/stage20g-production-'+side.toLowerCase()+'.fabric.json') { rename { 'fabric.mod.json' } }
  }
  tasks.register('remapStage20g'+side+'Harness',net.fabricmc.loom.task.RemapJarTask) {

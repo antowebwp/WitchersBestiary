@@ -665,5 +665,21 @@
   "enchantment.witchersbestiary.runic_resonance": "Runic Resonance",
   "death.attack.runic_pulse": "%1$s was struck by a runic pulse",
   "death.attack.runic_pulse.player": "%1$s was struck by %2$s's runic pulse",
-  "tooltip.witchersbestiary.runic_charge": "Runic charge: %s"
+  "tooltip.witchersbestiary.runic_charge": "Runic charge: %s",
+  "sign.witchersbestiary.igni": "Igni",
+  "item.witchersbestiary.sign_lesson_igni": "Sign lesson: Igni",
+  "sign.witchersbestiary.aard": "Aard",
+  "item.witchersbestiary.sign_lesson_aard": "Sign lesson: Aard",
+  "sign.witchersbestiary.quen": "Quen",
+  "item.witchersbestiary.sign_lesson_quen": "Sign lesson: Quen",
+  "sign.witchersbestiary.yrden": "Yrden",
+  "item.witchersbestiary.sign_lesson_yrden": "Sign lesson: Yrden",
+  "sign.witchersbestiary.axii": "Axii",
+  "item.witchersbestiary.sign_lesson_axii": "Sign lesson: Axii",
+  "sign.witchersbestiary.learned": "Learned sign: %s",
+  "sign.witchersbestiary.unavailable": "Signs unavailable in this state",
+  "key.witchersbestiary.sign_menu": "Signs menu (hold)",
+  "key.witchersbestiary.sign_cast": "Cast sign",
+  "key.witchersbestiary.sign_hud": "Signs HUD settings",
+  "death.attack.witcher_sign": "%1$s was struck by a witcher sign"
 }

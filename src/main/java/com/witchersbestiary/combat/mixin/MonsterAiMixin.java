@@ -37,11 +37,12 @@ public abstract class MonsterAiMixin implements ProgressiveEntityAccess, com.wit
     @Inject(method="tickNewAi", at=@At("HEAD"), cancellable=true)
     private void blockStunnedAi(CallbackInfo ci) {
         var mob=(MobEntity)(Object)this;
+        if(com.witchersbestiary.signs.SignManager.calmed(mob)){mob.setTarget(null);mob.getNavigation().stop();ci.cancel();return;}
         if(Stun.active(mob)) {Stun.stop(mob);ci.cancel();}
     }
     @Inject(method="tryAttack", at=@At("HEAD"), cancellable=true)
     private void blockStunnedAttack(net.minecraft.entity.Entity target, CallbackInfoReturnable<Boolean> cir) {
-        if(Stun.active((MobEntity)(Object)this)) cir.setReturnValue(false);
+        if(com.witchersbestiary.signs.SignManager.calmed((MobEntity)(Object)this)||Stun.active((MobEntity)(Object)this)) cir.setReturnValue(false);
     }
     @org.spongepowered.asm.mixin.Unique private long witchersbestiary$despawnGraceUntil=Long.MIN_VALUE;
     @Inject(method="checkDespawn",at=@At("HEAD"),cancellable=true)

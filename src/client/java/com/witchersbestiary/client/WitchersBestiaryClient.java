@@ -12,6 +12,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         com.witchersbestiary.client.board.NoticeBoardClient.initialize();
         com.witchersbestiary.client.economy.WalletScreen.initialize();
         com.witchersbestiary.client.fist.FistClient.initialize();
+        com.witchersbestiary.client.signs.SignsClient.initialize();
         com.witchersbestiary.client.tracking.WitcherSensesClient.initialize();
         com.witchersbestiary.client.config.ProgressiveConfigClient.initialize();
         net.minecraft.client.gui.screen.ingame.HandledScreens.register(com.witchersbestiary.workshop.ModWorkshop.ALCHEMY_SCREEN,com.witchersbestiary.client.workshop.AlchemyScreen::new);

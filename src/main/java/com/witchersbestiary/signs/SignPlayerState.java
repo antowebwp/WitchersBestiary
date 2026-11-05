@@ -3,6 +3,7 @@ import net.minecraft.nbt.NbtCompound;
 /** Server-owned persistent resource. Time advances only while this state is ticked online. */
 public final class SignPlayerState {
  private int learned;private SignType selected=SignType.IGNI;private double concentration=100;private int regenDelay;private final int[] cooldowns=new int[5];private long lastRequest=Long.MIN_VALUE;
+ public void resetProtocol(){lastRequest=Long.MIN_VALUE;}
  public int learned(){return learned;}public SignType selected(){return selected;}public double concentration(){return concentration;}public int cooldown(SignType sign){return cooldowns[sign.ordinal()];}
  public boolean knows(SignType sign){return (learned&(1<<sign.ordinal()))!=0;}
  public boolean learn(SignType sign){if(knows(sign))return false;learned|=1<<sign.ordinal();return true;}
