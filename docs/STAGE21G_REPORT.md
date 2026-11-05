@@ -37,3 +37,5 @@ HUD: справа сверху, концентрация/выбор/cooldown/з�
 build/libs/witchersbestiary-0.21.0-dev.jar; SHA256: 462adb2f9fb847119c185423371a7350cc73fe753c5332e0a04ce5e044f92f08.
 Финальный локальный checkpoint: коммит с названием `Stage 21G: five witcher signs and concentration system` в dev/0.21.0; точный hash — git log -1. Push/релиз/Stage21H не выполнялись, E:/Minecraft/game и утверждённые модели не изменялись.
 Повторять полную регрессию без нового основания не нужно. Целевой запуск при последующих изменениях: JAVA_HOME=C:/Program Files/Java/jdk-21; ./gradlew.bat runGametest build -Pstage19fProfile=A -PgameTestClass=SignTests,SwordEnchantmentTests --console=plain. Native launch: stage20ePrepareLaunch + remapStage20gServerHarness/remapStage20gClientHarness, tools/prepare-stage21f-production.py с STAGE21G_SPELL_COMPAT=1; затем tools/run-stage20e-network.py с STAGE20G_PRODUCTION=1 и STAGE21G_NETWORK=1. Все миры/логи/PNG остаются в ignored build/.
+
+Последующая проверка: точный Skill Tree теперь проверен в [Stage21H](STAGE21H_REPORT.md); историческое NOT TESTED выше относится к моменту завершения21G.

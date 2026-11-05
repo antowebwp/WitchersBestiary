@@ -1,9 +1,42 @@
 # Stage21H — Skill Tree compatibility
 
-Status: BLOCKED / NOT TESTED (2026-11-05). Existing Stage21G implementation is preserved; no runtime changes, dependencies, skills, bonuses or balance changes were introduced.
+Status: COMPLETED, 2026-11-05. Проверены реальные предоставленные артефакты, не предположение по названию.
 
-The exact requested Skill Tree mod ID/version/API cannot be identified from available local artifacts. No matching JAR was found in the project/dependency copies, Gradle cache, development directories or Downloads. Metadata of312 mod JARs in accessible Modrinth/CurseForge profiles was inspected; none identified the requested Skill Tree. Prior Stage20/21 reports also record the exact Skill Tree configuration as unavailable. Unrelated packs and similarly named internet mods are not evidence of the installed mod's identity. E:/Minecraft/game was not opened or modified.
+| Компонент | mod ID | Версия |
+|---|---|---|
+| default_skill_trees | `default_skill_trees` | 1.1 |
+| puffish_attributes | `puffish_attributes` | 0.8.2 |
+| puffish_skills | `puffish_skills` | 0.17.3 |
+| ranged_weapon_api | `ranged_weapon_api` | 2.3.3+1.21.1 |
+| skill_tree_rpgs | `skill_tree_rpgs` | 1.4.4+1.21.1 |
 
-Stage21H results: Skill Tree identity/API NOT IDENTIFIED; compatibility with it NOT TESTED; launch with/without it, R/G/HUD/persistence, multiplayer, GameTests and Gradle build NOT RUN for this stage. Earlier Stage21G results are historical evidence only and are not claimed as Stage21H PASS. No full regression was launched without the indispensable target mod.
+Основной мод: **Skill Tree (RPG Series)**, `skill_tree_rpgs`1.4.4+1.21.1. SHA256 предоставленного JAR: fa3a1eb766f6176aaa6d1acf08dc3ab0dc658d5f0b3ee5045dd321937965488e. Артефакт и необходимые соседние JAR скопированы в ignored build/stage21h-compat; содержимое оригиналов повторно сверено по SHA256 и не изменено. Сохранения/настройки установленной игры не открывались и не менялись.
 
-Required input: exact installed JAR and version, or a copy/path outside E:/Minecraft/game. A question requesting this is pending in the chat. After obtaining it: read fabric.mod.json/API and declared dependencies; pin that actual artifact in ignored build/; reuse existing Stage21G dedicated/two-client scenarios with and without the verified mod; fix only observed conflicts; run the one final combined verification. Do not create an integration layer unless the actual API/conflict requires one. No Stage21I, push or release.
+Публичный API находится в зависимости Pufferfish Skills: net.puffish.skillsmod.api.SkillsAPI, Category, Experience, Skill; доступны категории, очки, награды, экспорт/импорт данных. У RPG-слоя отдельный api-пакет отсутствует. Runtime-адаптер прокачки не нужен и не добавлен. API использован только тестовым контроллером: семь нераспределённых очков существующей категории проверяются до/после рестарта. В логах подтверждена загрузка обоих datapack: puffish_skills и skill_tree_rpgs. Новых деревьев, узлов, бонусов и требований обучения WB нет.
+
+Реальный конфликт: Pufferfish открывает дерево клавишей K, которой WB раньше назначал уклонение. SkillTreeKeyCompat однократно после входа проверяет фактические назначения. Только при общей legacy-K уклонение WB переносится на первую свободную LeftAlt/RightAlt/F8/F9, сохраняется в Controls и сопровождается RU/EN сообщением; клавиша дерева и остальные назначения не изменяются. Иное пользовательское назначение уклонения сохраняется. Если все кандидаты заняты, показывается просьба переназначить клавишу, без принудительного перехвата чужого управления. Без puffish_skills обработчик не регистрируется и уклонение остаётся K. R/G и их переназначения не менялись.
+
+В первом изолированном запуске обнаружена undeclared runtime-зависимость RPG-мода от Ranged Weapon API (NoClassDefFoundError EntityAttributes_RangedWeapon); в тестовый профиль добавлен фактически установленный ranged_weapon_api2.3.3+1.21.1. В обязательные зависимости WB он не добавлен. Совместно загружались BC2.3.2, SimplySwords1.63.0, SpellEngine1.9.9, SpellPower1.4.6.
+
+## Фактические проверки
+
+- PASS: один полный GameTest-прогон **123/123**, build/stage21h-comprehensive.log. Сценарии остальных систем сохранены; после единственной client-only правки общий пакет повторно не запускался.
+- PASS: Gradle build и13 release mixin/refmap проверок, build/stage21h-prepare2.log. Выпускаемый JAR не содержит тестовых контроллеров и не объявляет зависимости от Skill Tree. Серверные реализации знаков, концентрация, обучение, урон, алхимия, контракты, кошелёк, торговцы, зачарования, тролль и прогрессия не переписывались.
+- PASS: четыре кампании ниже — настоящий dedicated server, два настоящих клиента и повторный запуск того же сохранения в каждой. Ввод автоматизирован штатными клиентскими обработчиками; игровые PNG дерева/знаков/HUD просмотрены.
+
+| Профиль | Проверено | Evidence under build/stage20e-network/ |
+|---|---|---|
+| with_gameplay | Все5 знаков R/G, восстановление концентрации, Survival-использование учебных книг, дерево/уклонение, независимые данные и рестарт | run-20261105-132832/complete.json |
+| with_visual | GUI2 EN/GUI3 RU, углы/масштаб/drag/save-load HUD, R→U/G→Y, отсутствие повторов удержания, ресурс/cooldown после рестарта | run-20261105-133411/complete.json |
+| without_gameplay | Все5 знаков R/G, восстановление концентрации, Survival-использование учебных книг, дерево/уклонение, независимые данные и рестарт | run-20261105-133615/complete.json |
+| without_visual | GUI2 EN/GUI3 RU, углы/масштаб/drag/save-load HUD, R→U/G→Y, отсутствие повторов удержания, ресурс/cooldown после рестарта | run-20261105-133917/complete.json |
+
+WITH реально проверял `skill_tree_rpgs`1.4.4+1.21.1 и сохранность собственных очков дерева. WITHOUT исключал весь перечисленный стек Skill Tree, подтверждал отсутствие мода и сохранение стандартной K для уклонения. Обе кампании проверяли фактическую DODGE-команду в официальном NPC-бою без открытия дерева. Учебные книги предоставлялись как материалы стенда и использовались в Survival; ручное добывание ресурсов не заявляется. Общий протокол и профили: build/stage21h-summary.json и build/stage21h-campaigns.log.
+
+Ограничения: проверены указанные версии и встроенные данные деревьев; произвольные кастомные datapack/конфигурации и все возможные сборки навыков не заявляются проверенными. Клавиши, намеренно назначенные пользователем на конфликтующие действия, по-прежнему требуют выбора свободного назначения в Controls. Баланс/мана SpellEngine/SpellPower и концентрация WB не связывались.
+
+## Артефакт / воспроизведение
+
+build/libs/witchersbestiary-0.21.0-dev.jar, SHA256: e71cecab858da94aaa4ee42ebb84dd67df70c43351d9a97b9e2d5708cbd86abe. Этот же hash проверен у серверной копии всех четырёх native-кампаний.
+Java21; tools/prepare-stage21h-production.py создаёт WITH, --without-skill-tree создаёт WITHOUT из локальных pinned-копий. tools/run-stage21h-verification.py --with-world <успешный isolated signs world> выполняет оставшиеся три кампании и сохраняет результаты по мере завершения. Артефакты третьих сторон/миры/логи не включены в Git.
+База15cfc18; диагностический checkpoint f425c66; исправление98c3191; финальный checkpoint — коммит с названием `Stage 21H: verify optional Skill Tree compatibility` (git log -1). Push, релиз, изменения v0.20.0 и Stage21I не выполнялись.

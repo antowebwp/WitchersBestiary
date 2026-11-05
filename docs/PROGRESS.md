@@ -1,5 +1,10 @@
 # Progress
 
+## Stage21H — completed compatibility verification (2026-11-05)
+
+Actual Skill Tree RPG Series skill_tree_rpgs1.4.4+1.21.1 and its pinned Pufferfish/RangedWeapon dependencies verified. Optional client-only legacy K/K dodge conflict fixed without changing signs or progression. Full123/123 GameTests, build/13 release checks and four real two-client WITH/WITHOUT gameplay/HUD/restart campaigns PASS. No required Skill Tree dependency or new branches/bonuses. [Stage21H report](STAGE21H_REPORT.md) records exact versions, evidence and limits. No push/release/21I. Earlier entries are historical.
+
+
 ## Stage21G — completed local implementation and verification (2026-11-05)
 
 Five basic signs, independent concentration, Survival lesson recipes, R-hold radial/G cast, configurable RU/EN HUD, durable per-player progress, authoritative packets and fist/PvP protection implemented. One full115/115 suite; final targeted29/29; build/13 release mixin checks PASS. Two real BC/SS/SpellEngine/SpellPower clients passed five-sign gameplay, GUI2/3, remapping, held-key suppression and dedicated restarts without resource/cooldown refill. SkillTree NOT TESTED; no required dependency or claimed integration. [Stage21G report](STAGE21G_REPORT.md) records evidence and limits. No push/release or21H. Earlier status entries are historical.
