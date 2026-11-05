@@ -1,6 +1,6 @@
 # Active continuation: Stage21F
 
-Stage21A–E and contract hotfix progress is preserved. Stage21F is currently under native verification; read [STAGE21F_RECOVERY.md](STAGE21F_RECOVERY.md) first. Historical21B/C recovery follows.
+Stage21A–E and contract hotfix progress is preserved. Stage21F completed native verification; read [STAGE21F_RECOVERY.md](STAGE21F_RECOVERY.md) first. Historical21B/C recovery follows.
 
 # Current recovery - Contract Reliability Hotfix complete
 

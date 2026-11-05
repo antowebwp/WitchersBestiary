@@ -1,5 +1,10 @@
 # Stage21 progress
 
+## Stage21F — completed local implementation and verification (2026-11-05)
+
+Four vanilla1.21.1 sword enchantments I–III implemented with bounded authoritative effects and persistent weapon charges/cooldowns. All94 prior regression tests passed in the one full run; corrected focused sword checks passed with BC14/14 and without optional mods15/15. Build and13 release mixin/refmap checks PASS. Two native BC2.3.2/SS1.63 clients passed all four Survival table/book/anvil operations, vanilla/one-hand/two-hand/unique sword combat, offhand-only Rune ownership and exact earned-state dedicated restart. Evidence and limits: [Stage21F report](STAGE21F_REPORT.md). No push/release or Stage21G. Older status entries are historical.
+
+
 ## Stage21E — completed local implementation and verification (2026-11-05)
 
 The existing alchemy_workbench now browses/crafts17 real RecipeManager recipes (six existing elixirs, eight oils, three refinements) with exact server-owned inventory planning, missing counts, original output/storage and RU/EN GUI. Original effects, application, block ID and four-slot NBT remain intact. One original GeckoLib Arcane Merchant has saved VILLAGE/WANDERING modes, crown+wallet atomic purchasing, shared limited stock and stable settlement UUID claims. Actual vanilla and CTOV village discovery, production wandering placement, existing failed-claim migration, two native Better Combat clients, RU/EN GUI2/3, purchases, shared table crafting/Shift-click and dedicated restarts passed. Full94/94 GameTests plus necessary related repeats (alchemy3/3, merchant5/5), build and12 release mixin/refmap checks PASS. [Stage21E report](STAGE21E_REPORT.md) records evidence, economy and compatibility limits; [content audit](STAGE21E_ALCHEMY_AUDIT.md). Moog village compatibility remains unconfirmed; no blanket structure-mod claim. Stage21A–D and contract hotfix preserved. Stage21F not started; no push/release. Older entries are historical.

@@ -1,6 +1,6 @@
 # Stage21F — four sword enchantments
 
-Status: implementation complete; native verification in progress. Do not interpret this draft as stage completion.
+Status: implementation and required local verification COMPLETE.
 
 ## Registry and survival
 
@@ -35,7 +35,7 @@ Narrow sword tag includes vanilla swords and53 optional, required:false, locally
 
 One full suite:108 tests executed, all94 prior regression tests passed; five of13 new sword tests initially failed. Necessary focused repeats resolved actual test-fixture issues (permanently creative vanilla mock helper, login protection, BC default vanilla-sweep suppression, daytime-burning/despawning zombie fixtures). Final BC focused run14/14 including harness; subsequent no-optional focused run15/15 including the additional PvP-off/pulse-player test and harness. Coverage includes all tiers, exact Bane/oil/elixir composition, actual anvil/table pools and512 book-generation seeds, all compatibility pairs, shields/misses/indirect rejection, native sweep, cooldown gaps, friendlies, Rune thresholds/radii/exact2HP/eight-target cap/no recursion, weapon/NBT serialization, contract Katakan/progressive stat binding and official NPC/PvP fists. Prior wallet/merchant/alchemy/contract/duel regressions remain passing. No repeated full regression after minor fixes.
 
-Evidence: build/stage21f-comprehensive.log, focused5.log, without-optional.log; Gradle build PASS and strict13 production mixin/refmap checks PASS in without-optional.log. Release source sets exclude all test controllers. Native BC2.3.2 + SimplySwords1.63.0, dedicated/two clients/restart campaign is pending final result; do not claim it passed yet. First run011719 reached native enchanting on both clients, then screenshot filename failed on a Windows colon; test-only filename sanitization fixed.
+Evidence: build/stage21f-comprehensive.log, focused5.log, without-optional.log; Gradle build PASS and strict13 production mixin/refmap checks PASS in without-optional.log. Release source sets exclude all test controllers. Native BC2.3.2 + SimplySwords1.63.0 campaign PASS: both clients completed all four table/book/anvil acquisitions, diamond sword, SS iron_longsword, iron_claymore, emberblade and actual dual-wield offhand charge ownership. Extended dual-wield420tick window is required to accumulate three offhand hits;180 was insufficient. Exact earned inventory/enchantment/component and player cooldown state survived dedicated JVM restart. Evidence: E:\Minecraft\ModDevelopment\WitchersBestiary-public-0.19.0\build\stage20e-network\run-20261105-093154/complete.json and screenshots/logs. First run011719 reached native enchanting on both clients, then screenshot filename failed on a Windows colon; test-only filename sanitization fixed.
 
 ## Reproduction / limits
 

@@ -1,3 +1,7 @@
+# FINAL VERIFIED STATE
+
+Stage21F COMPLETE. Native4 PASS, E:\Minecraft\ModDevelopment\WitchersBestiary-public-0.19.0\build\stage20e-network\run-20261105-093154; all10 native combat results and exact-state restart validated. See STAGE21F_REPORT.md. Historical recovery follows. No21G/push/release.
+
 # Stage 21F recovery — implementation in progress
 
 Branch dev/0.21.0; base checkpoint 9a0988b. Preserve all prior Stage21 work. Do not push/publish or start21G.
