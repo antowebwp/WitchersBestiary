@@ -695,5 +695,7 @@
   "sign.ready": "Ready",
   "sign.locked": "Unlearned",
   "sign.energy": "Low concentration",
-  "sign.hud.status": "%ss  Quen %s  Yrden %ss"
+  "sign.hud.status": "%ss  Quen %s  Yrden %ss",
+  "compat.witchersbestiary.skill_tree_dodge": "Skill Tree shares K: fist dodge moved to %s. You can rebind it in Controls.",
+  "compat.witchersbestiary.skill_tree_conflict": "Skill tree and dodge share K; rebind one in Controls."
 }

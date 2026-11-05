@@ -695,5 +695,7 @@
   "sign.ready": "Готов",
   "sign.locked": "Не изучен",
   "sign.energy": "Мало концентрации",
-  "sign.hud.status": "%sс  Квен %s  Ирден %sс"
+  "sign.hud.status": "%sс  Квен %s  Ирден %sс",
+  "compat.witchersbestiary.skill_tree_dodge": "Конфликт K со Skill Tree: уклонение перенесено на %s. Настройте клавиши при необходимости.",
+  "compat.witchersbestiary.skill_tree_conflict": "K занят деревом навыков и уклонением: переназначьте одну клавишу в настройках."
 }
