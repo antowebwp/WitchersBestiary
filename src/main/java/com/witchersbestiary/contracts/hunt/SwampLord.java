@@ -38,10 +38,11 @@ public final class SwampLord {
  }
  public static void validateAccept(ServerPlayerEntity p,Identifier id){if((id.equals(ID)||id.equals(GraveDevourer.ID)||com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(id))&&ContractState.get(p.getServer()).ownedBy(p.getUuid()).stream().anyMatch(c->c.hunt!=null&&c.status()==ContractInstance.Status.ACCEPTED))throw new IllegalStateException("One active hunt per player");}
  /** No world generation or chunk tickets: validate a complete route before a board acceptance is stored. */
- public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c){
+ public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c){return prepareAcceptance(p,c,p.getBlockPos());}
+ public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c,BlockPos origin){
   if(p.getServerWorld().getDifficulty()==net.minecraft.world.Difficulty.PEACEFUL)return false;
   if(c.procedural!=null){var type=com.witchersbestiary.contracts.procedural.ContractSpecies.type(c.procedural.species());var trial=type.create(p.getServerWorld());if(trial==null||!trial.getType().equals(type)||!(trial instanceof com.witchersbestiary.contracts.procedural.ContractTargetAccess)&&!(trial instanceof DrownerEntity)&&!(trial instanceof com.witchersbestiary.entity.monster.GhoulEntity)&&!(trial instanceof com.witchersbestiary.entity.monster.FogletEntity))return false;}
-  c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),p.getBlockPos());
+  c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),origin);
   c.investigation=new com.witchersbestiary.contracts.tracking.ContractInvestigation(c.id(),c.owner(),c.hunt.dimension);
   for(int probe=0;probe<128;probe++)if(prepareCandidate(p,c,probe))return true;
   return false;
@@ -55,18 +56,29 @@ public final class SwampLord {
  }
  public static void cancelSearch(ServerPlayerEntity p){var q=QUEUES.get(p.getServer());if(q!=null)q.cancel(p.getUuid());}
  private static boolean prepareCandidate(ServerPlayerEntity p,ContractInstance c,int probe){
-  final int min=Math.max(48,Math.min(999,Integer.getInteger("witchersbestiary.huntMinRadius",150))),max=Math.max(min+1,Math.min(1000,Integer.getInteger("witchersbestiary.huntMaxRadius",500)));
-  // Prefer the original distant territory, then try a loaded neighbourhood of the current player.
-  // The old origin-only 150..500 ring could lie entirely outside the server's loaded view distance.
-  boolean nearby=probe>=64;int n=probe%64;double angle=n*2.399963229728653;
-  int radius=nearby?48+Math.floorMod(n*17,81):min+Math.floorMod(n*73,max-min);
-  var origin=nearby?p.getBlockPos():c.hunt.origin;
+  if(c.procedural==null)return prepareLegendaryCandidate(p,c,probe);
+  boolean procedural=c.procedural!=null;int n=probe%64;double angle=n*2.399963229728653;
+  int radius=procedural?(probe<64?80+Math.floorMod(n*73,251):48+Math.floorMod(n*17,81)):150+Math.floorMod(n*73,350);
+  var origin=c.hunt.origin;
   int x=origin.getX()+(int)(Math.cos(angle)*radius),z=origin.getZ()+(int)(Math.sin(angle)*radius);
   var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
   var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
   if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
   return com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at);
  }
+ private static boolean prepareLegendaryCandidate(ServerPlayerEntity p,ContractInstance c,int probe){
+  final int min=Math.max(48,Math.min(999,Integer.getInteger("witchersbestiary.huntMinRadius",150))),max=Math.max(min+1,Math.min(1000,Integer.getInteger("witchersbestiary.huntMaxRadius",500)));
+  // Prefer the original distant territory, then try a loaded neighbourhood of the current player.
+  // The old origin-only 150..500 ring could lie entirely outside the server's loaded view distance.
+  boolean nearby=probe>=64;int n=probe%64;double angle=n*2.399963229728653;
+  int radius=nearby?48+Math.floorMod(n*17,81):min+Math.floorMod(n*73,max-min);
+  var origin=nearby?p.getBlockPos():c.hunt.origin;
+  int x=origin.getX()+(int)(Math.cos(angle)*radius),z=origin.getZ()+(int)(Math.sin(angle)*radius);
+  var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
+  var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
+  if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
+  return com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at);
+ }
  private static void enqueue(ServerPlayerEntity p,ContractInstance c){
   var h=c.hunt;if(h==null||h.target!=null||c.status()!=ContractInstance.Status.ACCEPTED||c.investigation!=null&&c.investigation.stage!=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.SEARCHING)return;
   QUEUES.computeIfAbsent(p.getServer(),s->new HuntSearchQueue()).enqueue(new HuntSearchQueue.Search(){int probes;

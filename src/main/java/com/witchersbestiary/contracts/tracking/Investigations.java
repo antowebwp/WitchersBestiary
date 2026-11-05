@@ -25,6 +25,7 @@ public final class Investigations {
   if(w.isOutOfHeightLimit(at.up())||!w.getWorldBorder().contains(at)||!w.getFluidState(at).isEmpty())return false;
   var floor=w.getBlockState(at.down());return (floor.isIn(BlockTags.DIRT)||floor.isIn(BlockTags.SAND)||floor.isIn(BlockTags.BASE_STONE_OVERWORLD))&&w.isSpaceEmpty(new Box(at).expand(.25,0,.25).stretch(0,.35,0));
  }
+ private static double horizontal(BlockPos a,BlockPos b){double x=a.getX()-b.getX(),z=a.getZ()-b.getZ();return x*x+z*z;}
  public static boolean prepare(ServerPlayerEntity p,ContractInstance c,BlockPos lair){
   if(c.status()!=ContractInstance.Status.ACCEPTED||c.hunt==null||c.hunt.target!=null||!c.hunt.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString()))return false;
   if(c.investigation!=null&&c.investigation.stage!=ContractInvestigation.Stage.SEARCHING)return true;
@@ -35,16 +36,16 @@ public final class Investigations {
  }
  /** New v3 routes keep two logical clues 40..60 blocks apart; existing saved routes are untouched. */
  private static BlockPos clueSurface(ServerWorld w,int x,int z){var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return null;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);return safeClue(w,at)?at:null;}
- private static boolean traversable(ServerWorld w,BlockPos first,BlockPos second){if(Math.abs(first.getY()-second.getY())>12)return false;var previous=first;for(int step=1;step<=8;step++){int x=(int)Math.round(MathHelper.lerp(step/8.0,first.getX(),second.getX())),z=(int)Math.round(MathHelper.lerp(step/8.0,first.getZ(),second.getZ()));var at=clueSurface(w,x,z);if(at==null||Math.abs(at.getY()-previous.getY())>4)return false;previous=at;}return true;}
+ private static boolean traversable(ServerWorld w,BlockPos first,BlockPos second,boolean strict){if(Math.abs(first.getY()-second.getY())>12)return false;var previous=first;int samples=strict?Math.max(1,(int)Math.ceil(Math.sqrt(horizontal(first,second))/2)):8;for(int step=1;step<=samples;step++){int x=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getX(),second.getX())),z=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getZ(),second.getZ()));var at=clueSurface(w,x,z);if(at==null||Math.abs(at.getY()-previous.getY())>(strict?1:4))return false;previous=at;}return true;}
  private static List<BlockPos> routePositions(ServerWorld w,ContractInstance c,BlockPos lair){
   double preferred=Math.atan2(c.hunt.origin.getZ()-lair.getZ(),c.hunt.origin.getX()-lair.getX());int attempts=0;
   for(int near:new int[]{18,6})for(int turn:new int[]{0,1,-1,2,-2,3,-3,4}){
    double angle=preferred+turn*Math.PI/4;var second=clueSurface(w,lair.getX()+(int)Math.round(Math.cos(angle)*near),lair.getZ()+(int)Math.round(Math.sin(angle)*near));
-   if(second==null||!traversable(w,lair,second))continue;
+   if(second==null||!traversable(w,lair,second,c.procedural!=null))continue;
    for(int distance:new int[]{50,42,58})for(int branch:new int[]{0,1,-1,2,-2,3,-3,4}){
     if(++attempts>256)return List.of();double bearing=preferred+branch*Math.PI/4;
-    var first=clueSurface(w,second.getX()+(int)Math.round(Math.cos(bearing)*distance),second.getZ()+(int)Math.round(Math.sin(bearing)*distance));if(first==null)continue;
-    double gap=first.toCenterPos().subtract(second.toCenterPos()).horizontalLength();if(gap>=40&&gap<=60&&traversable(w,first,second))return List.of(first,second);
+    var first=clueSurface(w,second.getX()+(int)Math.round(Math.cos(bearing)*distance),second.getZ()+(int)Math.round(Math.sin(bearing)*distance));if(first==null)continue;if(c.procedural!=null&&(horizontal(first,c.hunt.origin)>350*350||horizontal(second,c.hunt.origin)>350*350||horizontal(lair,c.hunt.origin)>350*350))continue;
+    double gap=first.toCenterPos().subtract(second.toCenterPos()).horizontalLength();if(gap>=40&&gap<=60&&traversable(w,first,second,c.procedural!=null))return List.of(first,second);
    }
   }return List.of();
  }
@@ -58,7 +59,7 @@ public final class Investigations {
  public static boolean trySpawn(ServerPlayerEntity p,ContractInstance c){var i=c.investigation;if(i==null||i.stage!=ContractInvestigation.Stage.LAIR_FOUND||c.hunt.target!=null||!c.owner().equals(p.getUuid())||!i.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString())||p.squaredDistanceTo(i.lair.toCenterPos())>(i.routeVersion>=2?3*3:32*32))return false;
   if(SwampLord.spawn(p,c,i.lair))return true;
   // Only a bounded loaded neighbourhood, and only after an explicit discovery/retry.
-  for(int radius=3;radius<=12;radius+=3)for(int direction=0;direction<8;direction++){double angle=direction*Math.PI/4;int x=i.lair.getX()+(int)Math.round(Math.cos(angle)*radius),z=i.lair.getZ()+(int)Math.round(Math.sin(angle)*radius);var chunk=p.getServerWorld().getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)continue;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);if(Math.abs(at.getY()-i.lair.getY())<=3&&SwampLord.spawn(p,c,at))return true;}
+  for(int radius=3;radius<=12;radius+=3)for(int direction=0;direction<8;direction++){double angle=direction*Math.PI/4;int x=i.lair.getX()+(int)Math.round(Math.cos(angle)*radius),z=i.lair.getZ()+(int)Math.round(Math.sin(angle)*radius);var chunk=p.getServerWorld().getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)continue;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);if((c.procedural==null||horizontal(at,c.hunt.origin)<=350*350)&&Math.abs(at.getY()-i.lair.getY())<=3&&SwampLord.spawn(p,c,at))return true;}
   c.hunt.status=SwampHunt.Status.WAITING;ContractState.get(p.getServer()).markDirty();
   return false;
  }

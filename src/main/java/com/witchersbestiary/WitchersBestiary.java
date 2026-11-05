@@ -38,6 +38,7 @@ public final class WitchersBestiary implements ModInitializer {
         com.witchersbestiary.merchant.ArcaneMerchants.initialize();
         com.witchersbestiary.fist.FistFights.initialize();
         com.witchersbestiary.contracts.Contracts.initialize();
+        com.witchersbestiary.contracts.hunt.HuntTerrain.initialize();
         com.witchersbestiary.contracts.tracking.Investigations.initialize();
         com.witchersbestiary.board.NoticeBoards.initialize();
         com.witchersbestiary.config.ProgressiveConfigNetwork.initialize();

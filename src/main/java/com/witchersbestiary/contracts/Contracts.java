@@ -24,7 +24,9 @@ public final class Contracts {
     public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {return assign(player,definitionId,offerSeed,false);}
     /** Player-facing boards only commit a hunt after both clues and its lair are validated. */
     public static ContractInstance assignPrepared(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {return assign(player,definitionId,offerSeed,true);}
-    private static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed, boolean requireRoute) {
+    public static ContractInstance assignPrepared(ServerPlayerEntity player, Identifier id, Long seed, net.minecraft.util.math.BlockPos board) {return assign(player,id,seed,true,board);}
+    private static ContractInstance assign(ServerPlayerEntity player, Identifier id, Long seed, boolean route) {return assign(player,id,seed,route,player.getBlockPos());}
+    private static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed, boolean requireRoute, net.minecraft.util.math.BlockPos board) {
         com.witchersbestiary.contracts.hunt.SwampLord.validateAccept(player,definitionId);
         var definition = DEFINITIONS.find(definitionId);
         if (definition == null) throw new IllegalArgumentException("Missing/invalid contract definition: " + definitionId);
@@ -41,9 +43,9 @@ public final class Contracts {
         definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
         c.transition(ContractInstance.Status.ACCEPTED);
-        if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c)){
+        if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c,board)){
             player.sendMessage(Text.translatable("contract.witchersbestiary.no_safe_route"),false);
-            throw new IllegalStateException("No safe loaded hunt area with two clues; contract not accepted");
+            throw new IllegalStateException("No safe loaded hunt area within 350 blocks with two clues; contract not accepted");
         }
         store.add(c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
