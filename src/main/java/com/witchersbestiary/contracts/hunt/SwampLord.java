@@ -58,10 +58,10 @@ public final class SwampLord {
  private static boolean prepareCandidate(ServerPlayerEntity p,ContractInstance c,int probe){return prepareCandidate(p,c,probe,new com.witchersbestiary.contracts.tracking.Investigations.RouteBudget());}
  private static boolean prepareCandidate(ServerPlayerEntity p,ContractInstance c,int probe,com.witchersbestiary.contracts.tracking.Investigations.RouteBudget budget){
   if(c.procedural==null)return prepareLegendaryCandidate(p,c,probe);
-  boolean procedural=c.procedural!=null;int n=probe%64;double angle=n*2.399963229728653;
-  int radius=procedural?(probe<64?80+Math.floorMod(n*73,251):48+Math.floorMod(n*17,81)):150+Math.floorMod(n*73,350);
-  var origin=c.hunt.origin;
-  int x=origin.getX()+(int)(Math.cos(angle)*radius),z=origin.getZ()+(int)(Math.sin(angle)*radius);
+  int n=probe%16;double angle=n*2.399963229728653;int radius=80+Math.floorMod(n*73,251);var origin=c.hunt.origin;
+  int[][] offsets={{0,0},{6,0},{-6,0},{0,6},{0,-6},{12,12},{-12,12},{12,-12}};var offset=offsets[probe/16];
+  int x=origin.getX()+(int)(Math.cos(angle)*radius)+offset[0],z=origin.getZ()+(int)(Math.sin(angle)*radius)+offset[1];
+  if((long)(x-origin.getX())*(x-origin.getX())+(long)(z-origin.getZ())*(z-origin.getZ())>350*350)return false;
   var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
   var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
   if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
