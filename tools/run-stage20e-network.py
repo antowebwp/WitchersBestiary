@@ -111,6 +111,13 @@ def launch(role):
     print(f'{role} JVM run {count}, PID {process.pid}',flush=True)
     return process
 
+if os.environ.get('STAGE21I_RESUME_DIR'):
+    previous=Path(os.environ['STAGE21I_RESUME_DIR']).resolve()
+    if not previous.is_relative_to(BASE.resolve()) or not (previous/'signs-resume.json').is_file(): raise RuntimeError('Invalid isolated resume proof')
+    shutil.copytree(previous/'server/world',CASE/'server/world')
+    for proof in ['signs-resume.json','signs-results.json','stage21i-contracts.json','resume.json']:
+        if (previous/proof).is_file(): shutil.copyfile(previous/proof,CASE/proof)
+
 started = time.monotonic()
 try:
     server = launch('Server')

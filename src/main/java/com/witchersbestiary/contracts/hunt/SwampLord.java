@@ -65,6 +65,7 @@ public final class SwampLord {
   var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
   var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
   if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
+  for(var other:ContractState.get(w.getServer()).all()){if(other.id().equals(c.id())||other.status()!=ContractInstance.Status.ACCEPTED||other.hunt==null||!other.hunt.dimension.equals(c.hunt.dimension))continue;var reserved=other.investigation!=null?other.investigation.lair:other.hunt.target!=null?other.hunt.position:null;if(reserved!=null){long dx=(long)reserved.getX()-at.getX(),dz=(long)reserved.getZ()-at.getZ();if(dx*dx+dz*dz<16*16)return false;}}
   return com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at,budget);
  }
  private static boolean prepareLegendaryCandidate(ServerPlayerEntity p,ContractInstance c,int probe){

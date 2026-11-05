@@ -23,7 +23,7 @@ public final class Investigations {
  public static boolean safeClue(ServerWorld w,BlockPos at){
   for(int dx=-1;dx<=1;dx+=2)for(int dz=-1;dz<=1;dz+=2)if(w.getChunkManager().getWorldChunk((at.getX()+dx)>>4,(at.getZ()+dz)>>4)==null)return false;
   if(w.isOutOfHeightLimit(at.up())||!w.getWorldBorder().contains(at)||!w.getFluidState(at).isEmpty())return false;
-  var floor=w.getBlockState(at.down());return (naturalFloor(floor)||floor.isOf(net.minecraft.block.Blocks.SNOW)&&naturalFloor(w.getBlockState(at.down(2)))&&w.getBlockState(at.down(2)).isSideSolidFullSquare(w,at.down(2),net.minecraft.util.math.Direction.UP))&&w.isSpaceEmpty(new Box(at).expand(.25,0,.25).stretch(0,.35,0));
+  var floor=w.getBlockState(at.down());return (naturalFloor(floor)||floor.isOf(net.minecraft.block.Blocks.SNOW)&&naturalFloor(w.getBlockState(at.down(2)))&&w.getBlockState(at.down(2)).isSideSolidFullSquare(w,at.down(2),net.minecraft.util.math.Direction.UP))&&w.isSpaceEmpty(new Box(at).contract(.2,0,.2).stretch(0,.35,0));
  }
  private static boolean naturalFloor(net.minecraft.block.BlockState s){return s.isIn(BlockTags.DIRT)||s.isIn(BlockTags.SAND)||s.isIn(BlockTags.BASE_STONE_OVERWORLD)||s.isOf(net.minecraft.block.Blocks.GRAVEL)||s.isOf(net.minecraft.block.Blocks.SNOW_BLOCK)||s.isOf(net.minecraft.block.Blocks.ICE)||s.isOf(net.minecraft.block.Blocks.PACKED_ICE)||s.isOf(net.minecraft.block.Blocks.BLUE_ICE);}
  private static double footing(ServerWorld w,BlockPos at){var shape=w.getBlockState(at.down()).getCollisionShape(w,at.down());return at.getY()-1+(shape.isEmpty()?0:shape.getMax(net.minecraft.util.math.Direction.Axis.Y));}
@@ -75,7 +75,7 @@ public final class Investigations {
  public static boolean trySpawn(ServerPlayerEntity p,ContractInstance c){var i=c.investigation;if(i==null||i.stage!=ContractInvestigation.Stage.LAIR_FOUND||c.hunt.target!=null||!c.owner().equals(p.getUuid())||!i.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString())||p.squaredDistanceTo(i.lair.toCenterPos())>(i.routeVersion>=2?3*3:32*32))return false;
   if(SwampLord.spawn(p,c,i.lair))return true;
   // Only a bounded loaded neighbourhood, and only after an explicit discovery/retry.
-  for(int radius=3;radius<=12;radius+=3)for(int direction=0;direction<8;direction++){double angle=direction*Math.PI/4;int x=i.lair.getX()+(int)Math.round(Math.cos(angle)*radius),z=i.lair.getZ()+(int)Math.round(Math.sin(angle)*radius);var chunk=p.getServerWorld().getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)continue;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);if((c.procedural==null||horizontal(at,c.hunt.origin)<=350*350)&&Math.abs(at.getY()-i.lair.getY())<=3&&SwampLord.spawn(p,c,at))return true;}
+  for(int radius=3;radius<=24;radius+=3)for(int direction=0;direction<8;direction++){double angle=direction*Math.PI/4;int x=i.lair.getX()+(int)Math.round(Math.cos(angle)*radius),z=i.lair.getZ()+(int)Math.round(Math.sin(angle)*radius);var chunk=p.getServerWorld().getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)continue;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);if((c.procedural==null||horizontal(at,c.hunt.origin)<=350*350)&&Math.abs(at.getY()-i.lair.getY())<=3&&SwampLord.spawn(p,c,at))return true;}
   c.hunt.status=SwampHunt.Status.WAITING;ContractState.get(p.getServer()).markDirty();
   return false;
  }

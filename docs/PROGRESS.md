@@ -1,5 +1,9 @@
 # Progress
 
+## Stage21I — completed
+
+All12 native contract species and Grimoire Survival/two-client/restart scenarios verified with optional mods and standalone. Saved-world reload/save/stop now passes after fixing harness target-loading order. Wandering food, rare components and existing expensive swords added; existing transactions retained. Final focused check2/2 and Gradle build PASS. See [Stage21I report](STAGE21I_REPORT.md) for evidence and final focused build result. No release/push/21J.
+
 ## Stage21H â€” completed compatibility verification (2026-11-05)
 
 Actual Skill Tree RPG Series skill_tree_rpgs1.4.4+1.21.1 and its pinned Pufferfish/RangedWeapon dependencies verified. Optional client-only legacy K/K dodge conflict fixed without changing signs or progression. Full123/123 GameTests, build/13 release checks and four real two-client WITH/WITHOUT gameplay/HUD/restart campaigns PASS. No required Skill Tree dependency or new branches/bonuses. [Stage21H report](STAGE21H_REPORT.md) records exact versions, evidence and limits. No push/release/21I. Earlier entries are historical.
