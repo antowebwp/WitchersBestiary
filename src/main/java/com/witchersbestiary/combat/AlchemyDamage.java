@@ -11,7 +11,7 @@ public final class AlchemyDamage {
     public static final float HUNTER_MULTIPLIER=1.25f;
     private AlchemyDamage() { }
     private static float elixirs(LivingEntity victim, DamageSource source, float amount) {
-        if(source.isOf(com.witchersbestiary.signs.SignManager.DAMAGE)||source.isOf(com.witchersbestiary.enchantment.SwordEnchantments.PULSE)||source.isOf(com.witchersbestiary.equipment.OgroidHammerItem.SLAM))return amount;
+        if(com.witchersbestiary.signs.SignManager.signDamage(source)||source.isOf(com.witchersbestiary.enchantment.SwordEnchantments.PULSE)||source.isOf(com.witchersbestiary.equipment.OgroidHammerItem.SLAM))return amount;
         if (victim.getWorld().isClient||!(victim instanceof CategorizedMonster monster)||!(source.getAttacker() instanceof PlayerEntity player))return amount;
         MonsterCategory target=monster.getMonsterCategory();
         float multiplier=1f;

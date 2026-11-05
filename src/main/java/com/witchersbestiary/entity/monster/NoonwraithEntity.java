@@ -303,11 +303,11 @@ public class NoonwraithEntity extends HostileEntity implements GeoEntity, Catego
         if (source.isIn(DamageTypeTags.IS_FALL)) return false;
         if(isRetreating() && !source.isIn(DamageTypeTags.BYPASSES_INVULNERABILITY))return false;
         float before=getHealth();
-        boolean physical = source.getAttacker() instanceof LivingEntity;
+        boolean physical = source.getAttacker() instanceof LivingEntity&&!com.witchersbestiary.signs.SignManager.signDamage(source);
         var weapon = source.getWeaponStack();
         boolean oiled = com.witchersbestiary.alchemy.InventoryOils.prepare(this,source)!=null;
 
-        boolean hit = super.damage(source, physical && !oiled ? amount * .55f : amount);
+        boolean hit = super.damage(source, physical && !oiled && !com.witchersbestiary.signs.SignManager.yrdenExposed(this) ? amount * .55f : amount);
         if (hit && isAlive()) {
             if(attackWindup==0)triggerAnim("action", "hurt");
             if(!getWorld().isClient && !illusion && !Stun.active(this) && healingRetreatEnabled() && healingRetreats<3 && retreatCooldown==0 && source.getAttacker() instanceof PlayerEntity && getHealth()<before){

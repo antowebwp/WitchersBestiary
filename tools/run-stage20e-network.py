@@ -21,7 +21,7 @@ for role in ['Server', 'One', 'Two']:
     env = 'server' if role == 'Server' else 'client'
     cwd = CASE / role.lower()
     cwd.mkdir()
-    if role != 'Server': (cwd/'options.txt').write_text('tutorialStep:none\nlang:'+('ru_ru' if os.environ.get('STAGE21E_NETWORK')=='1' and role=='Two' else 'en_us')+'\nsoundCategory_master:0.0\n')
+    if role != 'Server': (cwd/'options.txt').write_text('tutorialStep:none\nlang:'+('ru_ru' if (os.environ.get('STAGE21E_NETWORK')=='1' or os.environ.get('STAGE21G_NETWORK')=='1') and role=='Two' else 'en_us')+'\nsoundCategory_master:0.0\n')
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
            f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' else '-Xmx1G']
@@ -36,6 +36,7 @@ for role in ['Server', 'One', 'Two']:
     if os.environ.get('STAGE20G_VILLAGE_ONLY') == '1': jvm += ['-Dwitchersbestiary.stage20gVillageOnly=true']
     if os.environ.get('STAGE21E_CTOV') == '1': jvm += ['-Dwitchersbestiary.stage21eCtov=true']
     if os.environ.get('STAGE21E_NATURAL') == '1': jvm += ['-Dwitchersbestiary.stage21eNatural=true']
+    if os.environ.get('STAGE21G_VISUAL') == '1': jvm += ['-Dwitchersbestiary.stage21gVisual=true','-Dwitchersbestiary.duelReview=true']
     if os.environ.get('STAGE21E_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
     if os.environ.get('DUEL_NETWORK') == '1': jvm += ['-Dwitchersbestiary.duelReview=true']
     if os.environ.get('CONTRACT_RELIABILITY_REVIEW') == '1': jvm += ['-Dwitchersbestiary.contractReliabilityReview=true']
@@ -55,8 +56,12 @@ for role in ['Server', 'One', 'Two']:
         (cwd / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=25583\nonline-mode=false\nenforce-secure-profile=false\nview-distance=4\nsimulation-distance=4\nmax-players=2\nlevel-name=world\nlevel-seed=202001\nlevel-type=minecraft\\:normal\ngenerate-structures=true\nspawn-protection=0\ndifficulty=normal\nenable-rcon=false\n')
     else:
         jvm += [f'-Dwitchersbestiary.stage20eClient=WB{role}']
-        args = ['--username', f'WB{role}', '--width','1280' if (os.environ.get('DUEL_NETWORK')=='1' or os.environ.get('STAGE21E_NETWORK')=='1') and role=='Two' else '960','--height','900' if (os.environ.get('DUEL_NETWORK')=='1' or os.environ.get('STAGE21E_NETWORK')=='1') and role=='Two' else '640']
+        args = ['--username', f'WB{role}', '--width','1280' if (os.environ.get('DUEL_NETWORK')=='1' or os.environ.get('STAGE21E_NETWORK')=='1' or os.environ.get('STAGE21G_VISUAL')=='1') and role=='Two' else '960','--height','900' if (os.environ.get('DUEL_NETWORK')=='1' or os.environ.get('STAGE21E_NETWORK')=='1' or os.environ.get('STAGE21G_VISUAL')=='1') and role=='Two' else '640']
     if production and role != 'Server': args += data['clientArgs']
+    if role == 'Server' and os.environ.get('STAGE21G_RECOVER_WORLD'):
+        source=Path(os.environ['STAGE21G_RECOVER_WORLD']).resolve()
+        if not source.is_relative_to(BASE.resolve()) or source.name!='world' or source.parent.name!='server':raise RuntimeError('Signs recovery must use isolated review world')
+        shutil.copytree(source,cwd/'world')
     if role == 'Server' and (os.environ.get('STAGE21A_RECOVER_WORLD') or os.environ.get('STAGE21B_RECOVER_WORLD')):
         source=Path(os.environ.get('STAGE21A_RECOVER_WORLD') or os.environ['STAGE21B_RECOVER_WORLD']).resolve()
         if not source.is_relative_to(BASE.resolve()) or source.name!='world' or source.parent.name!='server': raise RuntimeError('Recovery must use an isolated review world')

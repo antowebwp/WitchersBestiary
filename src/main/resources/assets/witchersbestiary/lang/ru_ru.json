@@ -681,5 +681,19 @@
   "key.witchersbestiary.sign_menu": "Меню знаков (удерживать)",
   "key.witchersbestiary.sign_cast": "Применить знак",
   "key.witchersbestiary.sign_hud": "Настройки HUD знаков",
-  "death.attack.witcher_sign": "%1$s поражён ведьмачьим знаком"
+  "death.attack.witcher_sign": "%1$s поражён ведьмачьим знаком",
+  "sign.hud.title": "Ведьмачьи знаки (HUD)",
+  "sign.hud.scale": "Масштаб +",
+  "sign.hud.reset": "Сброс",
+  "sign.hud.preview": "Ведьмачьи знаки",
+  "sign.hud.scale_value": "Масштаб: %s%%",
+  "sign.hud.position.0": "Справа сверху",
+  "sign.hud.position.1": "Справа снизу",
+  "sign.hud.position.2": "Слева сверху",
+  "sign.hud.position.3": "Слева снизу",
+  "sign.hud.position.4": "Произвольно",
+  "sign.ready": "Готов",
+  "sign.locked": "Не изучен",
+  "sign.energy": "Мало концентрации",
+  "sign.hud.status": "%sс  Квен %s  Ирден %sс"
 }

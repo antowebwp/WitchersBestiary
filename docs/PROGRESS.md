@@ -1,5 +1,10 @@
 # Progress
 
+## Stage21G — completed local implementation and verification (2026-11-05)
+
+Five basic signs, independent concentration, Survival lesson recipes, R-hold radial/G cast, configurable RU/EN HUD, durable per-player progress, authoritative packets and fist/PvP protection implemented. One full115/115 suite; final targeted29/29; build/13 release mixin checks PASS. Two real BC/SS/SpellEngine/SpellPower clients passed five-sign gameplay, GUI2/3, remapping, held-key suppression and dedicated restarts without resource/cooldown refill. SkillTree NOT TESTED; no required dependency or claimed integration. [Stage21G report](STAGE21G_REPORT.md) records evidence and limits. No push/release or21H. Earlier status entries are historical.
+
+
 ## Stage21F — completed local implementation and verification (2026-11-05)
 
 Four vanilla1.21.1 sword enchantments I–III implemented with bounded authoritative effects and persistent weapon charges/cooldowns. All94 prior regression tests passed in the one full run; corrected focused sword checks passed with BC14/14 and without optional mods15/15. Build and13 release mixin/refmap checks PASS. Two native BC2.3.2/SS1.63 clients passed all four Survival table/book/anvil operations, vanilla/one-hand/two-hand/unique sword combat, offhand-only Rune ownership and exact earned-state dedicated restart. Evidence and limits: [Stage21F report](STAGE21F_REPORT.md). No push/release or Stage21G. Older status entries are historical.

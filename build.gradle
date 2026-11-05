@@ -873,8 +873,8 @@ tasks.named('processGametestResources') {
   if(!selected.isEmpty()) {
    def manifest=file("${destinationDir}/fabric.mod.json")
    def data=new groovy.json.JsonSlurper().parse(manifest)
-   def matches=data.entrypoints['fabric-gametest'].findAll { it==selected || it.endsWith('.'+selected) }
-   if(matches.size()!=1) throw new GradleException("Expected one GameTest class: ${selected}")
+   def selections=selected.split(',').collect { it.trim() }; def matches=data.entrypoints['fabric-gametest'].findAll { name -> selections.any { name==it || name.endsWith('.'+it) } }
+   if(matches.size()!=selections.size()) throw new GradleException("Expected selected GameTest classes: ${selected}")
    data.entrypoints['fabric-gametest']=matches
    manifest.text=groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(data))
   }

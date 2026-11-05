@@ -46,6 +46,7 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
     @com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod(method="damage")
     private boolean witchersbestiary$damage(DamageSource source,float amount,com.llamalad7.mixinextras.injector.wrapoperation.Operation<Boolean> original){
         var victim=(LivingEntity)(Object)this;
+        source=com.witchersbestiary.signs.SignManager.resolveBurn(victim,source);if(source==null)return false;
         if(source.getAttacker() instanceof LivingEntity attacker&&com.witchersbestiary.signs.SignManager.calmed(attacker))return false;
         if(com.witchersbestiary.fist.FistFights.intercept(victim,source))return false;
         if(source.isOf(net.minecraft.entity.damage.DamageTypes.LAVA)&&com.witchersbestiary.combat.BasiliskRideProtection.active(victim))return original.call(source,0f);
@@ -54,7 +55,6 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
         amount=com.witchersbestiary.accessory.HunterAccessories.protect(victim,source,com.witchersbestiary.artifact.Artifacts.protection(victim,source,amount));
         amount=com.witchersbestiary.equipment.armory.ArmoryCombat.apply(victim,source,amount);
         var oil=Float.isFinite(amount)&&amount>0?com.witchersbestiary.alchemy.InventoryOils.prepare(victim,source):null;
-        amount=com.witchersbestiary.signs.SignManager.protect(victim,source,amount);
         float before=victim.getHealth(),absorption=victim.getAbsorptionAmount();
         var enchantmentHit=com.witchersbestiary.enchantment.SwordEnchantments.capture(victim,source);
         amount=com.witchersbestiary.enchantment.SwordEnchantments.damage(enchantmentHit,amount);

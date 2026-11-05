@@ -681,5 +681,19 @@
   "key.witchersbestiary.sign_menu": "Signs menu (hold)",
   "key.witchersbestiary.sign_cast": "Cast sign",
   "key.witchersbestiary.sign_hud": "Signs HUD settings",
-  "death.attack.witcher_sign": "%1$s was struck by a witcher sign"
+  "death.attack.witcher_sign": "%1$s was struck by a witcher sign",
+  "sign.hud.title": "Witcher signs HUD",
+  "sign.hud.scale": "Scale +",
+  "sign.hud.reset": "Reset",
+  "sign.hud.preview": "Witcher signs",
+  "sign.hud.scale_value": "Scale: %s%%",
+  "sign.hud.position.0": "Top right",
+  "sign.hud.position.1": "Bottom right",
+  "sign.hud.position.2": "Top left",
+  "sign.hud.position.3": "Bottom left",
+  "sign.hud.position.4": "Custom",
+  "sign.ready": "Ready",
+  "sign.locked": "Unlearned",
+  "sign.energy": "Low concentration",
+  "sign.hud.status": "%ss  Quen %s  Yrden %ss"
 }

@@ -1,3 +1,7 @@
+# Latest verified checkpoint: Stage21G complete
+
+Read STAGE21G_REPORT.md and STAGE21G_RECOVERY.md for the current verified state. Historical stage recovery below remains preserved.
+
 # Active continuation: Stage21F
 
 Stage21A–E and contract hotfix progress is preserved. Stage21F completed native verification; read [STAGE21F_RECOVERY.md](STAGE21F_RECOVERY.md) first. Historical21B/C recovery follows.
