@@ -34,6 +34,7 @@ public final class WitchersBestiary implements ModInitializer {
         ModItems.initialize();
         com.witchersbestiary.signs.SignLessonItem.initialize();
         com.witchersbestiary.signs.SignManager.initialize();
+        com.witchersbestiary.sorcery.Sorcery.initialize();
         com.witchersbestiary.economy.Currency.initialize();
         com.witchersbestiary.merchant.ArcaneMerchants.initialize();
         com.witchersbestiary.fist.FistFights.initialize();

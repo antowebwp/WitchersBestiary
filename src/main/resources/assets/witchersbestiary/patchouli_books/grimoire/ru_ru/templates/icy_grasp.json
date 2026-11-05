@@ -1,0 +1,10 @@
+{
+  "components": [
+    {
+      "type": "patchouli:custom",
+      "class": "com.witchersbestiary.client.sorcery.GrimoireComponent",
+      "x": 0,
+      "y": 0
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Icy Grasp",
+  "category": "witchersbestiary:sorcery",
+  "icon": "witchersbestiary:grimoire",
+  "pages": [
+    {
+      "type": "witchersbestiary:icy_grasp"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Range: 12 blocks. Control: 3 seconds, reduced for large targets. Cooldown: 8 seconds. Aim at a hostile target, then press Cast. Assign an optional separate casting key in Controls. Learning is free. Casting consumes one amethyst shard."
+    }
+  ]
+}

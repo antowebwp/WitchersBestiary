@@ -24,7 +24,8 @@
       "com.witchersbestiary.test.AlchemyTableTests",
       "com.witchersbestiary.test.MerchantTests",
       "com.witchersbestiary.test.SwordEnchantmentTests",
-      "com.witchersbestiary.test.SignTests"
+      "com.witchersbestiary.test.SignTests",
+      "com.witchersbestiary.test.Stage21ITests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer",

@@ -83,6 +83,7 @@ public final class ModItems {
             new Item.Settings().rarity(Rarity.RARE)));
     public static final Item SPECTER_ELIXIR = register("specter_elixir", new HunterElixirItem(new Item.Settings().maxCount(16), ModEffects.SPECTER_HUNTER));
     public static final Item SPECTER_OIL = register("specter_oil", new WeaponOilItem(new Item.Settings().maxCount(16), "specter_oil", MonsterCategory.SPECTER));
+    public static final Item GRIMOIRE = register("grimoire",new com.witchersbestiary.sorcery.GrimoireItem());
     public static final Item BESTIARY = register("bestiary", new com.witchersbestiary.bestiary.BestiaryItem(new Item.Settings().maxCount(1).rarity(Rarity.UNCOMMON)));
     public static final Item WRAITH_SPAWN_EGG=register("wraith_spawn_egg",new SpawnEggItem(ModEntities.WRAITH,0x343735,0xb4b3a0,new Item.Settings()));
     public static final Item WRAITH_ESSENCE=register("wraith_essence",new Item(new Item.Settings()));

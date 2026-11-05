@@ -58,7 +58,7 @@ public final class ContractHotfixTests implements FabricGameTest {
  }
  @GameTest(templateName="witchersbestiary:village_board_arena",batchId="contract-hotfix",tickLimit=60)
  public void loadedForestFallbackCommitsTwoCluesAndSavedLairBeforeAcceptance(TestContext c){
-  var w=c.getWorld();for(int x=0;x<48;x++)for(int z=0;z<48;z++){c.setBlockState(new BlockPos(x,1,z),Blocks.GRASS_BLOCK);for(int y=2;y<15;y++)c.setBlockState(new BlockPos(x,y,z),Blocks.AIR);}
+  var w=c.getWorld();for(int x=0;x<80;x++)for(int z=0;z<80;z++){c.setBlockState(new BlockPos(x,1,z),Blocks.GRASS_BLOCK);for(int y=2;y<15;y++)c.setBlockState(new BlockPos(x,y,z),Blocks.AIR);}
   for(int x=12;x<42;x++)for(int z=18;z<30;z++)c.setBlockState(new BlockPos(x,10,z),Blocks.OAK_LEAVES);
   var at=c.getAbsolutePos(new BlockPos(30,2,24));var forest=w.getRegistryManager().get(RegistryKeys.BIOME).getEntry(net.minecraft.world.biome.BiomeKeys.FOREST).orElseThrow();
   for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++){var chunk=w.getChunkManager().getWorldChunk((at.getX()>>4)+x,(at.getZ()>>4)+z);if(chunk!=null)chunk.populateBiomes((a,b,d,s)->forest,w.getChunkManager().getNoiseConfig().getMultiNoiseSampler());}
@@ -98,7 +98,7 @@ public final class ContractHotfixTests implements FabricGameTest {
  }
  @GameTest(templateName="witchersbestiary:village_board_arena",batchId="contract-hotfix-recovery",tickLimit=40)
  public void savedLairCanRecoverWithoutRerollOrRespawningExistingTarget(TestContext c){
-  var w=c.getWorld();for(int x=0;x<48;x++)for(int z=0;z<48;z++){c.setBlockState(new BlockPos(x,1,z),Blocks.GRASS_BLOCK);for(int y=2;y<15;y++)c.setBlockState(new BlockPos(x,y,z),Blocks.AIR);}
+  var w=c.getWorld();for(int x=0;x<80;x++)for(int z=0;z<80;z++){c.setBlockState(new BlockPos(x,1,z),Blocks.GRASS_BLOCK);for(int y=2;y<15;y++)c.setBlockState(new BlockPos(x,y,z),Blocks.AIR);}
   var at=c.getAbsolutePos(new BlockPos(30,2,24));var forest=w.getRegistryManager().get(RegistryKeys.BIOME).getEntry(net.minecraft.world.biome.BiomeKeys.FOREST).orElseThrow();for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++){var chunk=w.getChunkManager().getWorldChunk((at.getX()>>4)+x,(at.getZ()>>4)+z);if(chunk!=null)chunk.populateBiomes((a,b,d,s)->forest,w.getChunkManager().getNoiseConfig().getMultiNoiseSampler());}
   var p=c.createMockCreativeServerPlayerInWorld();p.refreshPositionAndAngles(at.getX()-18,at.getY(),at.getZ(),0,0);var broken=waiting(p);broken.hunt.position=at;broken=ContractInstance.fromNbt(broken.toNbt());var roll=broken.procedural;
   c.assertTrue(SwampLord.recoverSavedRoute(p,broken)&&broken.investigation.clues.size()==2&&broken.procedural.equals(roll)&&broken.progress()==0,"Saved coordinates recover missing clues without reward or profile reroll");
