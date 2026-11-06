@@ -24,6 +24,7 @@
       "com.witchersbestiary.test.AlchemyTableTests",
       "com.witchersbestiary.test.MerchantTests",
       "com.witchersbestiary.test.MerchantAssortmentTests",
+      "com.witchersbestiary.test.TournamentTests",
       "com.witchersbestiary.test.SwordEnchantmentTests",
       "com.witchersbestiary.test.SignTests",
       "com.witchersbestiary.test.Stage21ITests"

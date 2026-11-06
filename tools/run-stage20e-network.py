@@ -25,6 +25,8 @@ for role in ['Server', 'One', 'Two']:
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
            f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' or os.environ.get('STAGE21I_NETWORK')=='1' else '-Xmx1G']
+    if os.environ.get("STAGE21J_NETWORK")=="1": jvm += ["-Dwitchersbestiary.stage21jNetwork=true"]
+    if os.environ.get("STAGE21J_RESTART_ONLY")=="1": jvm += ["-Dwitchersbestiary.stage21jRestart=true"]
     if production:
         jvm=[a for a in jvm if not a.startswith('-Dfabric.dli.')] + ['-Dfabric.development=false']
         mods=cwd/'mods';mods.mkdir()
@@ -117,6 +119,11 @@ if os.environ.get('STAGE21I_RESUME_DIR'):
     shutil.copytree(previous/'server/world',CASE/'server/world')
     for proof in ['signs-resume.json','signs-results.json','stage21i-contracts.json','resume.json']:
         if (previous/proof).is_file(): shutil.copyfile(previous/proof,CASE/proof)
+
+if os.environ.get('STAGE21J_RESUME_DIR'):
+    previous=Path(os.environ['STAGE21J_RESUME_DIR']).resolve()
+    if not previous.is_relative_to(BASE.resolve()) or not (previous/'complete.json').is_file(): raise RuntimeError('Invalid tournament review world')
+    shutil.copytree(previous/'server/world',CASE/'server/world')
 
 started = time.monotonic()
 try:

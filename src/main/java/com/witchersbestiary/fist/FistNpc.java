@@ -6,7 +6,7 @@ public class FistNpc extends PathAwareEntity implements GeoEntity{
  public FistNpc(EntityType<? extends PathAwareEntity> type,World w,int tier){super(type,w);this.tier=tier;setPersistent();}
  protected void initDataTracker(DataTracker.Builder b){super.initDataTracker(b);b.add(POSE,"idle");}
  protected void initGoals(){goalSelector.add(1,new net.minecraft.entity.ai.goal.SwimGoal(this));goalSelector.add(6,new net.minecraft.entity.ai.goal.WanderAroundFarGoal(this,.55){public boolean canStart(){return getTarget()==null&&poseTimer==0&&!FistFights.invited(FistNpc.this)&&!FistFights.busy(FistNpc.this)&&super.canStart();}});}
- protected ActionResult interactMob(PlayerEntity player,Hand hand){if(player instanceof net.minecraft.server.network.ServerPlayerEntity p){if(p.isSneaking())FistFights.confirm(p,this);else FistFights.invite(p,this);}return ActionResult.SUCCESS;}
+ protected ActionResult interactMob(PlayerEntity player,Hand hand){if(player instanceof net.minecraft.server.network.ServerPlayerEntity p){if(Tournaments.opponent(this))return ActionResult.FAIL;if(p.isSneaking())FistFights.confirm(p,this);else FistFights.invite(p,this);}return ActionResult.SUCCESS;}
  public void configureBout(FistFightSession fight){fight.opponent.health=70+tier*25;fight.opponent.maxStamina=75+tier*12;fight.opponent.stamina=fight.opponent.maxStamina;}
  public String fightPose(FistFightSession.Action action){return action.name().toLowerCase(java.util.Locale.ROOT).replace("idle","stance");}
  public int winReward(){return new int[]{12,28,60}[tier];}

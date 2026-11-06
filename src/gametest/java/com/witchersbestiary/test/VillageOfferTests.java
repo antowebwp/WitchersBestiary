@@ -27,7 +27,7 @@ public final class VillageOfferTests implements FabricGameTest {
   var personal=state.refresh("A",p,24000,pool,o->true);
   c.assertTrue(!base.id().equals(personal.id())&&base.equals(state.personal("A",other,24000,pool)),"Personal refresh leaves peer unchanged");c.complete();
  }
- @GameTest(templateName="witchersbestiary:village_board_arena",batchId="stage20h-integration",tickLimit=40)
+ @GameTest(templateName="witchersbestiary:village_board_arena",batchId="stage20h-integration",tickLimit=2400)
  public void boardAcceptanceOwnershipAndReplay(TestContext c){
   var w=c.getWorld();prepareHuntField(c);var root=c.getAbsolutePos(new net.minecraft.util.math.BlockPos(2,2,46));
   for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++)w.setBlockState(root.add(x,-1,z),net.minecraft.block.Blocks.GRASS_BLOCK.getDefaultState());
@@ -37,12 +37,12 @@ public final class VillageOfferTests implements FabricGameTest {
   var h=new com.witchersbestiary.board.BoardScreenHandler(701,p.getInventory(),root);var peer=new com.witchersbestiary.board.BoardScreenHandler(702,q.getInventory(),root);p.currentScreenHandler=h;q.currentScreenHandler=peer;
   c.assertTrue(h.view(p,"").getAsJsonArray("offers").equals(peer.view(q,"").getAsJsonArray("offers")),"Shared base snapshot");
   h.onButtonClick(p,65);var special=h.view(p,"").getAsJsonArray("offers");c.assertTrue(special.size()==2&&special.get(0).getAsJsonObject().get("rarity").getAsString().equals("LEGENDARY"),"Separate legendary category");h.onButtonClick(p,65);c.assertTrue(h.view(p,"").getAsJsonArray("offers").size()==5,"Five regular slots retained");
-  h.onButtonClick(p,0);var state=com.witchersbestiary.contracts.ContractState.get(w.getServer());var accepted=state.ownedBy(p.getUuid()).getFirst();
+  h.onButtonClick(p,0);var state=com.witchersbestiary.contracts.ContractState.get(w.getServer());c.addInstantFinalTask(()->{c.assertTrue(!state.ownedBy(p.getUuid()).isEmpty(),"Async acceptance ready");var accepted=state.ownedBy(p.getUuid()).getFirst();
   c.assertTrue(accepted.offer!=null&&accepted.village!=null&&accepted.generation!=null,"Persisted source identity");
   c.assertTrue(peer.view(q,"").getAsJsonArray("offers").get(0).getAsJsonObject().get("state").getAsString().equals("AVAILABLE"),"Peer remains available");
   h.onButtonClick(p,0);c.assertTrue(state.ownedBy(p.getUuid()).size()==1,"Repeated accept is idempotent");
   var copy=com.witchersbestiary.contracts.ContractInstance.fromNbt(accepted.toNbt());c.assertTrue(accepted.offer.equals(copy.offer)&&accepted.id().equals(copy.id()),"Instance source roundtrip");
-  p.currentScreenHandler=p.playerScreenHandler;q.currentScreenHandler=q.playerScreenHandler;p.discard();q.discard();c.complete();
+  p.currentScreenHandler=p.playerScreenHandler;q.currentScreenHandler=q.playerScreenHandler;p.discard();q.discard();});
  }
  @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE,batchId="stage20h-final")
  public void hundredCyclesAndBoundedTerminalHistory(TestContext c){
