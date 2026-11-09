@@ -18,8 +18,8 @@ import net.minecraft.world.Heightmap;
 public final class Unicorns {
     public static final Identifier ID = Identifier.of("witchersbestiary", "unicorn");
     public static final EntityType<UnicornEntity> TYPE = Registry.register(Registries.ENTITY_TYPE, ID,
-        EntityType.Builder.create(UnicornEntity::new, SpawnGroup.CREATURE).dimensions(1.38f, 1.6f)
-            .passengerAttachments(new net.minecraft.util.math.Vec3d(0, 1.43, -.14))
+        EntityType.Builder.create(UnicornEntity::new, SpawnGroup.CREATURE).dimensions(1.52f, 1.79f)
+            .passengerAttachments(new net.minecraft.util.math.Vec3d(0, 1.60, -.157))
             .maxTrackingRange(10).build(ID.toString()));
 
     public static void initialize() {

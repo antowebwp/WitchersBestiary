@@ -24,8 +24,11 @@ public final class UnicornNetworkReview implements ModInitializer {
     private static String name(int index){ return index==0?"WBOne":"WBTwo"; }
     private void command(int index,String action,String shot) throws Exception {
         nonce[index]=System.currentTimeMillis()+index;
-        Files.writeString(output.resolve(name(index)+".command.json"),new Gson().toJson(Map.of(
+        var destination=output.resolve(name(index)+".command.json");
+        var temporary=output.resolve(name(index)+".command.tmp");
+        Files.writeString(temporary,new Gson().toJson(Map.of(
             "nonce",nonce[index],"action",action,"shot",shot,"target",unicorn==null?"":unicorn.getUuid().toString())));
+        Files.move(temporary,destination,StandardCopyOption.ATOMIC_MOVE,StandardCopyOption.REPLACE_EXISTING);
     }
     private boolean ack(int index)throws Exception {
         var path=output.resolve(name(index)+".reply.json");

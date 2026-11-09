@@ -7,6 +7,8 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/witchersbestiary"
 SIZE = 256
+# Uniform growth preserves the angles of the horn, face and stepped locks.
+SCALE = 1.12
 atlas = Image.new("RGBA", (SIZE, SIZE))
 glow = Image.new("RGBA", (SIZE, SIZE))
 rng = random.Random(22001)
@@ -20,7 +22,7 @@ palette = {
 }
 
 def bone(name, pivot, parent=None):
-    result = dict(name=name, pivot=pivot, cubes=[])
+    result = dict(name=name, pivot=[round(value * SCALE, 5) for value in pivot], cubes=[])
     if parent:
         result["parent"] = parent
     bones.append(result)
@@ -28,6 +30,8 @@ def bone(name, pivot, parent=None):
 
 def cube(b, origin, size, color, rotation=None, pivot=None):
     global x, y, height
+    origin = [round(value * SCALE, 5) for value in origin]
+    size = [round(value * SCALE, 5) for value in size]
     w, h, d = [math.ceil(v) for v in size]
     width, depth = 2*(w+d), h+d
     if x + width > SIZE:
@@ -35,7 +39,7 @@ def cube(b, origin, size, color, rotation=None, pivot=None):
     assert y+depth <= SIZE
     a = dict(origin=origin, size=size, uv=[x, y])
     if rotation:
-        a.update(rotation=rotation, pivot=pivot)
+        a.update(rotation=rotation, pivot=[round(value * SCALE, 5) for value in pivot])
     b["cubes"].append(a)
     base = palette[color]
     for yy in range(depth):
@@ -50,11 +54,11 @@ def cube(b, origin, size, color, rotation=None, pivot=None):
     height = max(height,depth)
 
 body=bone("body",[0,18,0])
-cube(body,[-4,13,-8],[8,9,17],"coat")
-cube(body,[-3.65,12.55,-9],[7.3,9.2,4],"coat")
-cube(body,[-3.8,13.2,6.2],[7.6,8.55,4],"coat")
+cube(body,[-4.62,12.35,-8],[9.24,9.65,17],"coat")
+cube(body,[-4.34,11.85,-9.2],[8.68,9.9,4.4],"coat")
+cube(body,[-4.39,12.44,6.08],[8.78,9.31,4.35],"coat")
 neck=bone("neck",[0,18,-6],"body")
-cube(neck,[-2.45,18,-10],[4.9,11,5.8],"coat",[17,0,0],[0,18,-6])
+cube(neck,[-2.72,17.7,-10.14],[5.44,11.3,6.03],"coat",[17,0,0],[0,18,-6])
 head=bone("head",[0,28,-9],"neck")
 cube(head,[-2.55,25,-13],[5.1,5.9,5.5],"coat")
 cube(head,[-2.16,25.05,-17.2],[4.32,3.7,5.8],"coat",[16,0,0],[0,27,-12])
@@ -89,30 +93,30 @@ for lock in range(5):
     for step in range(7+(lock%2)):
         sx=(lock-2)*1.06+(step*.15 if lock>=2 else -step*.15)
         cube(tail,[sx-.74,20.4-step*2.44-(lock%2)*.67,9.2+min(step,5)*.97+lock*.43+step*.037],[1.48,2.71,3.22],("lilac","rose","pearl","ice","lilac")[lock] if step else "pearl")
-for name,sx,z in [("front_l",-2.5,-6.5),("front_r",2.5,-6.5),("hind_l",-2.5,6.4),("hind_r",2.5,6.4)]:
+for name,sx,z in [("front_l",-2.74,-6.5),("front_r",2.74,-6.5),("hind_l",-2.74,6.4),("hind_r",2.74,6.4)]:
     leg=bone(name,[sx,15,z],"body")
-    cube(leg,[sx-1.05,7,z-1.15],[2.1,8.5,2.3],"coat",[12 if z>0 else -3,0,0],[sx,15,z])
-    cube(leg,[sx-.82,1.2,z-.94],[1.64,7.1,1.88],"coat")
-    cube(leg,[sx-1,0,z-1.21],[2,1.68,2.32],"hoof")
-    cube(leg,[sx-.96,1.63,z-1.16],[1.92,.64,2.22],"pearl")
+    cube(leg,[sx-1.21,7,z-1.29],[2.42,8.5,2.58],"coat",[12 if z>0 else -3,0,0],[sx,15,z])
+    cube(leg,[sx-.94,1.2,z-1.04],[1.88,7.1,2.08],"coat")
+    cube(leg,[sx-1.12,0,z-1.29],[2.24,1.68,2.48],"hoof")
+    cube(leg,[sx-1.08,1.63,z-1.24],[2.16,.64,2.38],"pearl")
 
 saddle=bone("saddle",[0,22,0],"body")
-cube(saddle,[-4.18,21.83,-2.9],[8.36,.5,6.75],"lilac")
+cube(saddle,[-4.74,21.83,-2.9],[9.48,.5,6.75],"lilac")
 cube(saddle,[-3.35,22.29,-2.46],[6.7,.55,5.8],"leather")
 cube(saddle,[-3.22,22.72,-2.68],[6.44,.65,1.1],"binding")
 cube(saddle,[-3.18,22.77,2.48],[6.36,.58,1.11],"binding")
 for side in (-1,1):
-    cube(saddle,[side*4.07-.19,17.15,-1.63],[.38,4.8,2.0],"leather")
-    cube(saddle,[side*4.25-.17,16.8,-1.24],[.34,1.0,1.04],"gold")
+    cube(saddle,[side*4.69-.19,17.15,-1.63],[.38,4.8,2.0],"leather")
+    cube(saddle,[side*4.87-.17,16.8,-1.24],[.34,1.0,1.04],"gold")
 
 for part in saddle["cubes"]:
-    part["origin"][2] += 2.24
+    part["origin"][2] += 2.24 * SCALE
 
 def write(name,obj):
     path=ROOT/name
     path.parent.mkdir(parents=True,exist_ok=True)
     path.write_text(json.dumps(obj,indent=2)+"\n",encoding="utf-8")
-write("geo/unicorn.geo.json",{"format_version":"1.12.0","minecraft:geometry":[{"description":{"identifier":"geometry.witchersbestiary.unicorn","texture_width":SIZE,"texture_height":SIZE,"visible_bounds_width":4,"visible_bounds_height":4,"visible_bounds_offset":[0,1.4,0]},"bones":bones}]})
+write("geo/unicorn.geo.json",{"format_version":"1.12.0","minecraft:geometry":[{"description":{"identifier":"geometry.witchersbestiary.unicorn","texture_width":SIZE,"texture_height":SIZE,"visible_bounds_width":4,"visible_bounds_height":4,"visible_bounds_offset":[0,1.57,0]},"bones":bones}]})
 path=ROOT/"textures/entity/unicorn.png"
 path.parent.mkdir(parents=True,exist_ok=True)
 atlas.save(path)
@@ -125,7 +129,14 @@ clip("idle",3.2,{"head":rot([(0,[0,0,0]),(1.6,[2,3,-1]),(3.2,[0,0,0])]),"body":{
 for gait,length,amplitude in [("walk",1.15,25),("run",.64,43)]:
     tracks={}
     for name,phase in zip(("front_l","front_r","hind_l","hind_r"),(0,.5,.68,.18) if gait=="walk" else (0,.18,.48,.67)):
-        tracks[name]=rot([(round(length*i/8,4),[round(amplitude*math.cos(2*math.pi*(i/8+phase)),2),0,0]) for i in range(9)])
+        keys = []
+        for i in range(9):
+            swing = math.cos(2 * math.pi * (i/8 + phase))
+            # The thicker fore and hind legs need clearance on the inward swing.
+            inward = (swing > 0) == name.startswith("front")
+            angle = (18 if inward else amplitude) * swing
+            keys.append((round(length*i/8,4), [round(angle,2),0,0]))
+        tracks[name]=rot(keys)
     tracks["neck"]=rot([(0,[1,0,0]),(length/2,[-4 if gait=="walk" else -8,0,0]),(length,[1,0,0])])
     clip(gait,length,tracks)
 clip("hair",2.8,{"mane":rot([(0,[0,0,-1]),(1.4,[2,0,1.5]),(2.8,[0,0,-1])]),"tail":rot([(0,[1,-7,0]),(1.4,[-3,7,0]),(2.8,[1,-7,0])])})
