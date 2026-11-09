@@ -18,6 +18,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         com.witchersbestiary.client.sorcery.SorceryClient.initialize();
         com.witchersbestiary.client.tracking.WitcherSensesClient.initialize();
         com.witchersbestiary.client.config.ProgressiveConfigClient.initialize();
+        net.minecraft.client.gui.screen.ingame.HandledScreens.register(com.witchersbestiary.nekker.NekkerHandler.TYPE,NekkerScreen::new);
         net.minecraft.client.gui.screen.ingame.HandledScreens.register(com.witchersbestiary.workshop.ModWorkshop.ALCHEMY_SCREEN,com.witchersbestiary.client.workshop.AlchemyScreen::new);
         net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin.register(context->context.addModels(com.witchersbestiary.workshop.ModWorkshop.id("block/witcher_chest_lid")));
         net.minecraft.client.gui.screen.ingame.HandledScreens.register(com.witchersbestiary.workshop.ModWorkshop.URN_SCREEN,com.witchersbestiary.client.workshop.WorkshopContainerScreen::new);

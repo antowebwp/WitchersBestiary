@@ -98,7 +98,7 @@ public final class NaturalSpawns {
             var state=access.getBlockState(q);if(state.isOf(Blocks.LAVA)||state.isOf(Blocks.FIRE)||state.isOf(Blocks.SOUL_FIRE)||state.isOf(Blocks.MAGMA_BLOCK)||state.isOf(Blocks.CAMPFIRE)||state.isOf(Blocks.CACTUS)||state.isOf(Blocks.POWDER_SNOW))return false;
         }
         int cap=type==ModEntities.WATER_HAG?ModConfig.groupMaximum("water_hag",2):type==ModEntities.ENDREGA_WARRIOR?ModConfig.groupMaximum("endrega_warrior",3):type==ModEntities.DROWNER?ModConfig.groupMaximum("drowner",5):type==ModEntities.GHOUL?ModConfig.groupMaximum("ghoul",4):type==ModEntities.WRAITH?ModConfig.groupMaximum("wraith",2):type==ModEntities.NEKKER?ModConfig.groupMaximum("nekker",5):type==ModEntities.FOGLET?ModConfig.groupMaximum("foglet",2):boss?1:type==ModEntities.KATAKAN||type==ModEntities.WEREWOLF||type==ModEntities.BONECRUSHER?1:6;double radius=type==ModEntities.FIEND?128:boss?96:type==ModEntities.BONECRUSHER?64:48;
-        int nearby=world.getOtherEntities(null,new Box(pos).expand(radius),e->e.isAlive()&&e.getType()==type&&(!(e instanceof NoonwraithEntity n)||!n.isIllusion())).size();
+        int nearby=world.getOtherEntities(null,new Box(pos).expand(radius),e->e.isAlive()&&e.getType()==type&&(!(e instanceof NekkerEntity nekker)||!nekker.isTamed())&&(!(e instanceof NoonwraithEntity n)||!n.isIllusion())).size();
         if(type==ModEntities.WATER_HAG&&nearby>0&&random.nextInt(4)!=0)return false;
         return nearby<cap;
     }

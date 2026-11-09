@@ -1,4 +1,9 @@
 {
+  "nekker.witchersbestiary.title": "Nekker",
+  "nekker.witchersbestiary.follow": "Following",
+  "nekker.witchersbestiary.wait": "Waiting",
+  "nekker.witchersbestiary.pickup_on": "Auto-pickup: On",
+  "nekker.witchersbestiary.pickup_off": "Auto-pickup: Off",
   "entity.witchersbestiary.leshen": "Leshen",
   "item.witchersbestiary.leshen_spawn_egg": "Leshen Spawn Egg",
   "entity.witchersbestiary.leshen_wolf": "Leshen Wolf",

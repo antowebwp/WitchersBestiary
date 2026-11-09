@@ -1,4 +1,9 @@
 {
+  "nekker.witchersbestiary.title": "Накер",
+  "nekker.witchersbestiary.follow": "Следовать",
+  "nekker.witchersbestiary.wait": "Ждать",
+  "nekker.witchersbestiary.pickup_on": "Автоподбор: Вкл",
+  "nekker.witchersbestiary.pickup_off": "Автоподбор: Выкл",
   "entity.witchersbestiary.leshen": "Леший",
   "item.witchersbestiary.leshen_spawn_egg": "Яйцо призыва лешего",
   "entity.witchersbestiary.leshen_wolf": "Волк лешего",

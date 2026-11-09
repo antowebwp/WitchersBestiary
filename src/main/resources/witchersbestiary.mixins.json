@@ -12,6 +12,7 @@
     "ProgressiveHealthAttributeMixin",
     "VillageNoticeBoardMixin",
     "CrownPickupMixin",
+    "ItemPickupOwner",
     "SwordAttackMixin"
   ],
   "injectors": {
