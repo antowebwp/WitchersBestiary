@@ -79,7 +79,7 @@ public final class Contracts {
     public static void claim(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); var c = store.find(instance);
         if (c == null || DEFINITIONS.find(c.definition().id()) == null) throw new IllegalStateException("Contract or its definition is unavailable");
-        ContractRewards.claim(store, c, player);if(instance.equals(store.tracked(player.getUuid())))store.track(player.getUuid(),null);com.witchersbestiary.contracts.tracking.Investigations.refresh(player);
+        ContractRewards.claim(store, c, player);com.witchersbestiary.signs.SignManager.awardContract(player);if(instance.equals(store.tracked(player.getUuid())))store.track(player.getUuid(),null);com.witchersbestiary.contracts.tracking.Investigations.refresh(player);
     }
     public static void cancel(ServerPlayerEntity player, UUID instance) {
         var store = ContractState.get(player.getServer()); store.writable(); var c = store.find(instance);

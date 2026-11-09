@@ -71,6 +71,56 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
   if(action.equals("trackingProof")){if(step==1&&c.currentScreen!=null)c.player.closeHandledScreen();if(screenReady>20&&step>40&&WitcherSensesClient.snapshot().has("contract")){capture(c,"tracking-proof");reply(c,"tracking-proof");}return;}
   if(action.equals("cancelPrompt")||action.equals("cancelConfirm")||action.equals("cancelBack")){if(action.equals("cancelPrompt")&&!choose(c))return;if(step==18&&c.currentScreen instanceof com.witchersbestiary.client.board.NoticeBoardScreen screen){String key="gui.witchersbestiary.board."+(action.equals("cancelPrompt")?"abandon":action.equals("cancelConfirm")?"cancel_confirm":"cancel_back");var label=Text.translatable(key).getString();boolean clicked=false;for(var child:screen.children())if(child instanceof net.minecraft.client.gui.widget.ButtonWidget widget&&widget.visible&&widget.active&&widget.getMessage().getString().equals(label)){screen.mouseClicked(widget.getX()+widget.getWidth()/2.0,widget.getY()+widget.getHeight()/2.0,0);clicked=true;break;}if(!clicked)throw new IllegalStateException("GUI button missing: "+key);}if(step>30){capture(c,action);reply(c,"cancel-gui");}return;}
   if(action.equals("boardProof")){if(c.currentScreen instanceof com.witchersbestiary.client.board.NoticeBoardScreen&&step>20){capture(c,"village-gui");reply(c,"board-screen");}return;}
+  if(action.equals("masteryNative")){
+   c.onWindowFocusChanged(true);c.getToastManager().clear();
+   if(step==6)c.setScreen(new com.witchersbestiary.client.signs.SignMasteryScreen(null,com.witchersbestiary.signs.SignType.IGNI));
+   if(step==16||step==26||step==36||step==46||step==56||step==66){
+    int index=switch(step){case 16->8;case 26->12;case 36->6;case 46->9;case 56->7;default->9;};
+    var widget=(net.minecraft.client.gui.widget.ButtonWidget)c.currentScreen.children().get(index);
+    if(!widget.active)throw new IllegalStateException("Mastery widget inactive at step "+step);
+    widget.onPress();
+   }
+   if(step==38||step==61||step==71)capture(c,"mastery-tab-"+step);
+   if(step==74)c.currentScreen.close();
+   var castKey=java.util.Arrays.stream(c.options.allKeys).filter(k->k.getTranslationKey().equals("key.witchersbestiary.sign_cast")).findFirst().orElseThrow();
+   castKey.setPressed(step>=83&&step<97);
+   if(step==103)capture(c,"mastery-circular-fire");
+   if(step==107)reply(c,"mastery-gui-and-held-cast");
+   return;
+  }
+  if(action.equals("hudScaleHotfix")){
+   c.getToastManager().clear();
+   if(step==8)c.setScreen(new com.witchersbestiary.client.signs.SignHudScreen());
+   if(step==12||step==22||step==32||step==62||step==72||step==82){
+    int count=step==32||step==82?20:10;int button=step==12||step==62?1:2;
+    var widget=(net.minecraft.client.gui.widget.ButtonWidget)c.currentScreen.children().get(button);
+    for(int i=0;i<count;i++)widget.onPress();
+    double expected=button==1?.5:count==10?1:2;
+    boolean signs=step<60;
+    double actual=signs?com.witchersbestiary.client.signs.SignHudSettings.scale:com.witchersbestiary.client.fist.FistHudSettings.scale;
+    if(actual!=expected)throw new IllegalStateException("HUD scale "+actual+" != "+expected);
+    for(int[] viewport:new int[][]{{480,320},{320,213},{1920,1080}}){
+     var box=signs?com.witchersbestiary.client.signs.SignHudSettings.bounds(viewport[0],viewport[1]):com.witchersbestiary.client.fist.FistHudSettings.bounds(viewport[0],viewport[1]);
+     if(box[0]+box[2]>viewport[0]||box[1]+box[3]>viewport[1]-48||box[4]>expected*10000)throw new IllegalStateException("HUD bounds exceed viewport");
+     if(viewport[0]>=480&&box[4]!=expected*10000)throw new IllegalStateException("HUD lost requested multiplier");
+    }
+   }
+   if(step==15||step==25||step==35||step==65||step==75||step==85)capture(c,"hud-scale-"+step);
+   if(step==40||step==90){
+    boolean signs=step==40;var screen=c.currentScreen;
+    var box=signs?com.witchersbestiary.client.signs.SignHudSettings.bounds(screen.width,screen.height):com.witchersbestiary.client.fist.FistHudSettings.bounds(screen.width,screen.height);
+    if(!screen.mouseClicked(box[0]+2,box[1]+2,0)||!screen.mouseDragged(19,17,0,10,10))throw new IllegalStateException("Scaled HUD drag hitbox");
+    screen.mouseReleased(19,17,0);screen.close();
+    if(signs){com.witchersbestiary.client.signs.SignHudSettings.reset();com.witchersbestiary.client.signs.SignHudSettings.load();if(com.witchersbestiary.client.signs.SignHudSettings.scale!=2||com.witchersbestiary.client.signs.SignHudSettings.corner!=4)throw new IllegalStateException("Sign HUD disk reload");c.setScreen(new com.witchersbestiary.client.signs.SignHudScreen());}
+    else{com.witchersbestiary.client.fist.FistHudSettings.reset();com.witchersbestiary.client.fist.FistHudSettings.load();if(com.witchersbestiary.client.fist.FistHudSettings.scale!=2||com.witchersbestiary.client.fist.FistHudSettings.corner!=4)throw new IllegalStateException("Combat HUD disk reload");c.setScreen(new com.witchersbestiary.client.fist.FistHudScreen(null));}
+    ((net.minecraft.client.gui.widget.ButtonWidget)c.currentScreen.children().get(3)).onPress();
+    if(signs?(com.witchersbestiary.client.signs.SignHudSettings.scale!=1||com.witchersbestiary.client.signs.SignHudSettings.corner!=0):(com.witchersbestiary.client.fist.FistHudSettings.scale!=1||com.witchersbestiary.client.fist.FistHudSettings.corner!=0))throw new IllegalStateException("HUD defaults were not restored");
+    c.currentScreen.close();
+   }
+   if(step==58)c.setScreen(new com.witchersbestiary.client.fist.FistHudScreen(null));
+   if(step==95)reply(c,"hud-scale-bounds-reset-and-disk-passed");
+   return;
+  }
   if(action.startsWith("unicorn")){
    c.getToastManager().clear();
    if(screenReady<6){step=0;return;}
@@ -79,16 +129,16 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
    for(var entity:c.world.getEntities())if(entity.getUuid().equals(target)&&entity instanceof com.witchersbestiary.unicorn.UnicornEntity found){unicorn=found;break;}
    if(unicorn==null){step=0;return;}
    String shot=command.get("shot").getAsString();
-   if(shot.equals("unicorn-final-motion")){
+   if(shot.equals("unicorn-final-motion")||shot.equals("unicorn-walk-motion")){
     var offset=unicorn.getPos().add(0,1.3,0).subtract(c.player.getEyePos());
     c.player.setYaw((float)Math.toDegrees(Math.atan2(-offset.x,offset.z)));
     c.player.setPitch((float)-Math.toDegrees(Math.atan2(offset.y,Math.sqrt(offset.horizontalLengthSquared()))));
-    if(unicornLastPos!=null&&unicornLastPos.squaredDistanceTo(unicorn.getPos())>.003&&unicorn.gait()!=0&&step%3==0){
+    if(unicornLastPos!=null&&unicornLastPos.squaredDistanceTo(unicorn.getPos())>.003&&unicorn.gait()==(shot.equals("unicorn-walk-motion")?1:2)&&step%3==0){
      var renderer=(com.witchersbestiary.client.unicorn.UnicornRenderer)c.getEntityRenderDispatcher().getRenderer(unicorn);
      var model=renderer.getGeoModel();
      float left=model.getBone("front_l").orElseThrow().getRotX();
      float right=model.getBone("front_r").orElseThrow().getRotX();
-     if(Math.abs(left-right)>.05f){capture(c,"unicorn-motion-"+(++unicornMotionFrames));if(unicornMotionFrames>=3)reply(c,"moving-gait");}
+     if(Math.abs(left-right)>.05f){capture(c,shot+"-"+(++unicornMotionFrames));if(unicornMotionFrames>=1)reply(c,"moving-gait");}
     }
     unicornLastPos=unicorn.getPos();
     if(step>150)throw new IllegalStateException("Unicorn motion not visible to observer");
@@ -99,7 +149,7 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
    if(action.equals("unicornRide")){
     if(step==4)c.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_BACK);
     c.options.forwardKey.setPressed(step>=5&&step<55);
-    c.options.jumpKey.setPressed(step>=16&&step<24);
+    c.options.jumpKey.setPressed(!shot.equals("unicorn-walking-rider")&&step>=16&&step<24);
     if(step==24)capture(c,shot);
     if(step>=63){c.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON);reply(c,"ride-input");}
    }else if(step>=28){capture(c,shot);reply(c,"unicorn-review");}

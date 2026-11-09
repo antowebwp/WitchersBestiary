@@ -1,8 +1,16 @@
 {
   "replace": false,
   "values": [
-    "minecraft:flower_forest",
+    "minecraft:plains",
     "minecraft:meadow",
-    "minecraft:forest"
+    "minecraft:flower_forest",
+    {
+      "id": "biomesoplenty:grassland",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:prairie",
+      "required": false
+    }
   ]
 }

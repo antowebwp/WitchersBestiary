@@ -25,6 +25,7 @@ for role in ['Server', 'One', 'Two']:
     jvm = [f'-Dfabric.dli.config={ROOT}/.gradle/loom-cache/launch.cfg',
            f'-Dfabric.dli.env={env}', f'-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.Knot{env.capitalize()}',
            f'-Dwitchersbestiary.stage20eOutput={CASE}', '-Xmx2G' if role == 'Server' or os.environ.get('STAGE21I_NETWORK')=='1' else '-Xmx1G']
+    if os.environ.get("STAGE22B_HOTFIX")=="1": jvm += ["-Dwitchersbestiary.stage22bHotfix=true"]
     if os.environ.get("STAGE22A_MOTION")=="1": jvm += ["-Dwitchersbestiary.stage22aMotion=true"]
     if os.environ.get("STAGE22A_VISUAL")=="1": jvm += ["-Dwitchersbestiary.stage22aVisual=true"]
     if os.environ.get("STAGE22A_NETWORK")=="1": jvm += ["-Dwitchersbestiary.stage22aNetwork=true"]

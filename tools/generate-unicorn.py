@@ -93,12 +93,13 @@ for lock in range(5):
     for step in range(7+(lock%2)):
         sx=(lock-2)*1.06+(step*.15 if lock>=2 else -step*.15)
         cube(tail,[sx-.74,20.4-step*2.44-(lock%2)*.67,9.2+min(step,5)*.97+lock*.43+step*.037],[1.48,2.71,3.22],("lilac","rose","pearl","ice","lilac")[lock] if step else "pearl")
-for name,sx,z in [("front_l",-2.74,-6.5),("front_r",2.74,-6.5),("hind_l",-2.74,6.4),("hind_r",2.74,6.4)]:
+for name,sx,z in [("front_l",-2.96,-6.55),("front_r",2.96,-6.55),("hind_l",-2.96,6.54),("hind_r",2.96,6.54)]:
     leg=bone(name,[sx,15,z],"body")
-    cube(leg,[sx-1.21,7,z-1.29],[2.42,8.5,2.58],"coat",[12 if z>0 else -3,0,0],[sx,15,z])
-    cube(leg,[sx-.94,1.2,z-1.04],[1.88,7.1,2.08],"coat")
-    cube(leg,[sx-1.12,0,z-1.29],[2.24,1.68,2.48],"hoof")
-    cube(leg,[sx-1.08,1.63,z-1.24],[2.16,.64,2.38],"pearl")
+    # Keep the cannon and hoof on a shared vertical axis in the resting pose.
+    cube(leg,[sx-1.42,7.05,z-1.45],[2.84,8.52,2.9],"coat")
+    cube(leg,[sx-1.15,1.22,z-1.16],[2.3,6.18,2.32],"coat")
+    cube(leg,[sx-1.32,0,z-1.37],[2.64,1.72,2.74],"hoof")
+    cube(leg,[sx-1.27,1.65,z-1.29],[2.54,.64,2.58],"pearl")
 
 saddle=bone("saddle",[0,22,0],"body")
 cube(saddle,[-4.74,21.83,-2.9],[9.48,.5,6.75],"lilac")
@@ -134,7 +135,7 @@ for gait,length,amplitude in [("walk",1.15,25),("run",.64,43)]:
             swing = math.cos(2 * math.pi * (i/8 + phase))
             # The thicker fore and hind legs need clearance on the inward swing.
             inward = (swing > 0) == name.startswith("front")
-            angle = (18 if inward else amplitude) * swing
+            angle = (16 if inward else amplitude) * swing
             keys.append((round(length*i/8,4), [round(angle,2),0,0]))
         tracks[name]=rot(keys)
     tracks["neck"]=rot([(0,[1,0,0]),(length/2,[-4 if gait=="walk" else -8,0,0]),(length,[1,0,0])])

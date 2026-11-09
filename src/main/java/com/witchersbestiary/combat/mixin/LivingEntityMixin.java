@@ -47,7 +47,7 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
     private boolean witchersbestiary$damage(DamageSource source,float amount,com.llamalad7.mixinextras.injector.wrapoperation.Operation<Boolean> original){
         var victim=(LivingEntity)(Object)this;
         source=com.witchersbestiary.signs.SignManager.resolveBurn(victim,source);if(source==null)return false;
-        if(source.getAttacker() instanceof LivingEntity attacker&&com.witchersbestiary.signs.SignManager.calmed(attacker))return false;
+        if(source.getAttacker() instanceof LivingEntity attacker&&(com.witchersbestiary.signs.SignManager.calmed(attacker)||!com.witchersbestiary.signs.SignManager.permitsRedirectedAttack(attacker,victim)))return false;
         if(com.witchersbestiary.fist.FistFights.intercept(victim,source))return false;
         if(source.isOf(net.minecraft.entity.damage.DamageTypes.LAVA)&&com.witchersbestiary.combat.BasiliskRideProtection.active(victim))return original.call(source,0f);
         if(source.getAttacker() instanceof com.witchersbestiary.combat.CategorizedMonster&&!source.isIn(net.minecraft.registry.tag.DamageTypeTags.IS_PROJECTILE))amount=com.witchersbestiary.config.ModConfig.damage(amount);

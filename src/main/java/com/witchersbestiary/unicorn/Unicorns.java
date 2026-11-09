@@ -27,7 +27,11 @@ public final class Unicorns {
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 28).add(EntityAttributes.GENERIC_MOVEMENT_SPEED, .235)
             .add(EntityAttributes.GENERIC_JUMP_STRENGTH, .65));
         SpawnRestriction.register(TYPE, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-            (type, world, reason, pos, random) -> AnimalEntity.isValidNaturalSpawn(type, world, reason, pos, random) && random.nextInt(12) == 0);
+            (type, world, reason, pos, random) -> AnimalEntity.isValidNaturalSpawn(type, world, reason, pos, random)
+                && random.nextInt(3) == 0
+                && world.isSpaceEmpty(type.getDimensions().getBoxAt(pos.toBottomCenterPos()))
+                && world.toServerWorld().getEntitiesByClass(UnicornEntity.class, new net.minecraft.util.math.Box(pos).expand(48),
+                    existing -> !existing.isTame()).isEmpty());
         BiomeModifications.addSpawn(BiomeSelectors.tag(TagKey.of(RegistryKeys.BIOME, Identifier.of("witchersbestiary", "unicorn_habitat"))),
             SpawnGroup.CREATURE, TYPE, 1, 1, 1);
         var egg = Registry.register(Registries.ITEM, Identifier.of("witchersbestiary", "unicorn_spawn_egg"),
