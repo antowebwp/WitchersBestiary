@@ -1,1 +1,22 @@
-{"replace":false,"values":["#minecraft:is_mountain","minecraft:stony_shore","minecraft:dripstone_caves"]}
+{
+  "replace": false,
+  "values": [
+    "#minecraft:is_mountain",
+    "minecraft:stony_shore",
+    "minecraft:dripstone_caves",
+    "minecraft:windswept_hills",
+    "minecraft:windswept_gravelly_hills",
+    {
+      "id": "biomesoplenty:crag",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:highland",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:jade_cliffs",
+      "required": false
+    }
+  ]
+}

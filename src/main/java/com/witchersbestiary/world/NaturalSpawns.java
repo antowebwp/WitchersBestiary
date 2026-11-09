@@ -30,7 +30,8 @@ public final class NaturalSpawns {
         if(t==ModEntities.NEKKER)return "nekker_habitats";
         if(t==ModEntities.BONECRUSHER)return "ogroid_ranges";
         if(t==ModEntities.DROWNER)return "wetlands";
-        if(t==ModEntities.FOGLET||t==ModEntities.WRAITH)return "haunted";
+        if(t==ModEntities.WRAITH)return "wraith_habitats";
+        if(t==ModEntities.FOGLET)return "haunted";
         if(t==ModEntities.NOONWRAITH)return "fields";
         if(t==ModEntities.LESHEN)return "leshen_habitats";
         if(t==ModEntities.WEREWOLF)return "forests";

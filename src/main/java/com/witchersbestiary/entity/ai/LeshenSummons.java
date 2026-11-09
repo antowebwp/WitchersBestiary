@@ -23,6 +23,7 @@ public final class LeshenSummons {
             return world.getTime() >= entry.getValue() || (entity != null && !entity.isAlive());
         });
     }
+    public void forget(UUID wolf) { leases.remove(wolf); }
     public int size() { return leases.size(); }
 
     public void summon(ServerWorld world, LeshenEntity owner, int requested) {

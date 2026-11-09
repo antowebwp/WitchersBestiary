@@ -13,8 +13,40 @@ public final class MerchantSpawns {
   claim.attempts++;claim.next=w.getTime()+1200;ledger.markDirty();for(int i=0;i<9;i++){int angle=(claim.attempts*5+i)*37;int x=center.getX()+(int)(Math.cos(Math.toRadians(angle))*(5+i*2+Math.min(36,(claim.attempts-1)*4))),z=center.getZ()+(int)(Math.sin(Math.toRadians(angle))*(5+i*2+Math.min(36,(claim.attempts-1)*4)));if(w.getChunkManager().getWorldChunk(x>>4,z>>4)==null)continue;var pos=new BlockPos(x,w.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x,z),z);if(!safe(w,pos))continue;var npc=ArcaneMerchants.TYPE.create(w);if(npc==null)return false;npc.refreshPositionAndAngles(x+.5,pos.getY(),z+.5,w.random.nextFloat()*360,0);npc.village(key,pos);if(w.spawnEntity(npc)){claim.entity=npc.getUuid();ledger.markDirty();return true;}}return false;
  }
  private static void discover(MinecraftServer s){var players=s.getPlayerManager().getPlayerList();if(players.isEmpty())return;var p=players.get(Math.floorMod(cursor++,players.size()));var w=p.getServerWorld();if(w.getRegistryKey()!=World.OVERWORLD)return;var cp=p.getChunkPos();var loaded=w.getChunkManager().getWorldChunk(cp.x,cp.z);if(loaded==null)return;int examined=0;for(var ref:loaded.getStructureReferences().entrySet()){if(!VisitedVillageBoards.supported(w,ref.getKey()))continue;for(long packed:ref.getValue()){if(++examined>16)return;var origin=new ChunkPos(packed);var chunk=w.getChunkManager().getWorldChunk(origin.x,origin.z);if(chunk==null)continue;var start=chunk.getStructureStart(ref.getKey());if(start==null||!start.hasChildren())continue;var box=start.getChildren().isEmpty()?start.getBoundingBox():start.getChildren().getFirst().getBoundingBox();String key=w.getRegistryKey().getValue()+"/"+w.getRegistryManager().get(net.minecraft.registry.RegistryKeys.STRUCTURE).getId(ref.getKey())+"/"+packed;village(w,key,new BlockPos((box.getMinX()+box.getMaxX())/2,0,(box.getMinZ()+box.getMaxZ())/2));}}}
- private static void wander(MinecraftServer s){var w=s.getOverworld();var ledger=MerchantLedger.get(s);if(ledger.readOnly()||w.getTime()<ledger.nextWander)return;ledger.nextWander=w.getTime()+12000;ledger.markDirty();var players=w.getPlayers(p->p.isAlive()&&!p.isSpectator());if(players.isEmpty())return;var p=players.get(w.random.nextInt(players.size()));if(!w.getEntitiesByType(ArcaneMerchants.TYPE,e->e.mode()==ArcaneMerchant.Mode.WANDERING).isEmpty())return;
-  for(int i=0;i<12;i++){double angle=w.random.nextDouble()*Math.PI*2;int range=40+w.random.nextInt(25),x=p.getBlockX()+(int)(Math.cos(angle)*range),z=p.getBlockZ()+(int)(Math.sin(angle)*range);if(w.getChunkManager().getWorldChunk(x>>4,z>>4)==null)continue;var pos=new BlockPos(x,w.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x,z),z);if(!safe(w,pos))continue;var npc=ArcaneMerchants.TYPE.create(w);if(npc==null)return;npc.refreshPositionAndAngles(x+.5,pos.getY(),z+.5,w.random.nextFloat()*360,0);if(w.spawnEntity(npc))return;}
+ private static void reserveWanderer(ServerWorld world, MerchantLedger ledger, ArcaneMerchant merchant) {
+  ledger.wanderer=merchant.getUuid();
+  ledger.wanderDeparture=merchant.departureAt();
+  ledger.nextWander=ledger.wanderDeparture+24000+world.random.nextInt(24001);
+  ledger.markDirty();
+ }
+
+ static void depart(ServerWorld world, ArcaneMerchant merchant) {
+  var ledger=MerchantLedger.get(world.getServer());
+  if(!merchant.getUuid().equals(ledger.wanderer))return;
+  long interval=Math.clamp(ledger.nextWander-ledger.wanderDeparture,24000,48000);
+  ledger.nextWander=world.getTime()+interval;
+  ledger.wanderer=null;
+  ledger.wanderDeparture=0;
+  ledger.markDirty();
+ }
+
+ private static void wander(MinecraftServer s){
+  var w=s.getOverworld();
+  var ledger=MerchantLedger.get(s);
+  if(ledger.readOnly()||w.getTime()<ledger.nextWander)return;
+  var existing=w.getEntitiesByType(ArcaneMerchants.TYPE,e->e.mode()==ArcaneMerchant.Mode.WANDERING);
+  if(!existing.isEmpty()){
+   var merchant=existing.getFirst();
+   if(!merchant.getUuid().equals(ledger.wanderer))reserveWanderer(w,ledger,merchant);
+   return;
+  }
+  if(ledger.wanderer!=null&&w.getTime()<ledger.wanderDeparture)return;
+  var players=w.getPlayers(p->p.isAlive()&&!p.isSpectator());
+  if(players.isEmpty())return;
+  ledger.nextWander=w.getTime()+1200;
+  ledger.markDirty();
+  var p=players.get(w.random.nextInt(players.size()));
+  for(int i=0;i<12;i++){double angle=w.random.nextDouble()*Math.PI*2;int range=40+w.random.nextInt(25),x=p.getBlockX()+(int)(Math.cos(angle)*range),z=p.getBlockZ()+(int)(Math.sin(angle)*range);if(w.getChunkManager().getWorldChunk(x>>4,z>>4)==null)continue;var pos=new BlockPos(x,w.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x,z),z);if(!safe(w,pos))continue;var npc=ArcaneMerchants.TYPE.create(w);if(npc==null)return;npc.refreshPositionAndAngles(x+.5,pos.getY(),z+.5,w.random.nextFloat()*360,0);npc.arrive();if(w.spawnEntity(npc)){reserveWanderer(w,ledger,npc);return;}}
  }
  public static void initialize(){net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK.register(s->{if(s.getTicks()%200==0)discover(s);if(s.getTicks()%400==0)wander(s);});}
 }

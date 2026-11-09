@@ -31,7 +31,7 @@ public final class FiendEntity extends HostileEntity implements CategorizedMonst
  private static final Identifier RAGE_SPEED=Identifier.of("witchersbestiary","fiend_rage");
  private final AnimatableInstanceCache cache=GeckoLibUtil.createInstanceCache(this);
  public enum Action { NONE, CLAW_ATTACK, HORN_ATTACK, SWEEP, CHARGE_PREPARATION, CHARGE, HYPNOSIS, ENRAGE }
- private Action action=Action.NONE;private int actionTick,attackCooldown,chargeCooldown=120,hypnosisCooldown=160;
+ private Action action=Action.NONE;private int actionTick,attackCooldown,chargeCooldown=35,hypnosisCooldown=160;
  private final CombatMotion motion=new CombatMotion();
  private int flankTicks,sweepCooldown;
  private Vec3d direction=Vec3d.ZERO;private boolean contact,hornNext;
@@ -46,9 +46,9 @@ public final class FiendEntity extends HostileEntity implements CategorizedMonst
  public int getHypnosisCooldown(){return hypnosisCooldown;}
  @Override public int getLimitPerChunk(){return 1;}
  @Override public MonsterCategory getMonsterCategory(){return MonsterCategory.RELICT;}
- @Override protected void initGoals(){targetSelector.add(1,new RevengeGoal(this));targetSelector.add(2,new ActiveTargetGoal<>(this,PlayerEntity.class,0,true,false,null));goalSelector.add(5,new WanderAroundFarGoal(this,.65){@Override public boolean canStart(){return getTarget()==null&&action==Action.NONE&&super.canStart();}});goalSelector.add(6,new LookAtEntityGoal(this,PlayerEntity.class,14));}
+ @Override protected void initGoals(){targetSelector.add(1,new RevengeGoal(this));targetSelector.add(2,new ActiveTargetGoal<>(this,PlayerEntity.class,0,true,false,null));goalSelector.add(5,new WanderAroundFarGoal(this,.65){@Override public boolean canStart(){return getTarget()==null&&action==Action.NONE&&super.canStart();}});}
  @Override public CombatState getCombatState(){return Stun.active(this)?CombatState.STUNNED:action!=Action.NONE?CombatState.SPECIAL_ABILITY:attackCooldown>0?CombatState.ATTACK_RECOVERY:getTarget()==null?CombatState.IDLE:CombatState.CHASE;}
- @Override public void cancelCombatForStun(){action=Action.NONE;actionTick=0;dataTracker.set(EYE,false);attackCooldown=12;getNavigation().stop();setVelocity(Vec3d.ZERO);}
+ @Override public void cancelCombatForStun(){action=Action.NONE;actionTick=0;dataTracker.set(EYE,false);attackCooldown=12;stopTriggeredAnim("action",null);getNavigation().stop();setVelocity(Vec3d.ZERO);}
  private boolean ready(){return !getWorld().isClient&&isAlive()&&!isAiDisabled()&&!Stun.active(this)&&action==Action.NONE&&getTarget()!=null&&getTarget().isAlive();}
  // Turn the whole quadruped, including the authoritative attack direction.
  private void face(LivingEntity target,float degrees){
@@ -56,7 +56,7 @@ public final class FiendEntity extends HostileEntity implements CategorizedMonst
  }
  private double edgeDistanceSquared(LivingEntity target){return MathHelper.square(CombatMotion.distance(this,target));}
  private void start(Action value){var target=getTarget();if(target!=null)face(target,0);action=value;actionTick=0;contact=false;getNavigation().stop();setVelocity(Vec3d.ZERO);dataTracker.set(EYE,value==Action.HYPNOSIS);triggerAnim("action",value.name().toLowerCase(java.util.Locale.ROOT));}
- public boolean beginCharge(){if(!ready()||chargeCooldown>0||squaredDistanceTo(getTarget())<25||squaredDistanceTo(getTarget())>324||!canSee(getTarget()))return false;chargeCooldown=ModConfig.abilityTicks((int)((240+random.nextInt(121))*(isEnraged()?.7:1)));start(Action.CHARGE_PREPARATION);playSound(SoundEvents.ENTITY_RAVAGER_ROAR,1.3f,.55f);return true;}
+ public boolean beginCharge(){if(!ready()||chargeCooldown>0||squaredDistanceTo(getTarget())<20||squaredDistanceTo(getTarget())>324||!canSee(getTarget()))return false;chargeCooldown=ModConfig.abilityTicks((int)((75+random.nextInt(36))*(isEnraged()?.7:1)));start(Action.CHARGE_PREPARATION);playSound(SoundEvents.ENTITY_RAVAGER_ROAR,1.3f,.55f);return true;}
  public boolean beginHypnosis(){if(!ready()||hypnosisCooldown>0||squaredDistanceTo(getTarget())>196||!canSee(getTarget()))return false;hypnosisCooldown=ModConfig.abilityTicks(360+random.nextInt(141));start(Action.HYPNOSIS);playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE,.75f,.7f);return true;}
  public boolean beginHornAttack(){if(!ready()||attackCooldown>0||edgeDistanceSquared(getTarget())>3.2*3.2||!CombatMotion.meleeHeight(this,getTarget())||!canSee(getTarget()))return false;start(Action.HORN_ATTACK);return true;}
  public Vec3d thirdEyePosition(){return getPos().add(Vec3d.fromPolar(0,getYaw()).multiply(1.8)).add(0,2.3,0);}
@@ -73,7 +73,7 @@ public final class FiendEntity extends HostileEntity implements CategorizedMonst
  @Override public void tick(){
   super.tick();if(!(getWorld() instanceof ServerWorld world)||!isAlive())return;
   if(attackCooldown>0)attackCooldown--;if(chargeCooldown>0)chargeCooldown--;if(hypnosisCooldown>0)hypnosisCooldown--;
-  if(Stun.active(this)){cancelCombatForStun();Stun.stop(this);return;}if(isAiDisabled())return;
+  if(Stun.active(this)){cancelCombatForStun();Stun.stop(this);return;}if(isAiDisabled()){if(action!=Action.NONE)finish();return;}
   var target=getTarget();motion.sample(this,target);if(sweepCooldown>0)sweepCooldown--;setAttacking(target!=null&&target.isAlive());
   if(!isEnraged()&&getHealth()<getMaxHealth()*.35f){dataTracker.set(RAGE,true);applyRage();start(Action.ENRAGE);playSound(SoundEvents.ENTITY_RAVAGER_ROAR,1.5f,.5f);}
   if(target!=null){double side=Vec3d.fromPolar(0,getYaw()).dotProduct(target.getPos().subtract(getPos()).multiply(1,0,1).normalize());flankTicks=edgeDistanceSquared(target)<16&&side<.25?Math.min(30,flankTicks+1):action!=Action.NONE||attackCooldown>0?flankTicks:Math.max(0,flankTicks-1);}
@@ -81,33 +81,36 @@ public final class FiendEntity extends HostileEntity implements CategorizedMonst
    if(target==null||!target.isAlive()){finish();return;}
    getNavigation().stop();actionTick++;setVelocity(0,getVelocity().y,0);
    // Claws track until the swing; horns/charge commit early enough to sidestep.
-   if(action==Action.CLAW_ATTACK&&actionTick<=attackTick()-2)face(target,14);
+   if(action==Action.CLAW_ATTACK&&(actionTick<=attackTick()-2||actionTick>attackTick()+2&&actionTick<attackTick()+10))face(target,14);
    else if(action==Action.HORN_ATTACK&&actionTick<=hornTick()-6)face(target,10);
-   else if(action==Action.CHARGE_PREPARATION&&actionTick<=14)direction=CombatMotion.face(this,motion.lead(target,8,1.3),6);
+   else if(action==Action.CHARGE_PREPARATION&&actionTick<=6)direction=CombatMotion.face(this,motion.lead(target,8,1.3),6);
    else if(action==Action.SWEEP&&actionTick<=12)face(target,12);
    else if(action==Action.HYPNOSIS&&actionTick<20)face(target,8);
    if(action==Action.CLAW_ATTACK&&actionTick<attackTick()-2&&edgeDistanceSquared(target)>2.6*2.6)CombatMotion.safeStep(this,direction.multiply(.12),true);
    switch(action){
-    case CLAW_ATTACK->{int windup=attackTick();if(!contact&&actionTick>=windup&&actionTick<=windup+2)contact=impact(target,14,3.2,.6);if(actionTick>=windup+10)finish();}
-    case HORN_ATTACK->{int windup=hornTick();if(!contact&&actionTick>=windup&&actionTick<=windup+2)contact=impact(target,18,3.4,1.25);if(actionTick>=windup+14)finish();}
-    case SWEEP->{int windup=isEnraged()?13:16;if(!contact&&actionTick>=windup&&actionTick<=windup+2)contact=impact(target,12,3.4,.85);if(actionTick>=(isEnraged()?25:30))finish();}
-    case CHARGE_PREPARATION->{if(actionTick%5==0)world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK,world.getBlockState(getBlockPos().down())),getX(),getY()+.1,getZ(),12,1,.1,1,.02);if(actionTick>=22){action=Action.CHARGE;actionTick=0;triggerAnim("action","charge");}}
-    case CHARGE->{if(actionTick<=6)direction=CombatMotion.face(this,target.getPos(),1.5f);Vec3d step=direction.multiply(isEnraged()?.92:.8);Box next=getBoundingBox().offset(step);if(horizontalCollision||!CombatMotion.safeStep(this,step,true)){wallStagger();break;}setVelocity(step.x,getVelocity().y,step.z);velocityModified=true;if(!contact)for(var p:world.getEntitiesByClass(PlayerEntity.class,next.expand(.25),e->!e.isCreative()&&!e.isSpectator()))if(impact(p,22,2.8,1.6)){contact=true;break;}if(actionTick>=22)finish();}
+    case CLAW_ATTACK->{int windup=attackTick();if(!contact&&actionTick>=windup&&actionTick<=windup+2)contact=impact(target,14,3.2,.6);if(actionTick==windup+11)impact(target,8,3.2,.45);if(actionTick>=windup+14)finish();}
+    case HORN_ATTACK->{int windup=hornTick();if(!contact&&actionTick>=windup&&actionTick<=windup+2)contact=impact(target,18,3.4,1.25);if(actionTick>=windup+8)finish();}
+    case SWEEP->{int windup=isEnraged()?8:10;if(actionTick==windup)for(var victim:world.getEntitiesByClass(PlayerEntity.class,getBoundingBox().expand(4,1,4),this::canTarget)){
+       if(CombatMotion.contact(this,victim,direction,3.4,-1)&&victim.damage(getDamageSources().mobAttack(this),12))
+        victim.takeKnockback(.85,getX()-victim.getX(),getZ()-victim.getZ());
+     }if(actionTick>=(isEnraged()?17:20))finish();}
+    case CHARGE_PREPARATION->{if(actionTick%5==0)world.spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK,world.getBlockState(getBlockPos().down())),getX(),getY()+.1,getZ(),12,1,.1,1,.02);if(actionTick>=11){action=Action.CHARGE;actionTick=0;triggerAnim("action","charge");}}
+    case CHARGE->{if(actionTick<=6)direction=CombatMotion.face(this,target.getPos(),1.5f);Vec3d step=direction.multiply(isEnraged()?.92:.8);Box next=getBoundingBox().offset(step);if(horizontalCollision||!CombatMotion.safeStep(this,step,true)){wallStagger();break;}setVelocity(step.x,getVelocity().y,step.z);velocityModified=true;if(!contact)for(var p:world.getEntitiesByClass(PlayerEntity.class,next.expand(.25),e->!e.isCreative()&&!e.isSpectator()))if(impact(p,22,2.8,1.6)){contact=true;break;}if(actionTick>=16)finish();}
     case HYPNOSIS->{if(actionTick==24){for(var p:world.getEntitiesByClass(PlayerEntity.class,getBoundingBox().expand(14),e->!e.isSpectator()))applyHypnosis(p);var eye=thirdEyePosition();world.spawnParticles(ParticleTypes.ELECTRIC_SPARK,eye.x,eye.y,eye.z,14,.3,.3,.3,.02);}if(actionTick>=40)finish();}
-    case ENRAGE->{if(actionTick>=30)finish();}
+    case ENRAGE->{if(actionTick>=14)finish();}
     default->{}
    }return;
   }
   if(target==null||!target.isAlive())return;
   if(flankTicks>=5&&attackCooldown==0&&sweepCooldown==0&&CombatMotion.meleeHeight(this,target)&&canSee(target)){start(Action.SWEEP);sweepCooldown=100;flankTicks=0;return;}
   face(target,12);getLookControl().lookAt(target,30,30);double d=squaredDistanceTo(target);
-  if(attackCooldown==0&&beginHypnosis())return;
+  if(d>81&&attackCooldown==0&&beginHypnosis())return;
   if(edgeDistanceSquared(target)>3.05*3.05){if(beginCharge())return;if(age%6==0)getNavigation().startMovingTo(target,1.05);}
   else if(canSee(target)&&CombatMotion.meleeHeight(this,target)){getNavigation().stop();if(attackCooldown==0){if(hornNext)beginHornAttack();else start(Action.CLAW_ATTACK);hornNext=!hornNext;}}
   else if(age%6==0)getNavigation().startMovingTo(target,1.05);
  }
  private int attackTick(){return isEnraged()?8:10;}
- private int hornTick(){return isEnraged()?15:18;}
+ private int hornTick(){return isEnraged()?9:12;}
  private void applyRage(){var speed=getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);speed.removeModifier(RAGE_SPEED);if(isEnraged())speed.addTemporaryModifier(new EntityAttributeModifier(RAGE_SPEED,.2,EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));}
  @Override public boolean damage(DamageSource source,float amount){boolean hit=super.damage(source,amount);if(hit&&isAlive()&&action==Action.NONE&&!Stun.active(this))triggerAnim("action","hurt");return hit;}
  @Override public void onDeath(DamageSource source){action=Action.NONE;dataTracker.set(EYE,false);stopTriggeredAnim("action",null);super.onDeath(source);}

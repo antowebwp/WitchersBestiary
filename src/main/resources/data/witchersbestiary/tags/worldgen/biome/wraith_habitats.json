@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "#witchersbestiary:haunted",
+    "minecraft:plains",
+    "minecraft:sunflower_plains",
+    "minecraft:forest",
+    "minecraft:birch_forest"
+  ]
+}

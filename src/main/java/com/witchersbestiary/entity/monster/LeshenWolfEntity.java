@@ -47,6 +47,12 @@ public final class LeshenWolfEntity extends WolfEntity {
         }
     }
 
+    @Override public void onDeath(net.minecraft.entity.damage.DamageSource source) {
+        if (getWorld() instanceof ServerWorld world && leshenId != null
+                && world.getEntity(leshenId) instanceof LeshenEntity leshen) leshen.onSummonedWolfDeath(getUuid());
+        super.onDeath(source);
+    }
+
     @Override public boolean canTarget(LivingEntity victim) {
         return !(victim instanceof LeshenEntity) && !(victim instanceof LeshenWolfEntity) && super.canTarget(victim);
     }

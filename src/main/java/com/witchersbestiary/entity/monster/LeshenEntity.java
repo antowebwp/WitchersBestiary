@@ -58,12 +58,12 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
     private UUID clawTarget;
     private Vec3d clawDirection=Vec3d.ZERO;
     private int rootTicks;
-    private int rootCooldown = 100;
+    private int rootCooldown = 55;
     private Vec3d rootPosition;
     private Vec3d rootOrigin;
     private final LeshenSummons summons = new LeshenSummons();
     private int summonTicks;
-    private int summonCooldown = 200;
+    private int summonCooldown = 25;
     private int roarTicks;
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.leshen.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.leshen.walk");
@@ -75,7 +75,7 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
             return state.setAndContinue(isDead() ? DEATH : state.isMoving() ? WALK : IDLE);
         }));
         AnimationController<LeshenEntity> actions = new AnimationController<>(this, "action", 0, state -> {state.getController().setAnimationSpeed(isSecondPhase()?1.2:1);return PlayState.STOP;});
-        for (String action : new String[]{"attack_claw", "attack_roots", "summon_wolves", "hurt", "roar"}) {
+        for (String action : new String[]{"attack_claw", "claw_combo", "attack_roots", "summon_wolves", "hurt", "roar"}) {
             actions.triggerableAnim(action, RawAnimation.begin().thenPlay("animation.leshen." + action));
         }
         controllers.add(actions);
@@ -90,14 +90,14 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
                 || !canTarget(victim) || !isInAttackRange(victim) || !canSee(victim)) return false;
         clawTarget = victim.getUuid();
         clawDirection=Vec3d.fromPolar(0,getYaw());
-        clawTicks = 16;clawContact=false;
-        clawCooldown = com.witchersbestiary.config.ModConfig.attackTicks(isSecondPhase() ? 18 : 26);
-        triggerAnim("action", "attack_claw");
+        clawTicks = isSecondPhase() ? 24 : 15;clawContact=false;
+        clawCooldown = com.witchersbestiary.config.ModConfig.attackTicks(isSecondPhase() ? 29 : 21);
+        triggerAnim("action", isSecondPhase() ? "claw_combo" : "attack_claw");
         return true;
     }
 
     @Override public CombatState getCombatState(){if(Stun.active(this))return CombatState.STUNNED;if(roarTicks>0)return CombatState.PHASE_TRANSITION;if(rootTicks>0||summonTicks>0)return CombatState.SPECIAL_ABILITY;if(clawTicks>0)return clawTicks>10?CombatState.ATTACK_WINDUP:clawTicks==10?CombatState.ATTACK_ACTIVE:CombatState.ATTACK_RECOVERY;return getTarget()==null?CombatState.IDLE:CombatState.CHASE;}
-    @Override public void cancelCombatForStun(){clawTicks=0;clawTarget=null;rootTicks=0;summonTicks=0;}
+    @Override public void cancelCombatForStun(){if(clawTicks>0||rootTicks>0||summonTicks>0||roarTicks>0)stopTriggeredAnim("action",null);clawTicks=0;clawTarget=null;rootTicks=0;summonTicks=0;roarTicks=0;}
     @Override public void tick() {
         super.tick();
         if (!(getWorld() instanceof ServerWorld world)) return;
@@ -105,7 +105,7 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
         bossBar.setName(getDisplayName());
         if (!isAlive()) { clawTicks = 0; clawTarget = null; rootTicks = 0; summonTicks = 0; return; }
         if(com.witchersbestiary.combat.Stun.active(this)){cancelCombatForStun();return;}
-        if (!isSecondPhase() && getHealth() < getMaxHealth() * 0.4f) {
+        if (!isSecondPhase() && getHealth() < getMaxHealth() * 0.5f) {
             dataTracker.set(SECOND_PHASE, true);
             getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(com.witchersbestiary.config.ModConfig.speed(.36));
             clawTicks = 0;
@@ -115,7 +115,7 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
             clawCooldown = Math.min(clawCooldown, 24);
             rootCooldown = Math.min(rootCooldown, 60);
             summonCooldown = Math.min(summonCooldown, 100);
-            roarTicks = 30;
+            roarTicks = 14;
             bossBar.setColor(BossBar.Color.RED);
             triggerAnim("action", "roar");
             world.spawnParticles(ParticleTypes.SOUL, getX(), getY() + 2, getZ(), 60, 1.3, 1.5, 1.3, 0.08);
@@ -124,7 +124,14 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
         if (clawCooldown > 0) clawCooldown--;
         if (rootCooldown > 0) rootCooldown--;
         if (summonCooldown > 0) summonCooldown--;
-        if (age % 20 == 0) summons.tick(world);
+        if (age % 20 == 0) {
+            summons.tick(world);
+            if (getTarget() == null && summons.size() > 0) summons.clear(world);
+        }
+        if (isAiDisabled() || getTarget() == null || !getTarget().isAlive()) {
+            cancelCombatForStun();
+            return;
+        }
         if (summonTicks > 0) {
             getNavigation().stop();
             if (--summonTicks == 10) summons.summon(world, this, isSecondPhase() ? 3 : 2);
@@ -156,12 +163,15 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
         if (clawTicks > 0) {
             getNavigation().stop();
             clawTicks--;
-            if(clawTicks>12&&world.getEntity(clawTarget) instanceof LivingEntity aiming)clawDirection=com.witchersbestiary.entity.ai.CombatMotion.face(this,aiming.getPos(),12);
+            if(clawTicks>(isSecondPhase()?19:11)&&world.getEntity(clawTarget) instanceof LivingEntity aiming)clawDirection=com.witchersbestiary.entity.ai.CombatMotion.face(this,aiming.getPos(),12);
             else com.witchersbestiary.entity.ai.CombatMotion.holdFacing(this,clawDirection);
-            if (!clawContact && clawTicks <= 10 && clawTicks >= 8 && world.getEntity(clawTarget) instanceof LivingEntity victim
+            if (isSecondPhase() && clawTicks == 7) clawContact = false;
+            int impact = isSecondPhase() && clawTicks > 9 ? 18 : isSecondPhase() ? 7 : 8;
+            if (!clawContact && clawTicks <= impact && clawTicks >= impact - 1 && world.getEntity(clawTarget) instanceof LivingEntity victim
                     && victim.isAlive() && canTarget(victim) && isInAttackRange(victim) && canSee(victim)
                     && com.witchersbestiary.entity.ai.CombatMotion.inSector(this,victim,clawDirection,0)) {
-                super.tryAttack(victim);clawContact=true;
+                super.tryAttack(victim);
+                clawContact=true;
             }
             if (clawTicks == 0) clawTarget = null;
         }
@@ -179,23 +189,25 @@ public class LeshenEntity extends HostileEntity implements GeoEntity, Categorize
                 || !getWorld().getBlockState(victim.getBlockPos().down()).isSolidBlock(getWorld(), victim.getBlockPos().down())) return false;
         rootOrigin = getPos();
         rootPosition = victim.getPos();
-        rootTicks = 30;
-        rootCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(isSecondPhase() ? 90 : 140);
+        rootTicks = 21;
+        rootCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(isSecondPhase() ? 65 : 100);
         triggerAnim("action", "attack_roots");
         return true;
     }
 
     public boolean trySummonWolves() {
         if (!(getWorld() instanceof ServerWorld world) || !isAlive() || com.witchersbestiary.combat.Stun.active(this) || getTarget() == null
-                || !getTarget().isAlive() || squaredDistanceTo(getTarget()) > 1600
+                || !getTarget().isAlive() || squaredDistanceTo(getTarget()) > 576
                 || roarTicks > 0 || clawTicks > 0 || rootTicks > 0 || summonTicks > 0 || summonCooldown > 0) return false;
         summons.tick(world);
         if (summons.size() >= LeshenSummons.MAX_WOLVES) return false;
-        summonTicks = 30;
-        summonCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(isSecondPhase() ? 260 : 400);
+        summonTicks = 20;
+        summonCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(isSecondPhase() ? 70 : 100);
         triggerAnim("action", "summon_wolves");
         return true;
     }
+
+    void onSummonedWolfDeath(UUID wolf) { summons.forget(wolf); }
 
     public int getSummonedWolfCount() { return summons.size(); }
 
