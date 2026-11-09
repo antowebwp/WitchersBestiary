@@ -71,11 +71,13 @@ for side in (-1,1):
     cube(head,[2.73 if side>0 else -2.83,27.81,-12.42],[.10,1.27,1.28],"eye")
     cube(head,[2.83 if side>0 else -2.91,28.59,-12.34],[.08,.37,.45],"glint")
     cube(head,[side*1.21-.32,26.46,-17.69],[.64,.56,.14],"lash",[16,0,0],[0,27,-12])
-horn=bone("horn",[0,30,-12.6],"head")
-horn["rotation"]=[27,0,0]
+horn=bone("horn",[0,29.9,-13.1],"head")
+horn["rotation"]=[32,0,0]
 for i in range(9):
     width=1.92-i*.151
-    cube(horn,[-width/2,30+i*.94,-12.6-width/2],[width,.97,width],("gold","pearl","lilac","pearl")[i%4],[0,i*24,0],[0,30+i*.94,-12.6])
+    y_base=29.9+i*1.36
+    cube(horn,[-width/2,y_base,-13.1-width/2],[width,1.40,width],
+         ("gold","pearl","lilac","pearl","rose")[i%5],[0,i*23,0],[0,y_base,-13.1])
 
 mane=bone("mane",[0,29,-7],"neck")
 for i in range(7):
