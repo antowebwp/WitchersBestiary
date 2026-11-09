@@ -25,13 +25,31 @@ public final class BoardScreenHandler extends ScreenHandler {
     private VillageOffers.Generation generation;
     private final Map<Integer,UUID> archived=new HashMap<>();
     private final Map<Integer,String> failures=new HashMap<>();
-    private List<String> eligible(){return Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.ProceduralHunts::isDefinition).map(Object::toString).sorted().toList();}
-    private VillageOffers.Generation current(ServerPlayerEntity p){return VillageOffers.get(p.getServer()).personal(village,p.getUuid(),p.getServer().getOverworld().getTime(),eligible());}
-    private ContractInstance instance(ServerPlayerEntity p,int index){if(legendary)return existing(p,offers.get(index));if(archived.containsKey(index))return ContractState.get(p.getServer()).find(archived.get(index));var offer=generation.offers().get(index).id();return ContractState.get(p.getServer()).ownedBy(p.getUuid()).stream().filter(c->offer.equals(c.offer)).findFirst().orElse(null);}
+    private static final List<String> LEGENDS = List.of("witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer");
+    private String rotationKey() { return legendary ? village + "/legends" : village; }
+    private List<String> eligible(){return legendary ? LEGENDS : Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.ProceduralHunts::isDefinition).map(Object::toString).sorted().toList();}
+    private VillageOffers.Generation current(ServerPlayerEntity p){return VillageOffers.get(p.getServer()).personal(rotationKey(),p.getUuid(),p.getServer().getOverworld().getTime(),eligible());}
+    private ContractInstance instance(ServerPlayerEntity p,int index){
+        var state=ContractState.get(p.getServer());
+        if(archived.containsKey(index))return state.find(archived.get(index));
+        var offer=generation.offers().get(index);
+        return state.ownedBy(owner).stream().filter(c->offer.id().equals(c.offer) || legendary && c.definition().id().toString().equals(offer.definition()) && (c.status()==ContractInstance.Status.ACCEPTED || c.status()==ContractInstance.Status.COMPLETED)).findFirst().orElse(null);
+    }
+    private void reloadOffers(ServerPlayerEntity p) {
+        generation=current(p);
+        archived.clear();
+        failures.clear();
+        var list=new ArrayList<>(generation.offers().stream().map(o->Identifier.of(o.definition())).toList());
+        if(!legendary) for(var c:ContractState.get(p.getServer()).ownedBy(owner)){
+            if(list.size()>=30)break;
+            if((c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED)&&generation.offers().stream().noneMatch(o->o.id().equals(c.offer))){archived.put(list.size(),c.id());list.add(c.definition().id());}
+        }
+        offers=List.copyOf(list);
+    }
 
     public BoardScreenHandler(int sync,PlayerInventory inventory,BlockPos root){
         super(NoticeBoards.SCREEN,sync);this.root=root.toImmutable();this.owner=inventory.player.getUuid();this.viewer=inventory.player;
-        if(inventory.player instanceof ServerPlayerEntity p){village=VillageOffers.identity(p.getServerWorld(),root);generation=current(p);ContractState.get(p.getServer()).compact(VillageOffers.get(p.getServer())::live);var list=new ArrayList<>(generation.offers().stream().map(o->Identifier.of(o.definition())).toList());for(var c:ContractState.get(p.getServer()).ownedBy(owner)){if(list.size()>=30)break;if((c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED)&&generation.offers().stream().noneMatch(o->o.id().equals(c.offer))){archived.put(list.size(),c.id());list.add(c.definition().id());}}offers=List.copyOf(list);}
+        if(inventory.player instanceof ServerPlayerEntity p){village=VillageOffers.identity(p.getServerWorld(),root);reloadOffers(p);ContractState.get(p.getServer()).compact(VillageOffers.get(p.getServer())::live);}
     }
     public BlockPos boardPos(){return root;}
     @Override public boolean canUse(PlayerEntity player){
@@ -53,9 +71,13 @@ public final class BoardScreenHandler extends ScreenHandler {
     }
     @Override public boolean onButtonClick(PlayerEntity player,int button){
         if(!(player instanceof ServerPlayerEntity server)||server.currentScreenHandler!=this||!canUse(server))return false;
-        if(button==65){failures.clear();legendary=!legendary;offers=legendary?List.of(com.witchersbestiary.contracts.hunt.SwampLord.ID,com.witchersbestiary.contracts.hunt.GraveDevourer.ID):generation.offers().stream().map(o->Identifier.of(o.definition())).toList();archived.clear();send(server,"");return true;}
-        if(button==64){try{VillageOffers.get(server.getServer()).refresh(village,owner,server.getServer().getOverworld().getTime(),eligible(),o->ContractState.get(server.getServer()).ownedBy(owner).stream().anyMatch(c->o.id().equals(c.offer)&&c.status()==ContractInstance.Status.REWARDED));server.closeHandledScreen();}catch(IllegalStateException e){}send(server,"");return true;}
-        if(!legendary&&button<32&&!current(server).id().equals(generation.id())){send(server,"rejected");return false;}
+        if(button==65){legendary=!legendary;reloadOffers(server);send(server,"");return true;}
+        if(button==64){
+            try{VillageOffers.get(server.getServer()).refresh(rotationKey(),owner,server.getServer().getOverworld().getTime(),eligible(),o->ContractState.get(server.getServer()).ownedBy(owner).stream().anyMatch(c->o.id().equals(c.offer)&&c.status()==ContractInstance.Status.REWARDED));reloadOffers(server);send(server,"updated");}
+            catch(IllegalStateException e){send(server,"rejected");}
+            return true;
+        }
+        if(button<32&&!current(server).id().equals(generation.id())){reloadOffers(server);send(server,"rejected");return false;}
         int index=button%32;if(button<0||button>=64||index>=offers.size())return false;
         int tick=server.getServer().getTicks();if(tick-lastAction<5)return false;lastAction=tick;
         var id=offers.get(index);String status="updated";
@@ -72,7 +94,11 @@ public final class BoardScreenHandler extends ScreenHandler {
                     },success->{if(!success)failures.put(index,"no_safe_route");send(server,success?"updated":"no_safe_route");});
                     send(server,"preparing");return true;
                 }
-                Contracts.assignPrepared(server,id,null,root);
+                var accepted=Contracts.assignPrepared(server,id,null,root);
+                accepted.village=village;
+                accepted.offer=generation.offers().get(index).id();
+                accepted.generation=generation.id();
+                ContractState.get(server.getServer()).markDirty();
             }
             else {if(existing==null)throw new IllegalStateException("unavailable");Contracts.claim(server,existing.id());}
         }catch(IllegalArgumentException|IllegalStateException e){status=button<32&&instance(server,index)!=null?"already":e.getMessage()!=null&&e.getMessage().startsWith("No safe loaded hunt area")?"no_safe_route":"rejected";if(status.equals("no_safe_route"))failures.put(index,status);}
@@ -95,5 +121,5 @@ public final class BoardScreenHandler extends ScreenHandler {
         }j.add("offers",array);return j;
     }
     public void send(ServerPlayerEntity player,String message){if(ServerPlayNetworking.canSend(player,BoardSnapshot.ID))ServerPlayNetworking.send(player,new BoardSnapshot(syncId,view(player,message).toString()));}
-    @Override public void sendContentUpdates(){super.sendContentUpdates();if(viewer instanceof ServerPlayerEntity p&&canUse(p)&&p.getServer().getTicks()-lastSync>=20){lastSync=p.getServer().getTicks();send(p,com.witchersbestiary.contracts.hunt.HuntTerrain.pending(owner)?"preparing":"");}}
+    @Override public void sendContentUpdates(){super.sendContentUpdates();if(viewer instanceof ServerPlayerEntity p&&canUse(p)&&p.getServer().getTicks()-lastSync>=20){lastSync=p.getServer().getTicks();if(!current(p).id().equals(generation.id()))reloadOffers(p);send(p,com.witchersbestiary.contracts.hunt.HuntTerrain.pending(owner)?"preparing":"");}}
 }

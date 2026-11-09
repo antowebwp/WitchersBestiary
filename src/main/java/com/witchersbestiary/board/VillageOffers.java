@@ -26,6 +26,9 @@ public final class VillageOffers extends PersistentState {
             }}if(!candidates.isEmpty())return candidates.entrySet().stream().min(Map.Entry.<String,Long>comparingByValue().thenComparing(Map.Entry.comparingByKey())).orElseThrow().getKey();}
         return world.getRegistryKey().getValue()+"/board/"+pos.asLong();
     }
+    private static boolean legendaryKey(String key) {
+        return key.endsWith("/legends") || key.contains("/legends/personal/");
+    }
     public boolean live(UUID offer) {return offer!=null&&villages.values().stream().anyMatch(g->g.offers().stream().anyMatch(o->o.id().equals(offer)));}
     public Generation personal(String village, UUID player, long age, List<String> eligible) {
         var base=current(village,age,eligible);var key=village+"/personal/"+player+"/"+base.id();
@@ -47,10 +50,12 @@ public final class VillageOffers extends PersistentState {
         var old = villages.get(village);
         if (old != null && (age < old.created() || age - old.created() < INTERVAL)) return old;
         var pool = new ArrayList<>(new LinkedHashSet<>(eligible));
-        if (pool.size() < 5) throw new IllegalStateException("Five eligible species required");
-        Collections.shuffle(pool);
+        int slots = legendaryKey(village) ? 2 : 5;
+        if (pool.size() < slots) throw new IllegalStateException("Five eligible species required");
+        if (slots == 5) Collections.shuffle(pool);
+        else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst())) Collections.reverse(pool);
         var offers = new ArrayList<Offer>(5);
-        for (int i = 0; i < 5; i++) offers.add(new Offer(UUID.randomUUID(), pool.get(i)));
+        for (int i = 0; i < slots; i++) offers.add(new Offer(UUID.randomUUID(), pool.get(i)));
         var next = new Generation(UUID.randomUUID(), age, offers);
         if(!village.contains("/personal/"))villages.keySet().removeIf(k->k.startsWith(village+"/personal/"));
         villages.put(village, next); markDirty(); return next;
@@ -76,7 +81,7 @@ public final class VillageOffers extends PersistentState {
             var offers = new ArrayList<Offer>(); var ids = new HashSet<UUID>();
             var list = entry.getList("Offers", NbtElement.COMPOUND_TYPE);
             for (int j = 0; j < list.size(); j++) { var o = list.getCompound(j); if (!o.containsUuid("Id") || !ids.add(o.getUuid("Id"))) throw new IllegalStateException("Invalid saved offer UUID"); offers.add(new Offer(o.getUuid("Id"), o.getString("Definition"))); }
-            if (offers.size() != 5 || !entry.containsUuid("Generation")) throw new IllegalStateException("Invalid saved offer generation");
+            if (offers.size() != (legendaryKey(entry.getString("Village")) ? 2 : 5) || !entry.containsUuid("Generation")) throw new IllegalStateException("Invalid saved offer generation");
             state.villages.put(entry.getString("Village"), new Generation(entry.getUuid("Generation"), entry.getLong("Created"), offers));
         } }catch(RuntimeException invalid){state.villages.clear();state.future=n.copy();}
         return state;

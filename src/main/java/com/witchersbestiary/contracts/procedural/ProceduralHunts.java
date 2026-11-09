@@ -22,7 +22,15 @@ public final class ProceduralHunts {
  public static ProceduralCombat combat(Entity e){return e instanceof DrownerEntity d?d.procedural:e instanceof GhoulEntity g?g.procedural:e instanceof FogletEntity f?f.procedural:e instanceof ContractTargetAccess a?a.witcher$combat():null;}
  public static UUID binding(Entity e){return e instanceof DrownerEntity d?d.huntContract:e instanceof GhoulEntity g?g.huntContract:e instanceof FogletEntity f?f.huntContract:e instanceof ContractTargetAccess a?a.witcher$contract():null;}
  public static void bind(MobEntity e,ContractInstance c){var data=new ProceduralCombat(c.procedural);if(e instanceof DrownerEntity d){d.huntContract=c.id();d.procedural=data;d.setBaby(false);}else if(e instanceof GhoulEntity g){g.huntContract=c.id();g.procedural=data;}else if(e instanceof FogletEntity f){f.huntContract=c.id();f.procedural=data;}else {((ContractTargetAccess)e).witcher$bind(c.id(),data);if(e instanceof WerewolfEntity wolf)wolf.prepareContractForm();}}
- public static ContractDefinition snapshot(ContractDefinition d,ProceduralProfile p){int ordinal=p.tier().ordinal();int threat=Math.clamp((int)Math.ceil(p.health()/50),1,6);int emeralds=ContractSpecies.legacy(p.species())?switch(p.tier()){case COMMON->3;case RARE->6;case EPIC->10;}:switch(p.tier()){case COMMON->4+threat/2;case RARE->14+threat;case EPIC->24+2*threat;};return new ContractDefinition(d.id(),d.name(),d.description(),d.target(),1,ordinal+1,new ContractDefinition.Reward((ordinal+1)*30,List.of(new ContractDefinition.ItemReward(Identifier.of("minecraft:emerald"),emeralds))),d.minimumLevel(),d.dimension(),d.durationMillis());}
+ public static ContractDefinition snapshot(ContractDefinition d,ProceduralProfile p){int ordinal=p.tier().ordinal();int[] range=switch(p.species()){
+  case "drowner","ghoul"->new int[]{80,160};
+  case "foglet","endrega"->new int[]{160,300};
+  case "noonwraith","specter"->new int[]{250,450};
+  case "katakan","werewolf"->new int[]{450,750};
+  case "leshen","fiend"->new int[]{700,1200};
+  case "griffin","grave_hag"->new int[]{800,1400};
+  default->throw new IllegalArgumentException("Unknown contract species: "+p.species());
+ };int crowns=range[0]+(range[1]-range[0])*ordinal/3+Math.floorMod(p.seed(),(range[1]-range[0])/3+1);return new ContractDefinition(d.id(),d.name(),d.description(),d.target(),1,ordinal+1,new ContractDefinition.Reward((ordinal+1)*30,List.of(new ContractDefinition.ItemReward(Identifier.of("witchersbestiary:witcher_crown"),crowns))),d.minimumLevel(),d.dimension(),d.durationMillis());}
  public static boolean safe(ServerWorld w,ContractInstance c,BlockPos at){
  if(!com.witchersbestiary.contracts.tracking.Investigations.safeClue(w,at)||w.isNearOccupiedPointOfInterest(at))return false;
  for(int dx=-3;dx<=3;dx++)for(int dz=-3;dz<=3;dz++){if(w.getChunkManager().getWorldChunk((at.getX()+dx)>>4,(at.getZ()+dz)>>4)==null)return false;for(int y=0;y<=5;y++){var state=w.getBlockState(at.add(dx,y,dz));if(state.hasBlockEntity()||state.isIn(net.minecraft.registry.tag.BlockTags.PLANKS)||state.isIn(net.minecraft.registry.tag.BlockTags.DOORS)||state.isIn(net.minecraft.registry.tag.BlockTags.STONE_BRICKS))return false;}}

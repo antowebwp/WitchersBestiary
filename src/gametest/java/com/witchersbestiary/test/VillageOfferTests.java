@@ -29,6 +29,21 @@ public final class VillageOfferTests implements FabricGameTest {
  }
  @GameTest(templateName="witchersbestiary:village_board_arena",batchId="stage20h-integration",tickLimit=2400)
  public void boardAcceptanceOwnershipAndReplay(TestContext c){
+  if ("1".equals(System.getenv("WB_LEGEND_RESTART_PROBE"))) {
+   var server=c.getWorld().getServer();
+   long now=server.getOverworld().getTime();
+   var ledger=com.witchersbestiary.board.VillageOffers.get(server);
+   var legends=java.util.List.of("witchersbestiary:swamp_lord","witchersbestiary:grave_devourer");
+   boolean restored=com.witchersbestiary.contracts.ContractState.get(server).all().stream()
+    .filter(contract->contract.village!=null&&contract.offer!=null&&contract.status()==com.witchersbestiary.contracts.ContractInstance.Status.ACCEPTED)
+    .anyMatch(contract->{
+     var generation=ledger.current(contract.village+"/legends",now,legends);
+     return generation.created()>now&&generation.offers().getFirst().definition().equals(legends.getLast())&&ledger.live(contract.offer);
+    });
+   c.assertTrue(restored,"Dedicated GameTest JVM restored the rotated legends and active regular contract from disk");
+   c.complete();
+   return;
+  }
   var w=c.getWorld();prepareHuntField(c);var root=c.getAbsolutePos(new net.minecraft.util.math.BlockPos(2,2,46));
   for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++)w.setBlockState(root.add(x,-1,z),net.minecraft.block.Blocks.GRASS_BLOCK.getDefaultState());
   c.assertTrue(com.witchersbestiary.board.NoticeBoardBlock.place(w,root,net.minecraft.util.math.Direction.NORTH),"Board placed");
@@ -42,6 +57,19 @@ public final class VillageOfferTests implements FabricGameTest {
   c.assertTrue(peer.view(q,"").getAsJsonArray("offers").get(0).getAsJsonObject().get("state").getAsString().equals("AVAILABLE"),"Peer remains available");
   h.onButtonClick(p,0);c.assertTrue(state.ownedBy(p.getUuid()).size()==1,"Repeated accept is idempotent");
   var copy=com.witchersbestiary.contracts.ContractInstance.fromNbt(accepted.toNbt());c.assertTrue(accepted.offer.equals(copy.offer)&&accepted.id().equals(copy.id()),"Instance source roundtrip");
+  h.onButtonClick(p,65);
+  var rotation= com.witchersbestiary.board.VillageOffers.get(w.getServer());
+  String key=h.view(p,"").get("village").getAsString()+"/legends";
+  var legends=java.util.List.of("witchersbestiary:swamp_lord","witchersbestiary:grave_devourer");
+  long now=w.getServer().getOverworld().getTime();
+  var first=rotation.current(key,now,legends);
+  var next=rotation.current(key,now+com.witchersbestiary.board.VillageOffers.INTERVAL,legends);
+  var restored=com.witchersbestiary.board.VillageOffers.read(rotation.writeNbt(new net.minecraft.nbt.NbtCompound(),w.getRegistryManager()),w.getRegistryManager());
+  c.assertTrue(!first.id().equals(next.id())&&first.offers().getFirst().definition().equals(next.offers().getLast().definition())&&restored.current(key,now,legends).equals(next),"Legend rotation, unique generation and save/reload");
+  h.onButtonClick(p,65);h.onButtonClick(p,65);
+  c.assertTrue(h.view(p,"").getAsJsonArray("offers").get(0).getAsJsonObject().get("id").getAsString().equals(next.offers().getFirst().definition()),"GUI uses rotated server generation");
+  h.onButtonClick(p,65);
+  c.assertTrue(state.find(accepted.id())==accepted&&accepted.status()==com.witchersbestiary.contracts.ContractInstance.Status.ACCEPTED&&h.view(p,"").getAsJsonArray("offers").size()==5,"Active regular contract and all five slots survive legend rotation");
   p.currentScreenHandler=p.playerScreenHandler;q.currentScreenHandler=q.playerScreenHandler;p.discard();q.discard();});
  }
  @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE,batchId="stage20h-final")
@@ -61,5 +89,19 @@ public final class VillageOfferTests implements FabricGameTest {
   long packed=new net.minecraft.util.math.ChunkPos(1000000,1000000).toLong();chunk.addStructureReference(type,packed);
   String id=VillageOffers.identity(w,pos);c.assertTrue(id.equals(w.getRegistryKey().getValue()+"/minecraft:village_plains/"+packed),"Reference origin usable without loading start");
   c.assertTrue(w.getChunkManager().getWorldChunk(1000000,1000000)==null,"No forced origin load");chunk.getStructureReferences().get(type).remove(packed);c.complete();
+ }
+ @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
+ public void hotfixRewardsAndThreatFloors(TestContext c){
+  for(var species:java.util.List.of("leshen","fiend","drowner")){
+   var definition=com.witchersbestiary.contracts.Contracts.DEFINITIONS.find(com.witchersbestiary.contracts.procedural.ProceduralHunts.id(species));
+   for(long seed=0;seed<32;seed++){
+    var profile=com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(seed,species);
+    var offer=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
+    int crowns=offer.reward().items().getFirst().count();
+    boolean ordinary=species.equals("drowner");
+    c.assertTrue(ordinary?crowns>=80&&crowns<=160:crowns>=700&&crowns<=1200&&offer.difficulty()==3,"Reward and danger floor: "+species);
+   }
+  }
+  c.complete();
  }
 }

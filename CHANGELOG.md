@@ -1,3 +1,7 @@
+# 0.21.0 - Witcher Signs and Tournaments
+
+Adds crowns and wallets, nonfatal fist fights, the Rock Troll, PvP duels, alchemy and merchants, sword enchantments, five signs, the Grimoire and three tournament tiers. Contract hunts work outside natural biomes, legendary offers rotate independently, and new payouts scale by monster danger. See [release notes](docs/RELEASE_NOTES_0.21.0.md).
+
 # 0.20.0 — Witcher Contracts Update
 
 Persistent village offers, twelve procedural hunt species, two-clue Witcher Senses investigations, renewable personal hunts, separate legendary contracts, visited-village boards, bounded terminal history and two claw-to-black-dye recipes. See [release notes](docs/RELEASE_NOTES_0.20.0.md) for requirements and limitations. Owner-approved RC5 promoted with version-only rebuild; no repeat QA.

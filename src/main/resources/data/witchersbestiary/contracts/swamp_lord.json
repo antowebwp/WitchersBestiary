@@ -7,11 +7,14 @@
   "difficulty": 3,
   "reward": {
     "experience": 120,
-    "emeralds": 12,
     "items": [
       {
         "item": "witchersbestiary:drowner_essence",
         "count": 3
+      },
+      {
+        "item": "witchersbestiary:witcher_crown",
+        "count": 1800
       }
     ]
   },
