@@ -29,7 +29,7 @@
       "com.witchersbestiary.test.SignTests",
       "com.witchersbestiary.test.SignFormsTests",
       "com.witchersbestiary.test.Stage22BWorldTests",
-      "com.witchersbestiary.test.Stage22CTests","com.witchersbestiary.test.Stage22CEncounterTests","com.witchersbestiary.test.Stage22BBopSpawnTests",
+      "com.witchersbestiary.test.Stage22CTests","com.witchersbestiary.test.LeshenPackTests","com.witchersbestiary.merchant.WanderingMerchantLifecycleTests","com.witchersbestiary.test.Stage22CEncounterTests","com.witchersbestiary.test.Stage22BBopSpawnTests",
       "com.witchersbestiary.test.Stage22BOptionalModsTests",
       "com.witchersbestiary.test.Stage21ITests",
       "com.witchersbestiary.test.UnicornTests"

@@ -20,10 +20,15 @@ public final class LeshenSummons {
     public void tick(ServerWorld world) {
         leases.entrySet().removeIf(entry -> {
             Entity entity = world.getEntity(entry.getKey());
-            return world.getTime() >= entry.getValue() || (entity != null && !entity.isAlive());
+            if (world.getTime() >= entry.getValue()) {
+                if (entity instanceof LeshenWolfEntity wolf) wolf.discard();
+                return true;
+            }
+            return entity != null && !entity.isAlive();
         });
     }
-    public void forget(UUID wolf) { leases.remove(wolf); }
+    public boolean forget(UUID wolf) { return leases.remove(wolf) != null; }
+    public boolean hasLease(UUID wolf, long time) { return leases.getOrDefault(wolf, Long.MIN_VALUE) > time; }
     public int size() { return leases.size(); }
 
     public void summon(ServerWorld world, LeshenEntity owner, int requested) {
@@ -40,7 +45,7 @@ public final class LeshenSummons {
             wolf.refreshPositionAndAngles(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, owner.getYaw(), 0);
             if (!world.isSpaceEmpty(wolf)) continue;
             wolf.bindTo(owner);
-            wolf.setTarget(owner.getTarget());
+            wolf.followTarget(owner.getTarget());
             if (world.spawnEntity(wolf)) {
                 leases.put(wolf.getUuid(), world.getTime() + LeshenWolfEntity.LIFETIME);
                 remaining--;

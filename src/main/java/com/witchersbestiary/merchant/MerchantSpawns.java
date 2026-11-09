@@ -30,7 +30,7 @@ public final class MerchantSpawns {
   ledger.markDirty();
  }
 
- private static void wander(MinecraftServer s){
+ static void wander(MinecraftServer s){
   var w=s.getOverworld();
   var ledger=MerchantLedger.get(s);
   if(ledger.readOnly()||w.getTime()<ledger.nextWander)return;

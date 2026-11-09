@@ -25,17 +25,7 @@ public final class LeshenWolfEntity extends WolfEntity {
 
     public void bindTo(LeshenEntity leshen) { leshenId = leshen.getUuid(); }
 
-    @Override public void tick() {
-        super.tick();
-        if (!(getWorld() instanceof ServerWorld world)) return;
-        if (--remainingTicks <= 0 || leshenId == null) { discard(); return; }
-        if (age % 20 != 0) return;
-        // Если босс выгружен или умер, волк удаляется, а не остаётся бесхозным.
-        if (!(world.getEntity(leshenId) instanceof LeshenEntity leshen) || !leshen.isAlive()) {
-            discard();
-            return;
-        }
-        LivingEntity victim = leshen.getTarget();
+    public void followTarget(LivingEntity victim) {
         if (victim != null && victim.isAlive() && canTarget(victim)) {
             setAngryAt(victim.getUuid());
             setAngerTime(remainingTicks);
@@ -45,6 +35,20 @@ public final class LeshenWolfEntity extends WolfEntity {
             setAngryAt(null);
             setAngerTime(0);
         }
+    }
+
+    @Override public void tick() {
+        if (isAlive() && getWorld() instanceof ServerWorld world) {
+            if (--remainingTicks <= 0 || leshenId == null) { discard(); return; }
+            if (world.getEntity(leshenId) instanceof LeshenEntity leshen) {
+                if (!leshen.isAlive() || !leshen.hasSummonedWolf(getUuid(), world.getTime())) { discard(); return; }
+                if (getTarget() != leshen.getTarget() || age % 20 == 0) followTarget(leshen.getTarget());
+            } else {
+                if (getTarget() != null) followTarget(null);
+                if (age % 20 == 19) { discard(); return; }
+            }
+        }
+        super.tick();
     }
 
     @Override public void onDeath(net.minecraft.entity.damage.DamageSource source) {

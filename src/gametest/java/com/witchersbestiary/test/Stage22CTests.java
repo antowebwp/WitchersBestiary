@@ -3,7 +3,6 @@ package com.witchersbestiary.test;
 import com.witchersbestiary.entity.ModEntities;
 import com.witchersbestiary.entity.monster.FiendEntity;
 import com.witchersbestiary.entity.monster.GriffinEntity;
-import com.witchersbestiary.entity.monster.LeshenWolfEntity;
 import com.witchersbestiary.fist.FistRegistry;
 import com.witchersbestiary.merchant.ArcaneMerchants;
 import com.witchersbestiary.world.NaturalSpawns;
@@ -82,34 +81,6 @@ public final class Stage22CTests implements FabricGameTest {
         c.runAtTick(120, () -> {
             c.assertTrue(wingHit[0], "Wing impact damages survival player under counterattack");
             griffin.discard(); victim.discard(); c.complete();
-        });
-    }
-
-    @GameTest(templateName = ARENA, tickLimit = 180)
-    public void leshenReplacesDefeatedPack(TestContext c) {
-        var start = floor(c);
-        var world = c.getWorld();
-        var victim = player(c, start.east(12));
-        var leshen = ModEntities.LESHEN.create(world);
-        place(leshen, start);
-        world.spawnEntity(leshen);
-        leshen.setTarget(victim);
-        var defeated = new java.util.HashSet<java.util.UUID>();
-        c.runAtEveryTick(() -> {
-            c.assertTrue(leshen.getSummonedWolfCount() <= 4, "Bounded pack");
-            place(victim, start.east(12));
-            victim.setHealth(20);
-            if (leshen.age % 12 == 0) leshen.damage(world.getDamageSources().playerAttack(victim), 1);
-            if (defeated.isEmpty() && leshen.getSummonedWolfCount() >= 2) {
-                for (var wolf : world.getEntitiesByClass(LeshenWolfEntity.class, new Box(start).expand(20), w -> w.getTarget() == victim)) {
-                    defeated.add(wolf.getUuid());
-                    wolf.damage(world.getDamageSources().genericKill(), 1000);
-                }
-            }
-        });
-        c.runAtTick(158, () -> {
-            c.assertTrue(defeated.size() >= 2 && leshen.getSummonedWolfCount() >= 2, "Defeated pack is replaced during combat");
-            leshen.kill(); victim.discard(); c.complete();
         });
     }
 
