@@ -744,5 +744,11 @@
   "tournament.witchersbestiary.round_win": "Раунд выигран! Вернитесь к организатору для продолжения.",
   "tournament.witchersbestiary.defeat": "Турнир завершён. Победы прошлых раундов сохранены в истории.",
   "tournament.witchersbestiary.hint": "Крадитесь при взаимодействии, чтобы открыть турниры. Во время раунда отказ доступен через клавишу меню дуэлей.",
-  "tournament.witchersbestiary.hud": "%s: раунд %s/%s"
+  "tournament.witchersbestiary.hud": "%s: раунд %s/%s",
+  "entity.witchersbestiary.unicorn": "Единорог",
+  "entity.witchersbestiary.unicorn.tamed": "Приручённый единорог",
+  "item.witchersbestiary.unicorn_spawn_egg": "Яйцо призыва единорога",
+  "unicorn.witchersbestiary.follow": "Следовать",
+  "unicorn.witchersbestiary.wait": "Ждать",
+  "unicorn.witchersbestiary.recovery": "Магическое восстановление"
 }

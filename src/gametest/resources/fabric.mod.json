@@ -27,7 +27,8 @@
       "com.witchersbestiary.test.TournamentTests",
       "com.witchersbestiary.test.SwordEnchantmentTests",
       "com.witchersbestiary.test.SignTests",
-      "com.witchersbestiary.test.Stage21ITests"
+      "com.witchersbestiary.test.Stage21ITests",
+      "com.witchersbestiary.test.UnicornTests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer",

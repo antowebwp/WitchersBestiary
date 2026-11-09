@@ -25,7 +25,9 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
  private void capture(MinecraftClient c,String name)throws Exception{try(var image=ScreenshotRecorder.takeScreenshot(c.getFramebuffer())){image.writeTo(dir.resolve(role+"-"+name.replaceAll("[^a-zA-Z0-9._-]","_")+".png"));}}
  private boolean choose(MinecraftClient c)throws Exception{if(!(c.currentScreen instanceof com.witchersbestiary.client.board.NoticeBoardScreen screen))return false;var h=(BoardScreenHandler)c.player.currentScreenHandler;var offers=h.snapshot.getAsJsonArray("offers");if(offers==null)return false;for(int n=0;n<offers.size();n++){var row=offers.get(n).getAsJsonObject();if(!row.get("id").getAsString().equals(command.get("definition").getAsString()))continue;if(command.has("instance")&&(!row.has("instance")||!row.get("instance").getAsString().equals(command.get("instance").getAsString())))continue;button=row.get("button").getAsInt();sync=h.syncId;for(String name:new String[]{"selected","page"}){var field=screen.getClass().getDeclaredField(name);field.setAccessible(true);field.setInt(screen,name.equals("selected")?n:n/3);}screen.refresh();return true;}return false;}
  public void onInitializeClient(){ClientTickEvents.START_CLIENT_TICK.register(client->{if(role!=null)client.onWindowFocusChanged(true);});ClientTickEvents.END_CLIENT_TICK.register(this::tick);var watchdog=new Thread(()->{try{Thread.sleep(900000);if(!Files.exists(dir.resolve("complete.json"))){Files.writeString(dir.resolve(role+".timeout.txt"),"900s dedicated review cap");Runtime.getRuntime().halt(2);}}catch(Exception ignored){}},"network-client-limit");watchdog.setDaemon(true);watchdog.start();}
- private void tick(MinecraftClient c){try{ticks++;if(!hidden){org.lwjgl.glfw.GLFW.glfwHideWindow(c.getWindow().getHandle());hidden=true;}if(c.getOverlay()!=null)return;c.options.pauseOnLostFocus=false;c.options.getMaxFps().setValue(30);c.options.getEnableVsync().setValue(false);c.options.getViewDistance().setValue(Boolean.getBoolean("witchersbestiary.stage20gVillage")?8:4);c.options.getSimulationDistance().setValue(5);c.options.getGuiScale().setValue(Boolean.getBoolean("witchersbestiary.duelReview")&&role.equals("WBTwo")?3:2);var path=dir.resolve(role+".command.json");if(Files.exists(path)){var j=JsonParser.parseString(Files.readString(path)).getAsJsonObject();if(j.get("nonce").getAsLong()!=nonce){nonce=j.get("nonce").getAsLong();command=j;c.options.sprintKey.setPressed(false);c.options.forwardKey.setPressed(false);c.options.attackKey.setPressed(false);c.options.sneakKey.setPressed(false);KeyBinding.setKeyPressed(InputUtil.fromKeyCode(74,0),false);step=0;bookOpenRetries=0;duelActiveTicks=duelEndTicks=0;duelSeen=duelRecover=false;screenReady=0;completed=false;seenTarget=false;fistRecover=false;fistArena=null;fistCommitUntil=0;}}
+ private Vec3d unicornLastPos;
+ private int unicornMotionFrames;
+ private void tick(MinecraftClient c){try{ticks++;if(!hidden){org.lwjgl.glfw.GLFW.glfwHideWindow(c.getWindow().getHandle());hidden=true;}if(c.getOverlay()!=null)return;c.options.pauseOnLostFocus=false;c.options.getMaxFps().setValue(30);c.options.getEnableVsync().setValue(false);c.options.getViewDistance().setValue(Boolean.getBoolean("witchersbestiary.stage20gVillage")?8:4);c.options.getSimulationDistance().setValue(5);c.options.getGuiScale().setValue(Boolean.getBoolean("witchersbestiary.duelReview")&&role.equals("WBTwo")?3:2);var path=dir.resolve(role+".command.json");if(Files.exists(path)){var j=JsonParser.parseString(Files.readString(path)).getAsJsonObject();if(j.get("nonce").getAsLong()!=nonce){nonce=j.get("nonce").getAsLong();command=j;c.options.sprintKey.setPressed(false);c.options.forwardKey.setPressed(false);c.options.attackKey.setPressed(false);c.options.sneakKey.setPressed(false);KeyBinding.setKeyPressed(InputUtil.fromKeyCode(74,0),false);step=0;unicornLastPos=null;unicornMotionFrames=0;bookOpenRetries=0;duelActiveTicks=duelEndTicks=0;duelSeen=duelRecover=false;screenReady=0;completed=false;seenTarget=false;fistRecover=false;fistArena=null;fistCommitUntil=0;}}
   String action=command.has("action")?command.get("action").getAsString():"wait";
   if(action.equals("stop")){capture(c,"final");reply(c,"stopped");c.scheduleStop();return;}
   if(action.equals("disconnect")){if(!completed&&c.world!=null){reply(c,"disconnected");c.world.disconnect();c.disconnect();c.setScreen(new TitleScreen());}return;}
@@ -69,6 +71,40 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
   if(action.equals("trackingProof")){if(step==1&&c.currentScreen!=null)c.player.closeHandledScreen();if(screenReady>20&&step>40&&WitcherSensesClient.snapshot().has("contract")){capture(c,"tracking-proof");reply(c,"tracking-proof");}return;}
   if(action.equals("cancelPrompt")||action.equals("cancelConfirm")||action.equals("cancelBack")){if(action.equals("cancelPrompt")&&!choose(c))return;if(step==18&&c.currentScreen instanceof com.witchersbestiary.client.board.NoticeBoardScreen screen){String key="gui.witchersbestiary.board."+(action.equals("cancelPrompt")?"abandon":action.equals("cancelConfirm")?"cancel_confirm":"cancel_back");var label=Text.translatable(key).getString();boolean clicked=false;for(var child:screen.children())if(child instanceof net.minecraft.client.gui.widget.ButtonWidget widget&&widget.visible&&widget.active&&widget.getMessage().getString().equals(label)){screen.mouseClicked(widget.getX()+widget.getWidth()/2.0,widget.getY()+widget.getHeight()/2.0,0);clicked=true;break;}if(!clicked)throw new IllegalStateException("GUI button missing: "+key);}if(step>30){capture(c,action);reply(c,"cancel-gui");}return;}
   if(action.equals("boardProof")){if(c.currentScreen instanceof com.witchersbestiary.client.board.NoticeBoardScreen&&step>20){capture(c,"village-gui");reply(c,"board-screen");}return;}
+  if(action.startsWith("unicorn")){
+   c.getToastManager().clear();
+   if(screenReady<6){step=0;return;}
+   var target=UUID.fromString(command.get("target").getAsString());
+   com.witchersbestiary.unicorn.UnicornEntity unicorn=null;
+   for(var entity:c.world.getEntities())if(entity.getUuid().equals(target)&&entity instanceof com.witchersbestiary.unicorn.UnicornEntity found){unicorn=found;break;}
+   if(unicorn==null){step=0;return;}
+   String shot=command.get("shot").getAsString();
+   if(shot.equals("unicorn-final-motion")){
+    var offset=unicorn.getPos().add(0,1.3,0).subtract(c.player.getEyePos());
+    c.player.setYaw((float)Math.toDegrees(Math.atan2(-offset.x,offset.z)));
+    c.player.setPitch((float)-Math.toDegrees(Math.atan2(offset.y,Math.sqrt(offset.horizontalLengthSquared()))));
+    if(unicornLastPos!=null&&unicornLastPos.squaredDistanceTo(unicorn.getPos())>.003&&unicorn.gait()!=0&&step%3==0){
+     var renderer=(com.witchersbestiary.client.unicorn.UnicornRenderer)c.getEntityRenderDispatcher().getRenderer(unicorn);
+     var model=renderer.getGeoModel();
+     float left=model.getBone("front_l").orElseThrow().getRotX();
+     float right=model.getBone("front_r").orElseThrow().getRotX();
+     if(Math.abs(left-right)>.05f){capture(c,"unicorn-motion-"+(++unicornMotionFrames));if(unicornMotionFrames>=3)reply(c,"moving-gait");}
+    }
+    unicornLastPos=unicorn.getPos();
+    if(step>150)throw new IllegalStateException("Unicorn motion not visible to observer");
+    return;
+   }
+   if(action.equals("unicornGlow")){if(unicorn.healing()&&step>=5){capture(c,shot);reply(c,"healing-horn");}return;}
+   if(action.equals("unicornInteract")&&step==16)c.interactionManager.interactEntity(c.player,unicorn,Hand.MAIN_HAND);
+   if(action.equals("unicornRide")){
+    if(step==4)c.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_BACK);
+    c.options.forwardKey.setPressed(step>=5&&step<55);
+    c.options.jumpKey.setPressed(step>=16&&step<24);
+    if(step==24)capture(c,shot);
+    if(step>=63){c.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON);reply(c,"ride-input");}
+   }else if(step>=28){capture(c,shot);reply(c,"unicorn-review");}
+   return;
+  }
   if(action.equals("wait")){if(step>5)reply(c,"waiting");return;}
   if(action.equals("respawn")){if(c.player.getHealth()<=0&&step%20==1)c.player.requestRespawn();if(c.player.getHealth()>0&&step>25){c.setScreen(null);reply(c,"respawned");}return;}
   if(action.equals("dimension")){if(screenReady>20&&c.world.getRegistryKey().getValue().toString().equals(command.get("dimension").getAsString())&&step>20&&WitcherSensesClient.snapshot().has("dimension")&&WitcherSensesClient.snapshot().get("dimension").getAsString().equals(command.get("dimension").getAsString())){capture(c,"dimension");reply(c,"dimension");}return;}

@@ -744,5 +744,11 @@
   "tournament.witchersbestiary.round_win": "Round won! Return to the organizer to continue.",
   "tournament.witchersbestiary.defeat": "Tournament ended. Previous round wins remain in your history.",
   "tournament.witchersbestiary.hint": "Sneak-interact to organize a fist tournament. Use the duel menu key during a round to abandon.",
-  "tournament.witchersbestiary.hud": "%s: round %s/%s"
+  "tournament.witchersbestiary.hud": "%s: round %s/%s",
+  "entity.witchersbestiary.unicorn": "Unicorn",
+  "entity.witchersbestiary.unicorn.tamed": "Tamed Unicorn",
+  "item.witchersbestiary.unicorn_spawn_egg": "Unicorn Spawn Egg",
+  "unicorn.witchersbestiary.follow": "Follow",
+  "unicorn.witchersbestiary.wait": "Wait",
+  "unicorn.witchersbestiary.recovery": "Magical Recovery"
 }
