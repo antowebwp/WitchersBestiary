@@ -32,7 +32,7 @@
       "com.witchersbestiary.test.Stage22CTests","com.witchersbestiary.test.LeshenPackTests","com.witchersbestiary.merchant.WanderingMerchantLifecycleTests","com.witchersbestiary.test.Stage22CEncounterTests","com.witchersbestiary.test.Stage22BBopSpawnTests",
       "com.witchersbestiary.test.Stage22BOptionalModsTests",
       "com.witchersbestiary.test.Stage21ITests",
-      "com.witchersbestiary.test.UnicornTests","com.witchersbestiary.test.UnicornHealingTests","com.witchersbestiary.test.NekkerCompanionTests"
+      "com.witchersbestiary.test.UnicornTests","com.witchersbestiary.test.UnicornHealingTests","com.witchersbestiary.test.NekkerCompanionTests","com.witchersbestiary.test.TrollCompanionTests"
     ],
     "main": [
       "com.witchersbestiary.test.Stage20ENetworkServer",

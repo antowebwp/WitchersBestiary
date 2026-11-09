@@ -1,4 +1,7 @@
 {
+  "troll.witchersbestiary.recognized": "Тролль признал вашу силу. Нажмите Shift + ПКМ, чтобы предложить дружбу.",
+  "troll.witchersbestiary.tamed": "Скальный тролль теперь ваш спутник.",
+  "troll.witchersbestiary.status": "%s | Владелец: %s | %s",
   "nekker.witchersbestiary.title": "Накер",
   "nekker.witchersbestiary.follow": "Следовать",
   "nekker.witchersbestiary.wait": "Ждать",

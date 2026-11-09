@@ -1,4 +1,7 @@
 {
+  "troll.witchersbestiary.recognized": "The troll acknowledges your strength. Sneak and right-click to offer friendship.",
+  "troll.witchersbestiary.tamed": "The rock troll is now your companion.",
+  "troll.witchersbestiary.status": "%s | Owner: %s | %s",
   "nekker.witchersbestiary.title": "Nekker",
   "nekker.witchersbestiary.follow": "Following",
   "nekker.witchersbestiary.wait": "Waiting",
