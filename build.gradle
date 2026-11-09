@@ -279,7 +279,7 @@ loom {
    vmArg '-Dfabric-api.gametest'
    if(project.hasProperty('testBatchPrefix')) vmArg "-Dwitchersbestiary.testBatchPrefix=${project.property('testBatchPrefix')}"
    vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/gametest-results.xml"
-   runDir 'build/gametest'
+   runDir(project.hasProperty('stage22bBop') ? 'build/stage22b-bop-test' : 'build/gametest')
   }
   stage19Review {
    client()
@@ -890,4 +890,18 @@ if(project.hasProperty('stage21dCompat')) {
 // Optional local structure compatibility campaign; never bundled into release artifacts.
 if(project.hasProperty('stage21eVillageCompat')) {
  dependencies { modRuntimeOnly fileTree(dir:'build/stage20g-compat/mods',includes:['*ctov*.jar','lithostitched*.jar']) }
+}
+
+if (project.hasProperty('stage22bBop')) {
+ dependencies {
+  modRuntimeOnly files('build/stage22b-bop/BiomesOPlenty-fabric-1.21.1-21.1.0.14.jar',
+      'build/stage22b-bop/GlitchCore-fabric-1.21.1-2.1.0.2.jar',
+      'build/stage22b-bop/TerraBlender-fabric-1.21.1-4.1.0.8.jar')
+  // Loom's dev remapping omits these nested plain Java libraries.
+  runtimeOnly files('build/stage22b-bop/core-3.6.7.jar', 'build/stage22b-bop/toml-3.6.7.jar', 'build/stage22b-bop/typetools-0.6.3.jar')
+  if (project.hasProperty('stage20eCompat')) {
+   modRuntimeOnly fileTree(dir:'build/stage22b-bop/compat-mods',include:'*.jar')
+   runtimeOnly fileTree(dir:'build/stage22b-bop/compat-libraries',include:'*.jar')
+  }
+ }
 }
