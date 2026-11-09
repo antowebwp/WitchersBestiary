@@ -749,6 +749,8 @@
   "entity.witchersbestiary.unicorn.tamed": "Tamed Unicorn",
   "item.witchersbestiary.unicorn_spawn_egg": "Unicorn Spawn Egg",
   "unicorn.witchersbestiary.follow": "Follow",
+  "unicorn.witchersbestiary.speed": "Speed: %s/%s",
+  "unicorn.witchersbestiary.speed_progress": "Next level: %s/%s blocks",
   "unicorn.witchersbestiary.wait": "Wait",
   "unicorn.witchersbestiary.recovery": "Magical Recovery",
   "sign.hud.scale_down": "Scale -",

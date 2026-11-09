@@ -1,6 +1,8 @@
 package com.witchersbestiary.unicorn;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.*;
@@ -15,6 +17,8 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -26,6 +30,11 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private static final TrackedData<Boolean> HEALING = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Byte> GAIT = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.BYTE);
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
+    private static final int MAX_SPEED_LEVEL = 25;
+    private static final Identifier RIDING_SPEED = Identifier.of("witchersbestiary", "unicorn_riding_speed");
+    private int speedLevel = 1;
+    private double ridingDistance;
+    private int lastRidingCredit = Integer.MIN_VALUE;
     private boolean waiting;
     private int castingTicks;
     private net.minecraft.util.math.Vec3d lastMotionPosition;
@@ -97,11 +106,14 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             if (!getWorld().isClient) {
                 waiting = !waiting;
                 getNavigation().stop();
-                player.sendMessage(Text.translatable("unicorn.witchersbestiary." + (waiting ? "wait" : "follow")), true);
+                player.sendMessage(Text.translatable("unicorn.witchersbestiary." + (waiting ? "wait" : "follow"))
+                    .append(" · ").append(speedStatus()), true);
             }
             return ActionResult.success(getWorld().isClient);
         }
-        return super.interactMob(player, hand);
+        ActionResult result = super.interactMob(player, hand);
+        if (!getWorld().isClient && hand == Hand.MAIN_HAND) player.sendMessage(speedStatus(), true);
+        return result;
     }
 
     @Override public Text getDefaultName() {
@@ -131,7 +143,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         double distance = lastMotionPosition == null ? 0 : position.subtract(lastMotionPosition).horizontalLength();
         lastMotionPosition = position;
         strideSpeed = strideSpeed * .55 + (distance < 2 ? distance : 0) * .45;
-        dataTracker.set(GAIT, (byte)(recovering() || healing() || strideSpeed < .025 ? 0 : strideSpeed >= .17 ? 2 : 1));
+        dataTracker.set(GAIT, (byte)(recovering() || strideSpeed < .025 ? 0 : strideSpeed >= .17 ? 2 : 1));
         if (recovering()) {
             int remaining = dataTracker.get(RECOVERY) - 1;
             dataTracker.set(RECOVERY, remaining);
@@ -144,30 +156,85 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     }
 
     public boolean healOwner(ServerWorld world) {
-        if (!isTame() || recovering() || castingTicks > 0 || hasPassengers() || !(getOwner() instanceof ServerPlayerEntity owner)
+        if (!isTame() || recovering() || castingTicks > 0 || !(getOwner() instanceof ServerPlayerEntity owner)
             || owner.getWorld() != world || !owner.isAlive() || owner.isSpectator() || owner.getHealth() >= owner.getMaxHealth()
-            || squaredDistanceTo(owner) > 144 || !canSee(owner) || com.witchersbestiary.fist.FistFights.busy(owner)) return false;
-        boolean defending = owner.getAttacker() != null && owner.age - owner.getLastAttackedTime() <= 100;
-        boolean attacking = owner.getAttacking() != null && owner.age - owner.getLastAttackTime() <= 100;
-        if ((!defending && !attacking) || !UnicornHealing.get(world.getServer()).reserve(owner.getUuid(), world.getServer().getOverworld().getTime())) return false;
+            || squaredDistanceTo(owner) > 144 || (owner.getVehicle() != this && !canSee(owner)) || com.witchersbestiary.fist.FistFights.busy(owner)) return false;
+        if (!UnicornHealing.get(world.getServer()).reserve(owner.getUuid(), world.getServer().getOverworld().getTime())) return false;
         owner.heal(2.5f);
         castingTicks = 25;
         dataTracker.set(HEALING, true);
         getNavigation().stop();
         triggerAnim("gesture", "heal");
-        world.spawnParticles(ParticleTypes.END_ROD, getX(), getBodyY(1.12), getZ(), 6, .19, .2, .19, .015);
+        Vec3d horn = getPos().add(Vec3d.fromPolar(0, getHeadYaw()).multiply(.64));
+        world.spawnParticles(ParticleTypes.END_ROD, horn.x, getBodyY(1.12), horn.z, 6, .19, .2, .19, .015);
         world.spawnParticles(ParticleTypes.CHERRY_LEAVES, owner.getX(), owner.getBodyY(.65), owner.getZ(), 7, .28, .32, .28, .012);
         return true;
     }
 
+    private static int distanceForLevel(int level) {
+        return 96 + 32 * (level - 1);
+    }
+
+    private Text speedStatus() {
+        var status = Text.translatable("unicorn.witchersbestiary.speed", speedLevel, MAX_SPEED_LEVEL);
+        if (speedLevel < MAX_SPEED_LEVEL) {
+            status.append(" · ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
+                (int) ridingDistance, distanceForLevel(speedLevel)));
+        }
+        return status;
+    }
+
+    // Called only after vanilla accepts a ridden vehicle move.
+    public void recordRiddenMove(ServerPlayerEntity rider, Vec3d displacement) {
+        if (!(getWorld() instanceof ServerWorld world) || recovering() || speedLevel == MAX_SPEED_LEVEL
+            || !isTame() || !rider.getUuid().equals(getOwnerUuid()) || rider.isSpectator()
+            || getControllingPassenger() != rider || !isOnGround()) return;
+
+        int tick = world.getServer().getTicks();
+        if (tick == lastRidingCredit) return;
+        double distance = displacement.horizontalLength();
+        double limit = getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) * 1.5;
+        if (!(distance >= .02 && distance <= limit) || Math.abs(displacement.y) > 1) return;
+
+        Vec3d input = new Vec3d(rider.sidewaysSpeed * .5, 0, rider.forwardSpeed)
+            .rotateY((float) -Math.toRadians(rider.getYaw()));
+        if (displacement.dotProduct(input) <= .25 * distance * input.length()) return;
+
+        lastRidingCredit = tick;
+        ridingDistance += distance;
+        if (ridingDistance >= distanceForLevel(speedLevel)) {
+            ridingDistance -= distanceForLevel(speedLevel);
+            speedLevel++;
+            if (speedLevel == MAX_SPEED_LEVEL) ridingDistance = 0;
+            updateRidingSpeed();
+            rider.sendMessage(speedStatus(), true);
+        }
+    }
+
+    private void updateRidingSpeed() {
+        var speed = getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        speed.removeModifier(RIDING_SPEED);
+        double bonus = .45 * (speedLevel - 1) / (MAX_SPEED_LEVEL - 1);
+        bonus = Math.min(bonus, .49 / speed.getBaseValue() - 1);
+        if (bonus > 0) speed.addTemporaryModifier(new EntityAttributeModifier(
+            RIDING_SPEED, bonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+    }
+
     @Override public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
+        nbt.putInt("UnicornSpeedLevel", speedLevel);
+        nbt.putDouble("UnicornRidingDistance", ridingDistance);
         nbt.putBoolean("UnicornWaiting", waiting);
         nbt.putInt("UnicornRecovery", dataTracker.get(RECOVERY));
     }
 
     @Override public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
+        speedLevel = Math.clamp(nbt.getInt("UnicornSpeedLevel"), 1, MAX_SPEED_LEVEL);
+        double savedDistance = nbt.getDouble("UnicornRidingDistance");
+        ridingDistance = speedLevel < MAX_SPEED_LEVEL && Double.isFinite(savedDistance)
+            && savedDistance >= 0 && savedDistance < distanceForLevel(speedLevel) ? savedDistance : 0;
+        updateRidingSpeed();
         waiting = nbt.getBoolean("UnicornWaiting");
         dataTracker.set(RECOVERY, Math.clamp(nbt.getInt("UnicornRecovery"), 0, 600));
     }

@@ -749,6 +749,8 @@
   "entity.witchersbestiary.unicorn.tamed": "Приручённый единорог",
   "item.witchersbestiary.unicorn_spawn_egg": "Яйцо призыва единорога",
   "unicorn.witchersbestiary.follow": "Следовать",
+  "unicorn.witchersbestiary.speed": "Скорость: %s/%s",
+  "unicorn.witchersbestiary.speed_progress": "До следующего уровня: %s/%s блоков",
   "unicorn.witchersbestiary.wait": "Ждать",
   "unicorn.witchersbestiary.recovery": "Магическое восстановление",
   "sign.hud.scale_down": "Масштаб −",

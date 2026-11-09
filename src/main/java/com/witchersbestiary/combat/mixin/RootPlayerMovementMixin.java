@@ -1,8 +1,13 @@
 package com.witchersbestiary.combat.mixin;
 
 import com.witchersbestiary.combat.RootBinding;
+import com.witchersbestiary.unicorn.UnicornEntity;
 import net.minecraft.server.network.*;
+import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.c2s.play.VehicleMoveC2SPacket;
+import net.minecraft.util.math.Vec3d;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -22,5 +27,38 @@ public abstract class RootPlayerMovementMixin {
         if(new net.minecraft.util.math.Vec3d(packet.getX(pos.x),packet.getY(pos.y),packet.getZ(pos.z)).squaredDistanceTo(pos)>.0001)
             player.networkHandler.requestTeleport(pos.x,pos.y,pos.z,player.getYaw(),player.getPitch());
         ci.cancel();
+    }
+
+    @Shadow private double updatedRiddenX;
+    @Shadow private double updatedRiddenY;
+    @Shadow private double updatedRiddenZ;
+    @Unique private UnicornEntity wb$inputMount;
+    @Unique private int wb$inputTick;
+    @Unique private Vec3d wb$rideOrigin;
+
+    @Inject(method = "onPlayerInput", at = @At("TAIL"))
+    private void wb$trackRidingInput(PlayerInputC2SPacket packet, CallbackInfo ci) {
+        wb$inputMount = player.getVehicle() instanceof UnicornEntity unicorn ? unicorn : null;
+        wb$inputTick = player.getServer().getTicks();
+    }
+
+    @Inject(method = "onVehicleMove", at = @At("HEAD"))
+    private void wb$captureRideOrigin(VehicleMoveC2SPacket packet, CallbackInfo ci) {
+        if (!player.getServer().isOnThread()) return;
+        wb$rideOrigin = null;
+        if (wb$inputMount == null || player.getVehicle() != wb$inputMount
+            || player.getServer().getTicks() - wb$inputTick > 2) return;
+        Vec3d origin = wb$inputMount.getPos();
+        if (origin.squaredDistanceTo(updatedRiddenX, updatedRiddenY, updatedRiddenZ) < 1e-8) {
+            wb$rideOrigin = origin;
+        }
+    }
+
+    @Inject(method = "onVehicleMove", at = @At(value = "FIELD", opcode = Opcodes.PUTFIELD,
+        target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;updatedRiddenX:D"))
+    private void wb$creditAcceptedRide(VehicleMoveC2SPacket packet, CallbackInfo ci) {
+        if (wb$rideOrigin != null) {
+            wb$inputMount.recordRiddenMove(player, wb$inputMount.getPos().subtract(wb$rideOrigin));
+        }
     }
 }
