@@ -6,6 +6,8 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.*;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -152,15 +154,32 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         }
         if (castingTicks > 0 && --castingTicks == 0) dataTracker.set(HEALING, false);
         if (age % 100 == 0) world.spawnParticles(ParticleTypes.END_ROD, getX(), getBodyY(.95), getZ(), 1, .28, .12, .28, .001);
-        if (age % 10 == 0) healOwner(world);
+        if (getOwner() instanceof ServerPlayerEntity owner) {
+            refreshMountedRegeneration(owner);
+            healOwner(world, owner);
+        }
+    }
+
+    private void refreshMountedRegeneration(ServerPlayerEntity owner) {
+        if (!isTame() || !owner.isAlive() || owner.isSpectator() || owner.getVehicle() != this) return;
+        var regeneration = owner.getStatusEffect(StatusEffects.REGENERATION);
+        // Leave time for vanilla's 50-tick Regeneration I pulse before renewing.
+        if (regeneration == null || (regeneration.getAmplifier() == 0
+                && !regeneration.isInfinite() && regeneration.getDuration() <= 40)) {
+            owner.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 100, 0, true, false, true));
+        }
     }
 
     public boolean healOwner(ServerWorld world) {
-        if (!isTame() || recovering() || castingTicks > 0 || !(getOwner() instanceof ServerPlayerEntity owner)
+        return getOwner() instanceof ServerPlayerEntity owner && healOwner(world, owner);
+    }
+
+    private boolean healOwner(ServerWorld world, ServerPlayerEntity owner) {
+        if (!isTame() || recovering() || castingTicks > 0
             || owner.getWorld() != world || !owner.isAlive() || owner.isSpectator() || owner.getHealth() >= owner.getMaxHealth()
             || squaredDistanceTo(owner) > 144 || (owner.getVehicle() != this && !canSee(owner)) || com.witchersbestiary.fist.FistFights.busy(owner)) return false;
         if (!UnicornHealing.get(world.getServer()).reserve(owner.getUuid(), world.getServer().getOverworld().getTime())) return false;
-        owner.heal(2.5f);
+        owner.heal(4);
         castingTicks = 25;
         dataTracker.set(HEALING, true);
         getNavigation().stop();

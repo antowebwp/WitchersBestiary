@@ -19,7 +19,7 @@ final class UnicornHealing extends PersistentState {
     boolean reserve(UUID owner, long now) {
         if (until.getOrDefault(owner, 0L) > now) return false;
         until.values().removeIf(end -> end <= now);
-        until.put(owner, now + 200);
+        until.put(owner, now + 80);
         markDirty();
         return true;
     }

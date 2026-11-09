@@ -59,7 +59,7 @@ public final class UnicornTests implements FabricGameTest {
         var wall=at.east(2);world.setBlockState(wall.up(),Blocks.STONE.getDefaultState());
         c.assertTrue(!horse.healOwner(world),"Wall blocks healing");
         world.setBlockState(wall.up(),Blocks.AIR.getDefaultState());
-        c.assertTrue(horse.healOwner(world)&&owner.getHealth()==12.5f&&horse.healing(),"Heal exactly 2.5 HP and begin casting");
+        c.assertTrue(horse.healOwner(world)&&owner.getHealth()==14f&&horse.healing(),"Heal exactly 4 HP and begin casting");
         c.assertTrue(!second.healOwner(world),"Two unicorns share one cooldown");
         horse.discard();second.discard();other.discard();owner.discard();c.complete();
     }
