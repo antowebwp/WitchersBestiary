@@ -74,6 +74,40 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         angled(arm,"knuckles",STEEL,axis,8.8f,-3,3.7f,1.15f,.85f,0,0);
     }
 
+    private static void lightTorso(ModelPartData torso, boolean cat){
+        if(cat){
+            angled(torso,"scarfFold",CLOTH,0,.95f,-3.75f,6,1.3f,.8f,-.12f,.08f);
+            angled(torso,"scarfTail",CLOTH,2.5f,2.5f,4.05f,1.35f,3.9f,.55f,.10f,-.20f);
+            for(int i=0;i<3;i++){
+                angled(torso,"abdomen"+i,LEATHER,0,5.35f+i*.89f,-3.91f,5.8f-i*.35f,.73f,.92f,-.19f,0);
+                angled(torso,"spine"+i,STEEL,0,3.5f+i*1.3f,4.03f,2.1f,.85f,.78f,.12f,0);
+            }
+            angled(torso,"sideWallet",LEATHER,-3.25f,9.8f,2.8f,1.9f,1.95f,2.05f,0,-.15f);
+            angled(torso,"sideWalletClasp",TRIM,-3.25f,9.55f,3.9f,.55f,.6f,.45f,0,-.15f);
+        }else{
+            for(int side=-1;side<=1;side+=2){
+                angled(torso,"giltRib"+side,STEEL,side*2.3f,4.1f,-4.01f,2.4f,3.2f,1.12f,-.11f,side*.24f);
+                angled(torso,"shoulderAnchor"+side,TRIM,side*2.5f,1.55f,4.11f,1.5f,1.15f,.68f,0,side*.12f);
+            }
+            angled(torso,"backplate",STEEL,0,4,3.86f,5.85f,4.35f,1.3f,.12f,0);
+            angled(torso,"rearTabard",CLOTH,0,7.2f,4.3f,3.4f,3.7f,.66f,.06f,0);
+            angled(torso,"rearTabardHem",TRIM,0,8.47f,4.73f,3.6f,.55f,.36f,0,0);
+            for(int spoke=0;spoke<4;spoke++)
+                angled(torso,"sunRay"+spoke,TRIM,0,3.55f,-5.14f,3.75f,.32f,.54f,0,spoke*.785f);
+            angled(torso,"sunBoss",TRIM,0,3.55f,-5.48f,1.25f,1.25f,.66f,0,.785f);
+        }
+    }
+
+    private static void lightArm(ModelPartData arm,float axis,float side,boolean cat){
+        float width=cat?(side<0?4.3f:4.95f):5.55f;
+        angled(arm,"shoulderTop",STEEL,axis+side*.35f,-1.75f,-.04f,width,1.5f,6.15f,0,side*.19f);
+        angled(arm,"shoulderHem",cat?LEATHER:TRIM,axis+side*.4f,-.95f,-3.16f,width-.28f,.47f,.52f,0,side*.19f);
+        angled(arm,"shoulderScale",STEEL,axis+side*.42f,-.29f,0,width-.35f,.86f,5.85f,0,side*.23f);
+        angled(arm,"bracer",cat?LEATHER:STEEL,axis,5.9f,-3.07f,3.95f,3.25f,1.35f,-.14f,side*.07f);
+        angled(arm,"bracerStrap",cat?TRIM:LEATHER,axis,7.15f,-3.54f,4.08f,.62f,.54f,0,side*.07f);
+        if(!cat)angled(arm,"bracerRune",TRIM,axis,5.75f,-3.85f,1.15f,1.15f,.35f,0,.785f);
+    }
+
     private static ModelPart[] bake(SchoolArmor.School school,boolean slim){
         var data=new ModelData();
         var root=data.getRoot();
@@ -103,7 +137,15 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
             }
         }
         var torso=child(root,"torso",cuirass);
-        if(bear)bearTorso(torso);
+        if(bear){
+            bearTorso(torso);
+            for(int i=0;i<3;i++)angled(torso,"lumbar"+i,STEEL,0,5.4f+i*.9f,4.01f,6.65f-i*.6f,.75f,1.16f,.17f,0);
+            angled(torso,"mantleBridge",LINING,0,.36f,3.28f,6.8f,1.4f,2.07f,.35f,0);
+            for(int side=-1;side<=1;side+=2){
+                angled(torso,"maneDrop"+side,LINING,side*2.55f,1.61f,-3.78f,1.32f,2.42f,1.1f,-.20f,side*.23f);
+                angled(torso,"mantleRivet"+side,TRIM,side*2.75f,2.36f,4.22f,.66f,.66f,.46f,0,.785f);
+            }
+        }else lightTorso(torso,cat);
         strap(torso,"front",2.8f,bear?-5.05f:-4.55f,.64f);
         strap(torso,"back",-2.8f,bear?4.8f:4.45f,-.64f);
         if(!cat)strap(torso,"cross",-2.8f,bear?-5.13f:-4.63f,-.64f);
@@ -111,21 +153,11 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         for(int side=0;side<2;side++){
             boolean right=side==0;
             float axis=right?(slim?-.5f:-1):(slim?.5f:1);
-            float shoulder=bear?6.65f:cat?(right?4.65f:5.35f):5.85f;
-            float outer=right?-.32f:.32f;
             var arm=ModelPartBuilder.create();
             box(arm,cat?LEATHER:LINING,axis-2.55f,-1.8f,-2.64f,5.1f,8.1f,5.28f);
-            if(!bear){
-            box(arm,STEEL,axis+outer-shoulder/2,-2.85f,-3.25f,shoulder,bear?3.3f:2.55f,6.5f);
-            box(arm,bear?LINING:TRIM,axis+outer-shoulder/2+.2f,-3.25f,-2.98f,shoulder-.4f,.8f,5.96f);
-            box(arm,STEEL,axis+outer-shoulder/2+.28f,-.65f,-3.02f,shoulder-.56f,2.05f,6.04f);
-            if(bear)box(arm,STEEL,axis-2.45f,1.05f,-2.85f,4.9f,1.55f,5.7f);
-            box(arm,cat?LEATHER:STEEL,axis-2.55f,4.7f,-3.2f,5.1f,3.65f,6.05f);
-            box(arm,TRIM,axis-2.63f,7.4f,-3.28f,5.26f,.7f,6.21f);
-            box(arm,cat?STEEL:TRIM,axis-.6f,5.7f,-3.45f,1.2f,1.1f,.55f);
-            }
             var armPart=child(root,"arm"+side,arm);
             if(bear)bearArm(armPart,axis,right?-1:1);
+            else lightArm(armPart,axis,right?-1:1,cat);
 
             var thigh=ModelPartBuilder.create();
             float sign=right?-1:1;
@@ -140,6 +172,9 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
                 angled(thighPart,"tasset",STEEL,sign*1.95f,2.25f,-2.5f,2.4f,3.6f,1.25f,-.18f,sign*.17f);
                 angled(thighPart,"quilt",CLOTH,sign*.62f,3.25f,2.82f,2.5f,4.3f,.78f,.12f,sign*.09f);
                 angled(thighPart,"knee",STEEL,0,5.95f,-3.43f,2.8f,2.2f,.95f,-.18f,0);
+            }else{
+                angled(thighPart,"hipShell",cat?LEATHER:STEEL,sign*2.02f,1.55f,-2.5f,1.9f,cat?2.55f:3.35f,1.18f,-.15f,sign*.24f);
+                angled(thighPart,"kneeShell",STEEL,0,5.95f,-3.13f,cat?2.65f:3.3f,1.68f,.92f,-.20f,0);
             }
 
             var boot=ModelPartBuilder.create();
@@ -152,6 +187,11 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
             if(bear){
                 angled(bootPart,"greave",STEEL,0,9.65f,-2.92f,4.45f,2.95f,1.35f,.13f,0);
                 angled(bootPart,"instep",STEEL,0,10.85f,-3.53f,4.55f,1.45f,1.35f,-.24f,0);
+            }else{
+                angled(bootPart,"ankleBand",LEATHER,0,9.65f,-2.96f,4.85f,.72f,.89f,0,0);
+                angled(bootPart,"ankleClasp",TRIM,sign*1.38f,9.65f,-3.51f,.74f,.73f,.38f,0,0);
+                if(cat)angled(bootPart,"highShaft",LEATHER,0,8.35f,-2.8f,4.4f,2.38f,.75f,.08f,0);
+                else angled(bootPart,"toeShell",STEEL,0,10.91f,-3.41f,4.5f,1.3f,1.3f,-.20f,0);
             }
         }
         var model=TexturedModelData.of(data,64,96).createModel();
