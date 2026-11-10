@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "witchersbestiary:bear_boots",
+    "witchersbestiary:bear_enhanced_boots",
+    "witchersbestiary:bear_mastercrafted_boots",
+    "witchersbestiary:cat_boots",
+    "witchersbestiary:cat_enhanced_boots",
+    "witchersbestiary:cat_mastercrafted_boots",
+    "witchersbestiary:griffin_boots",
+    "witchersbestiary:griffin_enhanced_boots",
+    "witchersbestiary:griffin_mastercrafted_boots"
+  ]
+}

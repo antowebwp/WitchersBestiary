@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "witchersbestiary:bear_chestplate",
+    "witchersbestiary:bear_enhanced_chestplate",
+    "witchersbestiary:bear_mastercrafted_chestplate",
+    "witchersbestiary:cat_chestplate",
+    "witchersbestiary:cat_enhanced_chestplate",
+    "witchersbestiary:cat_mastercrafted_chestplate",
+    "witchersbestiary:griffin_chestplate",
+    "witchersbestiary:griffin_enhanced_chestplate",
+    "witchersbestiary:griffin_mastercrafted_chestplate"
+  ]
+}

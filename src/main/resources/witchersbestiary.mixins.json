@@ -13,7 +13,8 @@
     "VillageNoticeBoardMixin",
     "CrownPickupMixin",
     "ItemPickupOwner",
-    "SwordAttackMixin"
+    "SwordAttackMixin",
+    "SchoolArmorAnvilMixin"
   ],
   "injectors": {
     "defaultRequire": 1

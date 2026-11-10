@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "witchersbestiary:bear_helmet",
+    "witchersbestiary:bear_enhanced_helmet",
+    "witchersbestiary:bear_mastercrafted_helmet",
+    "witchersbestiary:cat_helmet",
+    "witchersbestiary:cat_enhanced_helmet",
+    "witchersbestiary:cat_mastercrafted_helmet",
+    "witchersbestiary:griffin_helmet",
+    "witchersbestiary:griffin_enhanced_helmet",
+    "witchersbestiary:griffin_mastercrafted_helmet"
+  ]
+}

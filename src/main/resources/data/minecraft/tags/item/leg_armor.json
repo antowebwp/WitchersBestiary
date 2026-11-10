@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "witchersbestiary:bear_leggings",
+    "witchersbestiary:bear_enhanced_leggings",
+    "witchersbestiary:bear_mastercrafted_leggings",
+    "witchersbestiary:cat_leggings",
+    "witchersbestiary:cat_enhanced_leggings",
+    "witchersbestiary:cat_mastercrafted_leggings",
+    "witchersbestiary:griffin_leggings",
+    "witchersbestiary:griffin_enhanced_leggings",
+    "witchersbestiary:griffin_mastercrafted_leggings"
+  ]
+}
