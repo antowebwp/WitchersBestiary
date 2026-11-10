@@ -1,0 +1,15 @@
+{
+  "name": "Contracts and investigations",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:bestiary",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Find a village notice board. Pick an offer and wait for the hunt area to be prepared. Regular offers rotate every three in-game days. An accepted contract stays active. Follow the HUD."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Toggle Witcher Senses (V by default) near the search area. Inspect two clues in order. The second reveals the lair; approach it to encounter the target. Defeat it to finish the hunt and earn crowns. To cancel: /wbcontract abandon."
+    }
+  ]
+}

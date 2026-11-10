@@ -7,3 +7,9 @@ Read docs/PROGRESS.md, docs/ROADMAP.md and the relevant stage report. For new vi
 ## Test disk usage
 
 Use a named, isolated directory for each necessary world test and reuse it for related checks. At the end of a stage measure `build/`, preserve current JARs, useful screenshots, failure logs and recovery inputs, and remove only disposable artifacts owned by completed automated runs. Verify that associated processes have exited and resolve every deletion target inside the intended project test directory before deleting. Preserve user worlds, source, release backups, external caches and any unclear directory. Record reclaimed space and remaining `build/` size. Never bypass a deletion restriction.
+
+## In-game documentation
+
+For each new gameplay system, review the Patchouli entry and existing links, item tooltips, live recipe pages, EN/RU localization and agreement with actual mechanics. Preserve book entry IDs and unlock progress. Gate future investigation chapters by implemented progression before publishing them.
+
+Future Higher Vampire entries follow the investigation: contract introduction, evidence, preparation, then sealing. Add stable entry IDs and unlock conditions when the matching milestones exist.

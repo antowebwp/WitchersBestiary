@@ -1,0 +1,35 @@
+{
+  "name": "Школа Грифона",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:griffin_chestplate",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "До −12%% урона от чудовищ, +15%% дальности и +25%% урона Знаков. Полный комплект: каждое четвёртое подходящее применение получает множитель 1,2."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Две части дают 40%% бонуса, три — 70%%, четыре — 100%% и открывают особый эффект. Ступени можно смешивать. Бонусы отключены в официальных поединках. Удерживайте Shift над предметом для подробностей."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_helmet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_chestplate"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_leggings"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_boots"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Кузнечный стол: шаблон незеритового улучшения и ядовитая железа дают улучшенную часть. Второй шаблон и осколок могильной стали дают мастерскую. Ступени повышают прочность и твёрдость, бонус школы зависит от числа частей. Наковальня принимает зачарованную алмазную или незеритовую броню того же слота."
+    }
+  ]
+}

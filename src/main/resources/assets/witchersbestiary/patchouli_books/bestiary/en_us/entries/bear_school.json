@@ -1,0 +1,35 @@
+{
+  "name": "Bear School",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:bear_chestplate",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Up to 30%% less monster damage and 5%% more sword damage against monsters. Full set: a hit of 8 HP arms 35%% reduction on the next eligible hit within 4 seconds, with an 8 second cooldown."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Two pieces grant 40%% of the bonus, three grant 70%%, and four grant 100%% plus the full-set effect. Mix tiers freely. Official bouts suspend school bonuses. Hold Shift over a piece for details."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bear_helmet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bear_chestplate"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bear_leggings"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:bear_boots"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Smithing table: a netherite upgrade template and venom gland upgrade a base piece. A second template and gravebound steel fragment make it mastercrafted. Tiers increase durability and toughness. At an anvil you can transfer compatible enchantments from matching diamond or netherite armor."
+    }
+  ]
+}

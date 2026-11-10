@@ -6,7 +6,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:leshen_ring",
-      "text": "Ближний удар по врагу: 12% шанс корней на 3 сек. Боссам — замедление II. Откат 20 сек."
+      "text": "Ближний удар по врагу: 12%% шанс корней на 3 сек. Боссам — замедление II. Откат 20 сек."
     },
     {
       "type": "patchouli:crafting",
@@ -15,7 +15,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:werewolf_ring",
-      "text": "Ближний удар по врагу: 10% шанс лечения 2 HP. Откат 15 сек."
+      "text": "Ближний удар по врагу: 10%% шанс лечения 2 HP. Откат 15 сек."
     },
     {
       "type": "patchouli:crafting",
@@ -33,7 +33,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:griffin_charm",
-      "text": "Урон от падения −35%."
+      "text": "Урон от падения −35%%."
     },
     {
       "type": "patchouli:crafting",

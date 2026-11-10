@@ -1,0 +1,15 @@
+{
+  "name": "Sign mastery",
+  "category": "witchersbestiary:signs",
+  "icon": "witchersbestiary:bestiary",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Open a learned sign in the Bestiary and click its Mastery button. Eligible sign hits and contracts award points. Repeated hits on the same target are limited."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Each upgrade has three levels costing 2, 4 and 6 points. Alternate forms require 2, 4 or 6 total upgrade levels in that sign and cost 3, 4 or 5 points. Assign unlocked forms to two slots."
+    }
+  ]
+}

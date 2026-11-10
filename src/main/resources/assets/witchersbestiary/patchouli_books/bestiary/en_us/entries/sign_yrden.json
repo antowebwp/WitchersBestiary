@@ -9,7 +9,23 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Learning is free. Hold R to select a sign, press G to cast it. Rebind these keys in Controls."
+      "text": "Base cost: 35. Cooldown: 7s. Base radius 3 blocks for 10 seconds. Requires suitable ground."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Binding trap: Apply stronger slowing."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Three traps: Place small traps beside the main trap on safe ground."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Pulsing trap: Deal double base pulse damage."
     }
   ]
 }

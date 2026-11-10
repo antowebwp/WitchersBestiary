@@ -6,7 +6,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:leshen_ring",
-      "text": "Melee hit on a hostile: 12% chance of roots for 3s; bosses receive Slowness II. Cooldown 20s."
+      "text": "Melee hit on a hostile: 12%% chance of roots for 3s; bosses receive Slowness II. Cooldown 20s."
     },
     {
       "type": "patchouli:crafting",
@@ -15,7 +15,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:werewolf_ring",
-      "text": "Melee hit on a hostile: 10% chance to heal 2 HP. Cooldown 15s."
+      "text": "Melee hit on a hostile: 10%% chance to heal 2 HP. Cooldown 15s."
     },
     {
       "type": "patchouli:crafting",
@@ -33,7 +33,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:griffin_charm",
-      "text": "Fall damage −35%."
+      "text": "Fall damage −35%%."
     },
     {
       "type": "patchouli:crafting",

@@ -9,7 +9,23 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Learning is free. Hold R to select a sign, press G to cast it. Rebind these keys in Controls."
+      "text": "Base cost: 40. Cooldown: 8s. Absorbs 12 HP for up to 12 seconds."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Shield burst: Damage nearby enemies when the shield breaks."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Reflection: Return part of absorbed damage to the attacker."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Protection aura: Share your shield with nearby teammates."
     }
   ]
 }

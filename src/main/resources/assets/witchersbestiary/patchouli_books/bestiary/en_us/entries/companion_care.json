@@ -1,0 +1,19 @@
+{
+  "name": "Companion care",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "minecraft:golden_carrot",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Tame a Nekker with raw meat. After a nonlethal victory a Rock Troll accepts you with sneak-use. Both heal from raw meat (+4 HP) or cooked meat (+6 HP). Use an empty hand for orders, and sneak-use for the Nekker inventory."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Tame a unicorn with a golden apple or golden carrot. Carrots and apples heal 4 HP, golden carrots 6, and golden apples 8. Equip a saddle to ride. A recovering unicorn cannot be fed."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Tame an exhausted Infernal Basilisk with a Molten Heart. Raw or cooked meat heals 4 or 6 HP, blaze powder 8 and blaze rods 12. Only the owner can feed; food is spent only on successful healing. Use an empty hand to mount."
+    }
+  ]
+}

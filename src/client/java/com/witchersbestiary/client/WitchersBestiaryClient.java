@@ -14,6 +14,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         com.witchersbestiary.client.fist.FistClient.initialize();
         com.witchersbestiary.client.unicorn.UnicornRenderer.initialize();
         com.witchersbestiary.client.compat.SkillTreeKeyCompat.initialize();
+        SchoolArmorTooltip.initialize();
         com.witchersbestiary.client.signs.SignsClient.initialize();
         com.witchersbestiary.client.sorcery.SorceryClient.initialize();
         com.witchersbestiary.client.tracking.WitcherSensesClient.initialize();

@@ -1,0 +1,23 @@
+{
+  "name": "Алхимия перед охотой",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:forest_essence",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Готовьте масла и эликсиры на верстаке или алхимическом столе. Масло работает из основного инвентаря: 40 успешных попаданий по подходящей категории. Эликсир действует 180 секунд. Подходящие масло и эликсир совместимы."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:forest_essence"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:alchemy_workbench"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "В рецептах масел уже указаны актуальные ингредиенты. Лесная эссенция больше не требует охоты на Лешего: соберите бурый гриб, папоротник и мак."
+    }
+  ]
+}

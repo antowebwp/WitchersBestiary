@@ -1,0 +1,23 @@
+{
+  "name": "Preparing for a hunt",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:forest_essence",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Brew oils and elixirs at a crafting table or alchemy workbench. Oil works from your main inventory for 40 successful hits against the right category. Elixirs last 180 seconds. Matching oil and elixir can work together."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:forest_essence"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:alchemy_workbench"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Individual oil and elixir entries show their live recipes. For forest essence, collect a brown mushroom, a fern and a poppy. Hunting a Leshen is optional."
+    }
+  ]
+}

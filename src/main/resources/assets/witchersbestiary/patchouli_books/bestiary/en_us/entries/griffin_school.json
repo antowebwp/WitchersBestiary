@@ -1,0 +1,35 @@
+{
+  "name": "Griffin School",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:griffin_chestplate",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Up to 12%% less monster damage, 15%% more sign range and 25%% more sign damage. Full set: every fourth eligible cast gains a 1.2 multiplier."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Two pieces grant 40%% of the bonus, three grant 70%%, and four grant 100%% plus the full-set effect. Mix tiers freely. Official bouts suspend school bonuses. Hold Shift over a piece for details."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_helmet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_chestplate"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_leggings"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:griffin_boots"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Smithing table: a netherite upgrade template and venom gland upgrade a base piece. A second template and gravebound steel fragment make it mastercrafted. Tiers increase durability and toughness. At an anvil you can transfer compatible enchantments from matching diamond or netherite armor."
+    }
+  ]
+}

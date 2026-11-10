@@ -9,7 +9,23 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Learning is free. Hold R to select a sign, press G to cast it. Rebind these keys in Controls."
+      "text": "Base cost: 30. Cooldown: 3s. 7 blocks; burns for at least 3 seconds."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Fireburst: Burn enemies around you."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Fire breath: Repeat a short stream of flame."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Ground fire wave: Sweep fire across targets near ground level."
     }
   ]
 }

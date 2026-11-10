@@ -23,12 +23,12 @@
     {
       "type": "patchouli:text",
       "title": "Tactics",
-      "text": "Watch the raised arm and dodge sideways before contact. Use solid cover against mud, avoid shallow-water ambushes. Necrophage oil:15% bonus; existing elixir also applies. World-day progression increases danger."
+      "text": "Watch the raised arm and dodge sideways before contact. Use solid cover against mud, avoid shallow-water ambushes. Necrophage oil:15%% bonus; existing elixir also applies. World-day progression increases danger."
     },
     {
       "type": "patchouli:text",
       "title": "Remains",
-      "text": "Swamp gland45%: universal monster-essence ingredient in existing alchemy. Muddy claw65%: monster-bone ingredient for bone dust and a material for future recipes. No new elixirs."
+      "text": "Swamp gland45%%: universal monster-essence ingredient in existing alchemy. Muddy claw65%%: monster-bone ingredient for bone dust and a material for future recipes. No new elixirs."
     }
   ]
 }

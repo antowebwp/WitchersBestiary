@@ -1,0 +1,35 @@
+{
+  "name": "Школа Кота",
+  "category": "witchersbestiary:hunter_guide",
+  "icon": "witchersbestiary:cat_chestplate",
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "До −8%% урона от чудовищ и +20%% урона мечом. Полный комплект: 12%% шанс уклонения; следующий подходящий удар мечом усиливается на 25%% в течение 6 с. Перезарядка 5 с."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Две части дают 40%% бонуса, три — 70%%, четыре — 100%% и открывают особый эффект. Ступени можно смешивать. Бонусы отключены в официальных поединках. Удерживайте Shift над предметом для подробностей."
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:cat_helmet"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:cat_chestplate"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:cat_leggings"
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:cat_boots"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Кузнечный стол: шаблон незеритового улучшения и ядовитая железа дают улучшенную часть. Второй шаблон и осколок могильной стали дают мастерскую. Ступени повышают прочность и твёрдость, бонус школы зависит от числа частей. Наковальня принимает зачарованную алмазную или незеритовую броню того же слота."
+    }
+  ]
+}

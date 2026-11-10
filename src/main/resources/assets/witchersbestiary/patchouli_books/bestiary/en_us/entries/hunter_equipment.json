@@ -16,12 +16,12 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:vampire_fang",
-      "text": "Katakan fangs occupy the Trinkets necklace slot. Restore 10% of actual hostile HP loss: at most 2 HP per second and 4 HP over one victim’s lifetime. That reserve is shared across hunters and persists through reload. Copies, PvP, animals, ranged hits and Crushing Blow do not heal."
+      "text": "Katakan fangs occupy the Trinkets necklace slot. Restore 10%% of actual hostile HP loss: at most 2 HP per second and 4 HP over one victim’s lifetime. That reserve is shared across hunters and persists through reload. Copies, PvP, animals, ranged hits and Crushing Blow do not heal."
     },
     {
       "type": "patchouli:crafting",
       "recipe": "witchersbestiary:hunter_medallion",
-      "text": "An alternative in the same slot: senses monsters within 16 blocks and reduces their damage by 5%. Forest and wraith essences stabilize its sensitive frame. It does not replace armor."
+      "text": "An alternative in the same slot: senses monsters within 16 blocks and reduces their damage by 5%%. Forest and wraith essences stabilize its sensitive frame. It does not replace armor."
     }
   ]
 }

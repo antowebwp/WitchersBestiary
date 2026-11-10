@@ -9,7 +9,23 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Learning is free. Hold R to select a sign, press G to cast it. Rebind these keys in Controls."
+      "text": "Base cost: 35. Cooldown: 10s. 6 blocks, normally up to 5 seconds; shorter on large targets."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Mass confusion: Calm several hostile mobs in a wide cone."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Domination: Turn one hostile mob against another."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Redirect aggression: Redirect several hostile mobs toward other enemies."
     }
   ]
 }
