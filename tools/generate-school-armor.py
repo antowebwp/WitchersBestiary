@@ -7,9 +7,9 @@ root = Path(__file__).resolve().parents[1] / 'src/main/resources'
 assets = root / 'assets/witchersbestiary'
 recipes = root / 'data/witchersbestiary/recipe'
 schools = {
-    'griffin': ('Грифона', '#302b29', '#344252', '#d1a153', 'griffin_feather'),
-    'bear': ('Медведя', '#2c2523', '#4a3435', '#ba9c7e', 'fiend_horn'),
-    'cat': ('Кота', '#231e23', '#5c2e36', '#a09a91', 'nekker_claw'),
+    'griffin': ('Грифона', '#302b29', '#344252', '#d1a153', 'gold_ingot'),
+    'bear': ('Медведя', '#2c2523', '#4a3435', '#ba9c7e', 'chain'),
+    'cat': ('Кота', '#231e23', '#5c2e36', '#a09a91', 'string'),
 }
 tiers = ('', 'enhanced_', 'mastercrafted_')
 parts = {
@@ -29,6 +29,92 @@ def shade(color, factor):
 def save(path, image):
     path.parent.mkdir(parents=True, exist_ok=True)
     image.save(path)
+
+# Draw at native resolution. Each outline is independent of its crafting recipe.
+def armor_icon(school, part, tier):
+    image = Image.new('RGBA', (16, 16))
+    d = ImageDraw.Draw(image)
+    edge, deep, mid, light, accent, highlight = {
+        'bear': ('#211c23','#35313a','#646871','#a9abb0','#ae8965','#e5c59a'),
+        'cat': ('#21151d','#392730','#754d48','#a9755d','#b85365','#eaa49c'),
+        'griffin': ('#192331','#2b3d54','#526c87','#91a9be','#d4a349','#ffe2a1'),
+    }[school]
+    heavy = school == 'bear'
+    agile = school == 'cat'
+    def poly(points, color, border=None):
+        d.polygon(points, fill=color, outline=border)
+    def line(points, color):
+        d.line(points, fill=color)
+    if part == 'helmet':
+        if heavy:
+            poly([(2,4),(4,2),(11,2),(13,4),(13,12),(10,14),(5,14),(2,12)],deep,edge)
+            poly([(3,5),(5,3),(10,3),(12,5),(12,7),(3,7)],mid)
+            line([(4,5),(6,3),(10,3)],light)
+            line([(3,10),(4,12),(5,11),(6,13),(9,13),(10,11),(11,12),(12,10)],accent)
+        elif agile:
+            poly([(3,6),(5,3),(10,2),(12,5),(12,10),(10,13),(5,13),(3,11)],deep,edge)
+            poly([(4,6),(6,4),(10,3),(11,6),(9,5),(5,7)],mid)
+            line([(4,11),(7,12),(10,11),(11,10)],accent)
+        else:
+            poly([(3,4),(6,2),(9,2),(12,4),(12,12),(9,14),(6,14),(3,12)],deep,edge)
+            poly([(4,5),(7,3),(8,3),(11,5),(11,7),(4,7)],mid)
+            line([(5,5),(7,3),(8,3),(10,5)],light)
+            line([(4,7),(7,6),(8,6),(11,7)],accent)
+        d.rectangle((5,8,10,9),fill=edge)
+        d.point((6,8),fill=light)
+        d.point((9,8),fill=light)
+    elif part == 'chestplate':
+        x = 1 if heavy else 3 if agile else 2
+        poly([(x,4),(5,2),(6,4),(9,4),(10,2),(15-x,4),(15-x,8),(11,8),
+              (12,13),(10,14),(5,14),(3,13),(4,8),(x,8)],deep,edge)
+        poly([(5,5),(10,5),(10,10),(8,12),(5,10)],mid)
+        line([(5,6),(7,5),(9,5)],light)
+        line([(4,11),(11,11)],edge)
+        d.rectangle((7,11,8,12),fill=accent)
+        if heavy:
+            line([(2,5),(4,4),(5,5),(7,6),(9,5),(11,4),(13,5)],accent)
+            line([(2,7),(4,6)],light); line([(11,6),(13,7)],light)
+        elif agile:
+            line([(4,5),(9,9)],accent);line([(5,3),(7,5),(9,4)],highlight)
+        else:
+            line([(3,5),(5,4)],accent);line([(10,4),(12,5)],accent)
+            line([(7,6),(7,9)],accent);line([(6,7),(8,7)],highlight)
+    elif part == 'leggings':
+        x = 2 if heavy else 4 if agile else 3
+        poly([(x,2),(15-x,2),(15-x,7),(14-x,14),(9,14),(8,8),(7,8),(6,14),(x+1,14),(x,7)],deep,edge)
+        line([(x+1,3),(14-x,3)],accent)
+        poly([(x+1,5),(7,5),(6,8),(x+1,9)],mid)
+        poly([(8,5),(14-x,5),(14-x,9),(9,8)],mid)
+        for left,right in ((x+1,6),(9,14-x)):
+            line([(left,10),(right,10)],light)
+            line([(left,11),(right,11)],mid)
+            d.point((left,13),fill=accent if heavy else mid)
+        if agile:
+            line([(5,6),(6,5)],accent);line([(9,7),(10,6)],accent)
+    else:
+        # Two shafts and toes, offset so the ankle and sole read independently.
+        x = 1 if heavy else 3 if agile else 2
+        poly([(x+1,5),(x+5,5),(x+5,10),(x+6,11),(x+6,13),(x,13),(x,11),(x+1,10)],deep,edge)
+        poly([(8,3),(12,3),(12,9),(14,10),(14,12),(8,12),(7,11),(8,9)],mid,edge)
+        line([(x+2,6),(x+4,6)],accent);line([(9,4),(11,4)],accent)
+        line([(x+1,11),(x+4,11)],mid);line([(9,9),(12,10)],light)
+        line([(x+1,12),(x+5,12)],light if heavy else mid)
+        line([(9,11),(13,11)],light if heavy else deep)
+        if agile:
+            line([(9,6),(11,6)],accent);d.point((x+3,8),fill=accent)
+        elif not heavy:
+            line([(9,8),(11,8)],accent)
+    if tier:
+        # Rank marks sit on the piece and keep the silhouette intact.
+        edge_rgb=shade(edge,1)
+        for y in range(16):
+            xs=[x for x in range(16) if image.getpixel((x,y))[3] and image.getpixel((x,y))[:3] != edge_rgb]
+            if len(xs)>=4:
+                d.point((xs[-2],y),fill=highlight)
+                if tier==2:d.point((xs[-3],y),fill=accent)
+                break
+    return image
+
 
 translations = {'en_us': {}, 'ru_ru': {}}
 for school, (ru, leather, cloth, trim, trophy) in schools.items():
@@ -108,17 +194,12 @@ for school, (ru, leather, cloth, trim, trophy) in schools.items():
             key=f'item.witchersbestiary.{item}'
             translations['en_us'][key]=f'{["","Enhanced ","Mastercrafted "][level]}{school.title()} {part.title()}'
             translations['ru_ru'][key]=f'{["","Улучшенный комплект · ","Мастерский комплект · "][level]}{dict(helmet="Шлем",chestplate="Нагрудник",leggings="Поножи",boots="Сапоги")[part]} школы {ru}'
-            icon=Image.new('RGBA',(16,16));d=ImageDraw.Draw(icon)
-            for y,row in enumerate(pattern):
-                for x,symbol in enumerate(row):
-                    if symbol!=' ':
-                        d.rectangle((2+x*4,2+y*4,5+x*4,5+y*4),fill=trim if symbol=='T' else cloth if symbol=='S' else leather)
-                        if level:d.point((3+x*4,2+y*4),fill=trim)
+            icon=armor_icon(school, part, level)
             save(assets/f'textures/item/{item}.png',icon)
             write(assets/f'models/item/{item}.json',{'parent':'minecraft:item/generated','textures':{'layer0':f'witchersbestiary:item/{item}'}})
             if not level:
                 recipe={'type':'minecraft:crafting_shaped','pattern':pattern,'key':{
-                    'L':{'item':'minecraft:leather'},'S':{'item':'minecraft:iron_ingot'},'T':{'item':f'witchersbestiary:{trophy}'}},
+                    'L':{'item':'minecraft:leather'},'S':{'item':'minecraft:iron_ingot'},'T':{'item':f'minecraft:{trophy}'}},
                     'result':{'id':f'witchersbestiary:{item}'}}
             else:
                 recipe={'type':'minecraft:smithing_transform','template':{'item':'minecraft:netherite_upgrade_smithing_template'},

@@ -30,6 +30,7 @@ public final class SchoolArmor extends ArmorItem {
     public School school(){return school;}
 
     public static void initialize(){
+        var armorItems=new ArrayList<Item>();
         for(var school:School.values())for(int tier=0;tier<3;tier++){
             var prefix=school.name().toLowerCase(Locale.ROOT)+"_"+new String[]{"","enhanced_","mastercrafted_"}[tier];
             var id=Identifier.of("witchersbestiary",prefix+"armor");
@@ -40,8 +41,10 @@ public final class SchoolArmor extends ArmorItem {
                 List.of(new ArmorMaterial.Layer(id)),school==School.BEAR?2+tier*.5f:tier*.5f,
                 school==School.BEAR?.025f:0));
             for(var type:List.of(Type.HELMET,Type.CHESTPLATE,Type.LEGGINGS,Type.BOOTS))
-                Registry.register(Registries.ITEM,Identifier.of("witchersbestiary",prefix+type.getName()),new SchoolArmor(school,material,type,tier));
+                armorItems.add(Registry.register(Registries.ITEM,Identifier.of("witchersbestiary",prefix+type.getName()),new SchoolArmor(school,material,type,tier)));
         }
+        net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
+            .register(entries->armorItems.forEach(entries::add));
     }
 
     public static int pieces(ServerPlayerEntity player,School school){
