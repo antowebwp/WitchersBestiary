@@ -39,7 +39,7 @@ public final class NekkerScreen extends HandledScreen<NekkerHandler> {
 
     @Override protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         super.drawForeground(context, mouseX, mouseY);
-        var mode = Text.translatable(handler.waiting() ? "nekker.witchersbestiary.wait" : "nekker.witchersbestiary.follow");
+        var mode = com.witchersbestiary.entity.ai.CompanionDuty.label(handler.mode());
         context.drawText(textRenderer, mode, backgroundWidth - 8 - textRenderer.getWidth(mode), titleY, 0x40352b, false);
     }
 

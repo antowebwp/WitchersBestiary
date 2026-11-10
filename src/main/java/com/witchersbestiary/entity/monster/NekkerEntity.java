@@ -3,6 +3,7 @@ package com.witchersbestiary.entity.monster;
 import com.witchersbestiary.combat.*;
 import com.witchersbestiary.entity.ai.CombatMotion;
 import net.minecraft.entity.*;
+import com.witchersbestiary.entity.ai.CompanionDuty;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -45,7 +46,7 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
     private static final TrackedData<Optional<UUID>> OWNER =
         DataTracker.registerData(NekkerEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
     private final SimpleInventory storage = new SimpleInventory(9);
-    private boolean waiting;
+    private final CompanionDuty duty = new CompanionDuty();
     private boolean collecting;
     private static final Identifier FURY=Identifier.of("witchersbestiary","nekker_ally_fury");
     private final AnimatableInstanceCache cache=GeckoLibUtil.createInstanceCache(this);
@@ -84,7 +85,8 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
     @Override public UUID getOwnerUuid() { return dataTracker.get(OWNER).orElse(null); }
     public boolean isTamed() { return getOwnerUuid() != null; }
     public SimpleInventory storage() { return storage; }
-    public boolean waiting() { return waiting; }
+    public CompanionDuty.Mode mode() { return duty.mode(); }
+    public boolean waiting() { return duty.waiting(); }
     public boolean collecting() { return collecting; }
     public void setCollecting(boolean enabled) { collecting = enabled; }
 
@@ -145,11 +147,11 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
         }
         if (meat) return ActionResult.PASS;
         if (!getWorld().isClient) {
-            waiting = !waiting;
+            duty.cycle(this);
             setTarget(null);
             cancelCombatForStun();
             stopTriggeredAnim("action", null);
-            player.sendMessage(Text.translatable(waiting ? "nekker.witchersbestiary.wait" : "nekker.witchersbestiary.follow"), true);
+            player.sendMessage(CompanionDuty.label(duty.mode()), true);
         }
         return ActionResult.success(getWorld().isClient);
     }
@@ -162,7 +164,8 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
     }
 
     private boolean defendsAgainst(PlayerEntity owner, LivingEntity target) {
-        return !waiting && owner != null && owner.isAlive() && !owner.isSpectator()
+        if(duty.guarding())return duty.guardTarget(this,owner,target);
+        return !duty.retreating() && !duty.waiting() && owner != null && owner.isAlive() && !owner.isSpectator()
             && squaredDistanceTo(owner) <= 144 && owner.squaredDistanceTo(target) <= 144
             && target instanceof HostileEntity
             && !(target instanceof Tameable pet && pet.getOwnerUuid() != null)
@@ -172,7 +175,7 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
     private void tickCompanion(ServerWorld world) {
         PlayerEntity owner = owner();
         if (!valid(getTarget())) setTarget(null);
-        if (owner == null || !owner.isAlive() || owner.isSpectator() || waiting) {
+        if (owner == null || !owner.isAlive() || owner.isSpectator() || duty.waiting()) {
             getNavigation().stop();
             return;
         }
@@ -247,7 +250,7 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
     }
     public boolean beginLeap(){
         var t=getTarget();double d=t==null?0:squaredDistanceTo(t);
-        if(getWorld().isClient||!isAlive()||isAiDisabled()||Stun.active(this)||action!=Action.NONE||attackCooldown>0||leapCooldown>0||!valid(t)||!isOnGround()||!canSee(t)||d<9||d>49)return false;
+        if(isTamed()&&duty.guarding()||getWorld().isClient||!isAlive()||isAiDisabled()||Stun.active(this)||action!=Action.NONE||attackCooldown>0||leapCooldown>0||!valid(t)||!isOnGround()||!canSee(t)||d<9||d>49)return false;
         leapCooldown=angerTicks>0?120+random.nextInt(41):160+random.nextInt(81);start(Action.LEAP);return true;
     }
     private boolean impact(LivingEntity t,double range){
@@ -262,7 +265,12 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
         super.tick();if(getWorld().isClient||!isAlive())return;
         if(attackCooldown>0)attackCooldown--;if(leapCooldown>0)leapCooldown--;if(angerTicks>0&&--angerTicks==0)applyFury();
         if(Stun.active(this)){cancelCombatForStun();return;}if(isAiDisabled())return;
-        if (isTamed()) tickCompanion((ServerWorld)getWorld());
+        if (isTamed()) {
+            var world=(ServerWorld)getWorld();
+            if(duty.emergency(world,this,owner(),this::cancelCombatForStun)){setAttacking(false);return;}
+            if(duty.guarding())duty.guardTick(world,this,owner(),this::cancelCombatForStun);
+            else tickCompanion(world);
+        }
         else if((age+getId())%20==0)coordinate();
         var t=getTarget();setAttacking(valid(t));if(!valid(t)){setTarget(null);if(action!=Action.NONE)cancelCombatForStun();return;}
         pursuit.sample(this,t);
@@ -285,7 +293,7 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
         getLookControl().lookAt(t,35,35);CombatMotion.face(this,t.getPos(),22);double distance=squaredDistanceTo(t);
         if(beginLeap())return;
         if(distance<3.2&&canSee(t)){getNavigation().stop();if(attackCooldown==0){start(biteNext&&distance<2.3?Action.BITE:Action.CLAW_ATTACK);biteNext=!biteNext;}}
-        else if((age+getId())%8==0){var p=approachPosition(t);if(!getNavigation().startMovingTo(p.x,p.y,p.z,1.05))getNavigation().startMovingTo(t,1.05);}
+        else if((age+getId())%8==0){if(isTamed()&&duty.guarding()){duty.pursue(this,t,1.05);return;}var p=approachPosition(t);if(!getNavigation().startMovingTo(p.x,p.y,p.z,1.05))getNavigation().startMovingTo(t,1.05);}
     }
     @Override public boolean damage(DamageSource source,float amount){boolean hit=super.damage(source,amount);if(hit&&isAlive()&&action==Action.NONE)triggerAnim("action","hurt");return hit;}
     @Override public void onDeath(DamageSource source){if(!getWorld().isClient && isTamed()) ItemScatterer.spawn(getWorld(), this, storage);
@@ -293,14 +301,14 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
     @Override public void writeCustomDataToNbt(NbtCompound n){super.writeCustomDataToNbt(n);n.putInt("NekkerLeapCooldown",leapCooldown);n.putInt("NekkerAnger",angerTicks);
         dataTracker.get(OWNER).ifPresent(owner -> {
             n.putUuid("NekkerOwner", owner);
-            n.putBoolean("NekkerWaiting", waiting);
+            duty.write(n,"Nekker");
             n.putBoolean("NekkerPickup", collecting);
             n.put("NekkerStorage", Inventories.writeNbt(new NbtCompound(), storage.getHeldStacks(), getRegistryManager()));
         });
     }
     @Override public void readCustomDataFromNbt(NbtCompound n){super.readCustomDataFromNbt(n);leapCooldown=n.contains("NekkerLeapCooldown")?Math.clamp(n.getInt("NekkerLeapCooldown"),0,240):100;angerTicks=Math.clamp(n.getInt("NekkerAnger"),0,160);applyFury();action=Action.NONE;attackCooldown=20;
         dataTracker.set(OWNER, n.containsUuid("NekkerOwner") ? Optional.of(n.getUuid("NekkerOwner")) : Optional.empty());
-        waiting = n.getBoolean("NekkerWaiting");
+        duty.read(n,"Nekker");
         collecting = n.getBoolean("NekkerPickup");
         storage.clear();
         if (isTamed()) {

@@ -110,6 +110,7 @@ public final class TrollFieldTests implements FabricGameTest {
         troll.writeCustomDataToNbt(saved);
         c.assertTrue(saved.getBoolean("TrollWaiting"),"Second player cannot alter the owner mode");
         troll.interact(owner,Hand.MAIN_HAND);
+        troll.interact(owner,Hand.MAIN_HAND);
         for(int z=-2;z<=2;z++)for(int y=0;y<4;y++)world.setBlockState(at.add(4,y,z),Blocks.STONE.getDefaultState());
         place(owner,at.east(11));
         c.runAtTick(170,()->{

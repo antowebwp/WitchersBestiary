@@ -1,6 +1,7 @@
 package com.witchersbestiary.fist;
 
 import net.minecraft.entity.*;
+import com.witchersbestiary.entity.ai.CompanionDuty;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.World;
@@ -19,7 +20,7 @@ import net.minecraft.util.math.Vec3d;
 public final class RockTrollEntity extends FistNpc implements Tameable {
  private static final TrackedData<Optional<UUID>> OWNER=DataTracker.registerData(RockTrollEntity.class,TrackedDataHandlerRegistry.OPTIONAL_UUID);
  private final Map<UUID,Long> victories=new HashMap<>();
- private boolean waiting;
+ private final CompanionDuty duty = new CompanionDuty();
  private java.util.UUID alertedTarget;
  private int attackTicks, recovery, lastAttack=-1, attack=-1;
  public RockTrollEntity(EntityType<? extends net.minecraft.entity.mob.PathAwareEntity> type,World world){super(type,world,2);}
@@ -69,11 +70,11 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
   }
   if(!player.getUuid().equals(getOwnerUuid()))return ActionResult.PASS;
   if(!player.isSneaking()){
-   waiting=!waiting;
+   duty.cycle(this);
    setTarget(null);
    resetAttack();
   }
-  var mode=Text.translatable(waiting?"nekker.witchersbestiary.wait":"nekker.witchersbestiary.follow");
+  var mode=CompanionDuty.label(duty.mode());
   player.sendMessage(player.isSneaking()?Text.translatable("troll.witchersbestiary.status",getDisplayName(),player.getDisplayName(),mode):mode,true);
   return ActionResult.CONSUME;
  }
@@ -81,7 +82,8 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
   attack=-1;attackTicks=0;alertedTarget=null;getNavigation().stop();pose("idle",0);
  }
  private boolean companionTarget(LivingEntity target){
-  return !waiting && getOwner() instanceof PlayerEntity owner && owner.isAlive() && !owner.isSpectator()
+  if(duty.guarding())return duty.guardTarget(this,getOwner() instanceof PlayerEntity p?p:null,target);
+  return !duty.retreating() && !duty.waiting() && getOwner() instanceof PlayerEntity owner && owner.isAlive() && !owner.isSpectator()
       && squaredDistanceTo(owner)<=256 && owner.squaredDistanceTo(target)<=256
       && target instanceof HostileEntity && target.isAlive()
       && !(target instanceof Tameable pet && pet.getOwnerUuid()!=null)
@@ -89,7 +91,7 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
  }
  private void companionTick(ServerWorld world){
   if(getTarget()!=null&&!companionTarget(getTarget())){setTarget(null);resetAttack();}
-  if(!(getOwner() instanceof PlayerEntity owner)||!owner.isAlive()||owner.isSpectator()||waiting){
+  if(!(getOwner() instanceof PlayerEntity owner)||!owner.isAlive()||owner.isSpectator()||duty.waiting()){
    getNavigation().stop();
    return;
   }
@@ -123,7 +125,7 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
  }
  @Override public void writeCustomDataToNbt(NbtCompound n){
   super.writeCustomDataToNbt(n);
-  if(!canDuel()){n.putUuid("TrollOwner",getOwnerUuid());n.putBoolean("TrollWaiting",waiting);}
+  if(!canDuel()){n.putUuid("TrollOwner",getOwnerUuid());duty.write(n,"Troll");}
   else {
    var rights=new NbtCompound();
    victories.forEach((id,expiry)->{if(expiry>getWorld().getTime())rights.putLong(id.toString(),expiry);});
@@ -133,7 +135,7 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
  @Override public void readCustomDataFromNbt(NbtCompound n){
   super.readCustomDataFromNbt(n);
   dataTracker.set(OWNER,n.containsUuid("TrollOwner")?Optional.of(n.getUuid("TrollOwner")):Optional.empty());
-  waiting=n.getBoolean("TrollWaiting");
+  duty.read(n,"Troll");
   victories.clear();
   if(canDuel()){
    var rights=n.getCompound("TrollVictories");
@@ -146,13 +148,16 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
   if(FistFights.busy(this)){attack=-1;attackTicks=0;recovery=30;setTarget(null);return;}
   if(!canDuel()){
    if(isAiDisabled()||com.witchersbestiary.signs.SignManager.calmed(this)){setTarget(null);resetAttack();return;}
-   companionTick(world);
+   var owner=getOwner() instanceof PlayerEntity p?p:null;
+   if(duty.emergency(world,this,owner,this::resetAttack))return;
+   if(duty.guarding())duty.guardTick(world,this,owner,this::resetAttack);
+   else companionTick(world);
   }
   var target=getTarget();if(target==null||!target.isAlive()||squaredDistanceTo(target)>1024){setTarget(null);alertedTarget=null;if(attack>=0)pose("idle",0);attack=-1;attackTicks=0;return;}
   if(!target.getUuid().equals(alertedTarget)){alertedTarget=target.getUuid();recovery=canDuel()?20:5;getNavigation().stop();pose("alert",20);}
   getLookControl().lookAt(target,25,25);
-  if(recovery>0){recovery--;if(!canDuel()&&squaredDistanceTo(target)>16&&age%5==0)getNavigation().startMovingTo(target,1.1);return;}
-  if(attack<0){double d=squaredDistanceTo(target);if(d>144||d>16&&(lastAttack==2||!canSee(target))){getNavigation().startMovingTo(target,.85);return;}int choices=canDuel()?5:4;int choice=random.nextInt(choices);if(choice==lastAttack)choice=(choice+1)%choices;attack=d>16?2:choice;lastAttack=attack;attackTicks=0;getNavigation().stop();pose(new String[]{"wild_quick","wild_heavy","throw","stomp","block"}[attack],0);}
+  if(recovery>0){recovery--;if(!canDuel()&&squaredDistanceTo(target)>16&&age%5==0)duty.pursue(this,target,1.1);return;}
+  if(attack<0){double d=squaredDistanceTo(target);if(d>144||d>16&&(lastAttack==2||!canSee(target))){duty.pursue(this,target,.85);return;}int choices=canDuel()?5:4;int choice=random.nextInt(choices);if(choice==lastAttack)choice=(choice+1)%choices;attack=d>16?2:choice;lastAttack=attack;attackTicks=0;getNavigation().stop();pose(new String[]{"wild_quick","wild_heavy","throw","stomp","block"}[attack],0);}
   attackTicks++;
   int contact=attack==0?8:attack==1?18:attack==2?20:attack==3?22:30;
   if(attackTicks==contact&&attack!=4){

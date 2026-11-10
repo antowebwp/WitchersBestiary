@@ -62,6 +62,7 @@ public final class TrollCompanionTests implements FabricGameTest {
         troll.readCustomDataFromNbt(pet);
         c.assertTrue(owner.getUuid().equals(troll.getOwnerUuid())&&!troll.canDuel(),"Owner survives NBT reload");
         troll.interact(owner,Hand.MAIN_HAND);
+        troll.interact(owner,Hand.MAIN_HAND);
         var zombie=EntityType.ZOMBIE.create(world);
         zombie.refreshPositionAndAngles(at.getX()+.5,at.getY(),at.getZ()+2.5,0,0);
         owner.setAttacker(zombie);

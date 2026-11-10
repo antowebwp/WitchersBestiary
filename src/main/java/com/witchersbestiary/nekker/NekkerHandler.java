@@ -34,14 +34,14 @@ public final class NekkerHandler extends GenericContainerScreenHandler {
         this.pet = pet;
         if (!player.player.getWorld().isClient && pet != null) {
             pickup.set(pet.collecting() ? 1 : 0);
-            waiting.set(pet.waiting() ? 1 : 0);
+            waiting.set(pet.mode().ordinal());
         }
         addProperty(pickup);
         addProperty(waiting);
     }
 
     public boolean collecting() { return pickup.get() != 0; }
-    public boolean waiting() { return waiting.get() != 0; }
+    public com.witchersbestiary.entity.ai.CompanionDuty.Mode mode() { return com.witchersbestiary.entity.ai.CompanionDuty.Mode.values()[Math.clamp(waiting.get(),0,2)]; }
 
     @Override public boolean canUse(PlayerEntity player) {
         return player.getWorld().isClient || pet != null && pet.canAccess(player);

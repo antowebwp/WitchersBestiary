@@ -118,6 +118,7 @@ public final class NekkerCompanionTests implements FabricGameTest {
             c.assertTrue(nekker.waiting() && nekker.squaredDistanceTo(owner) > 100, "Waiting pet remains behind");
             place(owner, nekker.getBlockPos().west());
             nekker.interactMob(owner, Hand.MAIN_HAND);
+            nekker.interactMob(owner, Hand.MAIN_HAND);
             place(owner, at.east(14));
         });
         c.runAtTick(50, () -> {
