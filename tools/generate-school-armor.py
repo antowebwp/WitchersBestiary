@@ -32,15 +32,22 @@ def save(path, image):
 
 translations = {'en_us': {}, 'ru_ru': {}}
 for school, (ru, leather, cloth, trim, trophy) in schools.items():
-    details=Image.new('RGBA',(64,64),shade(leather,1.25))
+    details=Image.new('RGBA',(64,96))
     d=ImageDraw.Draw(details)
-    for y in range(64):
-        for x in range(64):
-            if (x*7+y*13+x*y)%17<7:d.point((x,y),fill=shade(cloth,1.25))
-    for y in (0,4,10,15,20,26,30):
-        d.line((0,y,63,y),fill=trim)
-    for x in (3,8,13,27,32,37):
-        d.point((x,27),fill='#e3d7c3')
+    steel={'griffin':'#697984','bear':'#535561','cat':'#534a47'}[school]
+    lining={'griffin':'#889095','bear':'#a89075','cat':'#673641'}[school]
+    for band,color in enumerate((steel,'#654632',cloth,trim,lining,'#52968d')):
+        for y in range(16):
+            for x in range(64):
+                grain=((x*11+y*7+x*y)%11-5)*.028
+                edge=.19 if y in (0,1,4,8) else -.15 if y in (7,11,15) else 0
+                if band==4 and school=='bear':
+                    edge+=.17 if (x//2+y//2)%3==0 else -.1
+                if band==4 and school=='griffin':
+                    edge+=.22 if (x+y)%2 else -.24
+                if band==5 and x%5 in (1,2):
+                    edge+=.25
+                d.point((x,band*16+y),fill=shade(color,1+grain+edge))
     save(assets/f'textures/models/armor/{school}_details.png',details)
     for level, tier in enumerate(tiers):
         prefix = f'{school}_{tier}'
