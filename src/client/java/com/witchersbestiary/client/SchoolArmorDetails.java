@@ -109,6 +109,31 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         if(!cat)angled(arm,"bracerRune",TRIM,axis,5.75f,-3.85f,1.15f,1.15f,.35f,0,.785f);
     }
 
+    private static void helmetShell(ModelPartData helmet, SchoolArmor.School school, int tier){
+        boolean cat=school==SchoolArmor.School.CAT, bear=school==SchoolArmor.School.BEAR;
+        int shell=cat?LEATHER:STEEL;
+        angled(helmet,"crownShell",shell,0,-8.33f,.15f,bear?8.75f:8.35f,.95f,8.35f,0,0);
+        angled(helmet,"napeShell",cat?CLOTH:shell,0,-5.14f,4.18f,7.9f,5.55f,.83f,0,0);
+        for(int side:new int[]{-1,1}){
+            angled(helmet,"sideShell"+side,shell,side*4.06f,-5.52f,.55f,.83f,5.7f,7.22f,0,0);
+            if(tier==0)continue;
+            angled(helmet,"cheekPlate"+side,bear?STEEL:cat?LEATHER:TRIM,side*3.68f,-2.78f,-4.19f,
+                cat?.94f:1.28f,3.11f,1.24f,-.15f,side*.12f);
+            if(tier!=2)continue;
+            if(bear){
+                angled(helmet,"forgedPeak"+side,STEEL,side*2.79f,-8.03f,-3.55f,2.7f,1.85f,2.45f,.09f,side*.12f);
+                angled(helmet,"peakRivet"+side,TRIM,side*2.78f,-7.68f,-4.86f,.69f,.69f,.55f,0,.785f);
+            }else if(cat){
+                angled(helmet,"catEar"+side,STEEL,side*2.84f,-8.77f,-2.59f,1.42f,2.62f,1.32f,-.12f,side*.31f);
+                angled(helmet,"maskSweep"+side,STEEL,side*2.01f,-6.44f,-4.71f,4.1f,.86f,.93f,0,-side*.32f);
+            }else{
+                for(int feather=0;feather<3;feather++)
+                    angled(helmet,"wing"+side+"_"+feather,TRIM,side*(4.03f+feather*.31f),-7.78f-feather*.46f,
+                        .6f+feather*.92f,.64f,1.72f+feather*.22f,2.55f,-.44f,side*.26f);
+            }
+        }
+    }
+
     private static ModelPart[] bake(SchoolArmor.School school,boolean slim,int tier){
         var data=new ModelData();
         var root=data.getRoot();
@@ -152,6 +177,7 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         if(!cat)strap(torso,"cross",-2.8f,bear?-5.13f:-4.63f,-.64f);
 
         var helmet=child(root,"helmet",ModelPartBuilder.create());
+        helmetShell(helmet,school,tier);
         angled(helmet,"brow",cat?LEATHER:STEEL,0,-5.8f,-4.75f,cat?7.9f:8.65f,.8f,.75f,-.13f,0);
         if(tier>0){
             angled(torso,"waistPlate",cat?LEATHER:STEEL,0,7.8f,-4.57f,cat?5.5f:7.6f,1.3f,1.15f,-.18f,0);
@@ -212,12 +238,19 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
                 if(cat)angled(bootPart,"highShaft",LEATHER,0,8.35f,-2.8f,4.4f,2.38f,.75f,.08f,0);
                 else angled(bootPart,"toeShell",STEEL,0,10.91f,-3.41f,4.5f,1.3f,1.3f,-.20f,0);
             }
+            angled(thighPart,"rearCuisse",bear?STEEL:cat?LEATHER:CLOTH,0,4.6f,2.98f,
+                bear?3.62f:3.26f,4.2f,.82f,.08f,0);
+            angled(bootPart,"heelCounter",LEATHER,0,10.92f,2.62f,4.58f,2.34f,.95f,.05f,0);
             if(tier>0){
+                angled(thighPart,"sideLame",cat?LEATHER:STEEL,sign*2.04f,4.9f,0,1.03f,2.42f,5.38f,0,sign*.12f);
                 angled(armPart,"outerLame",cat?LEATHER:STEEL,axis+sign*(bear?2.65f:2.35f),1.55f,.05f,1.15f,2.65f,5.2f,0,sign*.23f);
                 angled(thighPart,"outerGreave",STEEL,sign*1.74f,6.92f,-2.43f,1.33f,2.45f,2.12f,-.14f,sign*.12f);
                 angled(bootPart,"heelGuard",cat?LEATHER:STEEL,0,10.38f,2.58f,4.48f,2.13f,1.04f,.08f,0);
             }
             if(tier==2){
+                angled(armPart,"shoulderCrest",bear?LINING:cat?STEEL:TRIM,axis+sign*.47f,-2.7f,.14f,
+                    bear?5.55f:cat?3.95f:4.96f,1.35f,5.92f,-.06f,sign*.20f);
+                angled(thighPart,"rearLame",cat?LEATHER:STEEL,0,6.75f,3.05f,bear?3.45f:2.96f,1.32f,.85f,.18f,0);
                 angled(armPart,"forearmRidge",cat?STEEL:TRIM,axis+sign*1.45f,5.98f,-3.7f,1.25f,2.85f,.84f,-.12f,sign*.10f);
                 angled(thighPart,"articulatedLame",cat?LEATHER:STEEL,sign*.73f,3.65f,-3.33f,cat?1.85f:2.75f,1.42f,.83f,-.23f,sign*.15f);
                 angled(bootPart,"toeRidge",cat?LEATHER:TRIM,0,11.04f,bear?-4.13f:-3.98f,bear?3.95f:3.25f,.7f,.88f,-.25f,0);

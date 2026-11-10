@@ -14,5 +14,12 @@ public final class SignPackets {
   public int form(int sign,int slot){return values.get(sign*9+7+slot);}
   public Id<Mastery> getId(){return ID;}
  }
- public static void initialize(){PayloadTypeRegistry.playC2S().register(Intent.ID,Intent.CODEC);PayloadTypeRegistry.playS2C().register(View.ID,View.CODEC);PayloadTypeRegistry.playS2C().register(Mastery.ID,Mastery.CODEC);ServerPlayNetworking.registerGlobalReceiver(Intent.ID,(p,c)->c.server().execute(()->SignManager.intent(c.player(),p)));}
+ public record QuenShell(int entityId,int form,int ticks) implements CustomPayload {
+  public static final Id<QuenShell> ID=new Id<>(Identifier.of("witchersbestiary:quen_shell"));
+  public static final PacketCodec<RegistryByteBuf,QuenShell> CODEC=PacketCodec.of((p,b)->{
+   b.writeVarInt(p.entityId);b.writeByte(p.form);b.writeByte(p.ticks);
+  },b->new QuenShell(b.readVarInt(),b.readUnsignedByte(),b.readUnsignedByte()));
+  public Id<QuenShell> getId(){return ID;}
+ }
+ public static void initialize(){PayloadTypeRegistry.playC2S().register(Intent.ID,Intent.CODEC);PayloadTypeRegistry.playS2C().register(View.ID,View.CODEC);PayloadTypeRegistry.playS2C().register(QuenShell.ID,QuenShell.CODEC);PayloadTypeRegistry.playS2C().register(Mastery.ID,Mastery.CODEC);ServerPlayNetworking.registerGlobalReceiver(Intent.ID,(p,c)->c.server().execute(()->SignManager.intent(c.player(),p)));}
 }

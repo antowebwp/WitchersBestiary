@@ -107,7 +107,7 @@ public final class SignManager {
     var origin=sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos();
     castWave(w,origin,p.getRotationVec(1),sign,form,range(p,sign));
    }
-   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;quenContour(w,p.getPos(),form,true);}
+   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;syncQuen(p,form,12);quenContour(w,p.getPos(),form,true);}
    case YRDEN->{
     r.trap=trap;r.trapForm=form;r.trapDamageMultiplier=SchoolArmor.signDamage(p)*combo;r.trapTicks=Math.round((200+duration*20)*combo);
     var centers=new ArrayList<Vec3d>();centers.add(trap);
@@ -196,6 +196,13 @@ public final class SignManager {
   int rgb=sign.color;
   return new DustParticleEffect(new org.joml.Vector3f(((rgb>>16)&255)/255f,((rgb>>8)&255)/255f,(rgb&255)/255f),size);
  }
+ private static void syncQuen(ServerPlayerEntity player,int form,int ticks){
+  var packet=new SignPackets.QuenShell(player.getId(),form,ticks);
+  if(ServerPlayNetworking.canSend(player,SignPackets.QuenShell.ID))ServerPlayNetworking.send(player,packet);
+  for(var observer:net.fabricmc.fabric.api.networking.v1.PlayerLookup.tracking(player))
+   if(observer!=player&&observer.squaredDistanceTo(player)<=40*40&&ServerPlayNetworking.canSend(observer,SignPackets.QuenShell.ID))
+    ServerPlayNetworking.send(observer,packet);
+ }
  private static void quenContour(ServerWorld world,Vec3d center,int form,boolean flash){
   var glow=dust(SignType.QUEN,flash?1.1f:.64f);
   double phase=world.getTime()*.17;
@@ -254,6 +261,7 @@ public final class SignManager {
   }
   if(shield.shieldTicks<=0||shield.shield<=0)return amount;
   float taken=Math.min(shield.shield,amount);shield.shield-=taken;
+  if(shield.shield<=0)syncQuen(owner,shield.shieldForm,0);
   var world=owner.getServerWorld();burst(world,p.getPos().add(0,1,0),SignType.QUEN,shield.shield<=0?12:4);
   if(damage.getAttacker() instanceof LivingEntity attacker&&enemy(owner,attacker)&&owner.canSee(attacker)){
    awardCombat(owner,attacker);
@@ -297,13 +305,14 @@ public final class SignManager {
  private static void tick(net.minecraft.server.MinecraftServer server){
   for(var player:server.getPlayerManager().getPlayerList()){
    var runtime=runtime(player);state(player).tick(1+.15*SchoolArmor.fraction(player,SchoolArmor.School.GRIFFIN));
-   if(!allowed(player)){runtime.shield=0;runtime.shieldTicks=0;runtime.trapTicks=0;runtime.breathTicks=0;}
+   if(!allowed(player)){if(runtime.shield>0)syncQuen(player,runtime.shieldForm,0);runtime.shield=0;runtime.shieldTicks=0;runtime.trapTicks=0;runtime.breathTicks=0;}
    if(runtime.shieldTicks>0){
     if(--runtime.shieldTicks==0){
+     if(runtime.shield>0)syncQuen(player,runtime.shieldForm,0);
      runtime.shield=0;
      burst(player.getServerWorld(),player.getPos().add(0,1,0),SignType.QUEN,8);
-    }else if(runtime.shieldTicks%6==0&&runtime.shield>0){
-     quenContour(player.getServerWorld(),player.getPos(),runtime.shieldForm,false);
+    }else if(runtime.shieldTicks%8==0&&runtime.shield>0){
+     syncQuen(player,runtime.shieldForm,Math.min(runtime.shieldTicks,12));
     }
    }
    if(runtime.trapTicks>0){runtime.trapTicks--;if(server.getTicks()%10==0)tickTrap(player,runtime);}
