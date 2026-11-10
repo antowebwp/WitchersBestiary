@@ -104,10 +104,10 @@ public final class SignManager {
     float damage=(sign==SignType.IGNI?6.24f:1.44f)*(1+.1f*power)*SchoolArmor.signDamage(p)*combo;
     if(sign==SignType.IGNI&&form==2){r.breathTicks=24+duration*4;r.breathDamageMultiplier=SchoolArmor.signDamage(p)*combo;damage*=.42f;}
     for(var target:targets.stream().limit(12).toList())hit(p,target,sign,form,damage,duration,effect);
-    if(form==1)for(int i=0;i<16;i++){double a=i*Math.PI/8;burst(w,p.getPos().add(2*Math.cos(a),.65,2*Math.sin(a)),sign,1);}
-    else coneParticles(w,sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos(),p.getRotationVec(1),sign);
+    var origin=sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos();
+    castWave(w,origin,p.getRotationVec(1),sign,form,range(p,sign));
    }
-   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;burst(w,p.getPos().add(0,1,0),sign,16);}
+   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;quenContour(w,p.getPos(),form,true);}
    case YRDEN->{
     r.trap=trap;r.trapForm=form;r.trapDamageMultiplier=SchoolArmor.signDamage(p)*combo;r.trapTicks=Math.round((200+duration*20)*combo);
     var centers=new ArrayList<Vec3d>();centers.add(trap);
@@ -127,7 +127,7 @@ public final class SignManager {
      }
      if(redirected!=null){REDIRECTS.put(target.getUuid(),new Redirect(p.getUuid(),redirected.getUuid(),until));target.setTarget(redirected);}
      else {CALM.put(target.getUuid(),until);target.setTarget(null);target.getNavigation().stop();}
-     burst(w,target.getEyePos(),sign,6);
+     axiiThreads(w,p.getEyePos(),target.getEyePos(),form);
     }
    }
   }
@@ -143,6 +143,7 @@ public final class SignManager {
   if(sign==SignType.IGNI&&(target.isFireImmune()||target.hasStatusEffect(StatusEffects.FIRE_RESISTANCE)))return;
   if(!target.damage(source(p,sign),damage))return;
   awardCombat(p,target);
+  burst(p.getServerWorld(),target.getPos().add(0,target.getHeight()*.6,0),sign,4);
   if(sign==SignType.IGNI){int seconds=3+(duration+effect)/2;target.setOnFireFor(seconds);BURNS.put(target.getUuid(),new Burn(p.getUuid(),p.getWorld().getRegistryKey(),p.getWorld().getTime()+seconds*20));}
   else {
    double force=(form==2?1.45:.85)*(large(target)?.3:1)*(1+.1*effect);
@@ -152,33 +153,90 @@ public final class SignManager {
   }
  }
  private static double halfAngle(SignType sign){return switch(sign){case IGNI->37.5;case AARD->45;case AXII->12;default->30;};}
- private static void coneParticles(ServerWorld world,Vec3d origin,Vec3d forward,SignType sign){
-  var particle=sign==SignType.IGNI?ParticleTypes.FLAME:ParticleTypes.CLOUD;
-  for(int spoke=-3;spoke<=3;spoke++){
-   var ray=forward.rotateY((float)Math.toRadians(halfAngle(sign)*spoke/3));
-   for(int step=1;step<=5;step++){
-    var at=origin.add(ray.multiply(sign.range*step/5));
-    if(!world.getBlockState(BlockPos.ofFloored(at)).getCollisionShape(world,BlockPos.ofFloored(at)).isEmpty())break;
-    world.spawnParticles(particle,at.x,at.y,at.z,1,.06,.09,.06,.006);
+ private static void castWave(ServerWorld world,Vec3d origin,Vec3d forward,SignType sign,int form,double radius){
+  boolean fire=sign==SignType.IGNI;
+  var core=dust(sign,fire?.82f:.64f);
+  var flow=fire?ParticleTypes.SMALL_FLAME:ParticleTypes.POOF;
+  int spokes=form==1?16:9;
+  if(form==1)forward=forward.multiply(1,0,1).normalize();
+  for(int spoke=0;spoke<spokes;spoke++){
+   double angle=form==1?360.0*spoke/spokes:halfAngle(sign)*(2.0*spoke/(spokes-1)-1);
+   var ray=forward.rotateY((float)Math.toRadians(angle));
+   for(int band=1;band<=3;band++){
+    var at=origin.add(ray.multiply(radius*(band*.28+.16)));
+    var pos=BlockPos.ofFloored(at);
+    if(!world.isChunkLoaded(pos)||world.raycast(new net.minecraft.world.RaycastContext(origin,at,
+        net.minecraft.world.RaycastContext.ShapeType.COLLIDER,net.minecraft.world.RaycastContext.FluidHandling.NONE,
+        net.minecraft.block.ShapeContext.absent())).getType()!=net.minecraft.util.hit.HitResult.Type.MISS)break;
+    if(band==3||spoke%2==0)world.spawnParticles(core,at.x,at.y,at.z,1,0,0,0,0);
+    if(band==2&&spoke%2==0){
+     var motion=ray.multiply(!fire&&form==3?-.20:!fire&&form==2?.32:.16);
+     world.spawnParticles(flow,at.x,at.y,at.z,0,motion.x,motion.y+.02,motion.z,1);
+    }
    }
+  }
+ }
+ private static void axiiThreads(ServerWorld world,Vec3d origin,Vec3d eye,int form){
+  var core=dust(SignType.AXII,.65f);
+  var direction=eye.subtract(origin);
+  var side=direction.crossProduct(new Vec3d(0,1,0)).normalize();
+  int points=form==0?6:form==1?4:8;
+  for(int i=1;i<=points;i++){
+   double progress=i/(double)points;
+   var at=origin.add(direction.multiply(progress)).add(side.multiply(Math.sin(progress*Math.PI*2)*.18));
+   world.spawnParticles(core,at.x,at.y,at.z,1,0,0,0,0);
+  }
+  for(int i=0;i<8;i++){
+   double angle=i*Math.PI/4;
+   var at=eye.add(.42*Math.cos(angle),.05+i*.053,.42*Math.sin(angle));
+   world.spawnParticles(core,at.x,at.y,at.z,1,0,0,0,0);
+  }
+ }
+ private static DustParticleEffect dust(SignType sign,float size){
+  int rgb=sign.color;
+  return new DustParticleEffect(new org.joml.Vector3f(((rgb>>16)&255)/255f,((rgb>>8)&255)/255f,(rgb&255)/255f),size);
+ }
+ private static void quenContour(ServerWorld world,Vec3d center,int form,boolean flash){
+  var glow=dust(SignType.QUEN,flash?1.1f:.64f);
+  double phase=world.getTime()*.17;
+  int points=flash?18:8;
+  for(int i=0;i<points;i++){
+   double angle=phase+i*Math.PI*2/points;
+   double height=.95+Math.sin(angle*(form==2?3:2))*.74;
+   double radius=(form==3?1.28:.92)*Math.sqrt(1-Math.pow((height-.95)/1.12,2));
+   var point=center.add(Math.cos(angle)*radius,height,Math.sin(angle)*radius);
+   world.spawnParticles(glow,point.x,point.y,point.z,1,0,0,0,0);
   }
  }
  private static void yrdenCircle(ServerWorld world,Vec3d center,int ticks,double radius){
   var dust=new DustParticleEffect(new org.joml.Vector3f(.78f,.31f,1),ticks%20==0?1.35f:1.1f);
   for(int i=0;i<36;i++){
    double angle=i*Math.PI/18;
-   world.spawnParticles(dust,center.x+Math.cos(angle)*radius,center.y+.075,center.z+Math.sin(angle)*radius,1,0,0,0,0);
+   yrdenMark(world,center.add(Math.cos(angle)*radius,0,Math.sin(angle)*radius),dust);
   }
   // Four short chevrons point from the boundary into the circle.
   for(int quadrant=0;quadrant<4;quadrant++){
    double angle=quadrant*Math.PI/2;
    for(int n=-2;n<=2;n++){
     var point=new Vec3d(n*.15,.09,radius*.67+Math.abs(n)*.17).rotateY((float)angle).add(center);
-    world.spawnParticles(dust,point.x,point.y,point.z,1,0,0,0,0);
+    yrdenMark(world,point,dust);
    }
   }
  }
- private static void burst(ServerWorld w,Vec3d at,SignType sign,int count){int rgb=sign.color;w.spawnParticles(new DustParticleEffect(new org.joml.Vector3f(((rgb>>16)&255)/255f,((rgb>>8)&255)/255f,(rgb&255)/255f),.9f),at.x,at.y,at.z,count,.45,.5,.45,.01);}
+ private static void yrdenMark(ServerWorld world,Vec3d point,DustParticleEffect dust){
+  var pos=BlockPos.ofFloored(point);
+  if(!world.isChunkLoaded(pos))return;
+  for(int dy=1;dy>=-1;dy--){
+   var surface=pos.up(dy);
+   if(validTrap(world,new Vec3d(point.x,surface.getY(),point.z))){
+    world.spawnParticles(dust,point.x,surface.getY()+.08,point.z,1,0,0,0,0);
+    return;
+   }
+  }
+ }
+ private static void burst(ServerWorld w,Vec3d at,SignType sign,int count){
+  w.spawnParticles(dust(sign,.9f),at.x,at.y,at.z,count,.45,.5,.45,.01);
+ }
  public static boolean permitsRedirectedAttack(LivingEntity attacker,LivingEntity victim){
   var redirect=REDIRECTS.get(attacker.getUuid());
   return redirect==null||redirect.until<=attacker.getWorld().getTime()||redirect.target.equals(victim.getUuid());
@@ -240,13 +298,20 @@ public final class SignManager {
   for(var player:server.getPlayerManager().getPlayerList()){
    var runtime=runtime(player);state(player).tick(1+.15*SchoolArmor.fraction(player,SchoolArmor.School.GRIFFIN));
    if(!allowed(player)){runtime.shield=0;runtime.shieldTicks=0;runtime.trapTicks=0;runtime.breathTicks=0;}
-   if(runtime.shieldTicks>0&&--runtime.shieldTicks==0)runtime.shield=0;
+   if(runtime.shieldTicks>0){
+    if(--runtime.shieldTicks==0){
+     runtime.shield=0;
+     burst(player.getServerWorld(),player.getPos().add(0,1,0),SignType.QUEN,8);
+    }else if(runtime.shieldTicks%6==0&&runtime.shield>0){
+     quenContour(player.getServerWorld(),player.getPos(),runtime.shieldForm,false);
+    }
+   }
    if(runtime.trapTicks>0){runtime.trapTicks--;if(server.getTicks()%10==0)tickTrap(player,runtime);}
    if(runtime.breathTicks>0&&--runtime.breathTicks%6==0){
     int power=level(player,SignType.IGNI,SignPlayerState.Upgrade.POWER);
     for(var target:targets(player,SignType.IGNI,range(player,SignType.IGNI),37.5,false).stream().limit(12).toList())
      hit(player,target,SignType.IGNI,2,(1.8f+.2f*power)*runtime.breathDamageMultiplier,0,0);
-    coneParticles(player.getServerWorld(),player.getEyePos(),player.getRotationVec(1),SignType.IGNI);
+    castWave(player.getServerWorld(),player.getEyePos(),player.getRotationVec(1),SignType.IGNI,2,range(player,SignType.IGNI));
    }
    if(server.getTicks()%10==0)sync(player);
   }

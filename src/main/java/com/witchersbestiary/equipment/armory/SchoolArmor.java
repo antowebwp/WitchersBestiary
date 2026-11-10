@@ -22,10 +22,14 @@ public final class SchoolArmor extends ArmorItem {
         long bearReady, bearUntil, catReady, catUntil;
     }
     private final School school;
+    private final int tier;
     private SchoolArmor(School school, net.minecraft.registry.entry.RegistryEntry<ArmorMaterial> material, Type type, int tier){
         super(material,type,new Item.Settings().maxDamage(type.getMaxDamage(19+tier*6)));
         this.school=school;
+        this.tier=tier;
     }
+
+    public int tier(){return tier;}
 
     public School school(){return school;}
 

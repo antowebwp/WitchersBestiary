@@ -13,12 +13,13 @@ import net.minecraft.util.Identifier;
 
 public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlayerEntity,PlayerEntityModel<AbstractClientPlayerEntity>> {
     private static final int STEEL=0, LEATHER=16, CLOTH=32, TRIM=48, LINING=64, GLASS=80;
-    private final ModelPart[][][] models=new ModelPart[3][2][];
+    private final ModelPart[][][][] models=new ModelPart[3][2][3][];
 
     public SchoolArmorDetails(PlayerEntityRenderer context){
         super(context);
         for(var school:SchoolArmor.School.values())for(int slim=0;slim<2;slim++)
-            models[school.ordinal()][slim]=bake(school,slim!=0);
+            for(int tier=0;tier<3;tier++)
+                models[school.ordinal()][slim][tier]=bake(school,slim!=0,tier);
     }
 
     private static void box(ModelPartBuilder part,int material,float x,float y,float z,float w,float h,float d){
@@ -108,7 +109,7 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         if(!cat)angled(arm,"bracerRune",TRIM,axis,5.75f,-3.85f,1.15f,1.15f,.35f,0,.785f);
     }
 
-    private static ModelPart[] bake(SchoolArmor.School school,boolean slim){
+    private static ModelPart[] bake(SchoolArmor.School school,boolean slim,int tier){
         var data=new ModelData();
         var root=data.getRoot();
         boolean bear=school==SchoolArmor.School.BEAR, cat=school==SchoolArmor.School.CAT;
@@ -149,6 +150,24 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         strap(torso,"front",2.8f,bear?-5.05f:-4.55f,.64f);
         strap(torso,"back",-2.8f,bear?4.8f:4.45f,-.64f);
         if(!cat)strap(torso,"cross",-2.8f,bear?-5.13f:-4.63f,-.64f);
+
+        var helmet=child(root,"helmet",ModelPartBuilder.create());
+        angled(helmet,"brow",cat?LEATHER:STEEL,0,-5.8f,-4.75f,cat?7.9f:8.65f,.8f,.75f,-.13f,0);
+        if(tier>0){
+            angled(torso,"waistPlate",cat?LEATHER:STEEL,0,7.8f,-4.57f,cat?5.5f:7.6f,1.3f,1.15f,-.18f,0);
+            for(int side:new int[]{-1,1}){
+                angled(helmet,"temple"+side,bear?LINING:STEEL,side*4.22f,-3.7f,-2.6f,.95f,cat?2:3.1f,2.75f,.12f,side*.12f);
+                angled(torso,"flank"+side,cat?LEATHER:STEEL,side*3.96f,6.7f,.8f,1.12f,2.5f,4.8f,.12f,side*.10f);
+            }
+        }
+        if(tier==2){
+            angled(helmet,"crest",bear?STEEL:TRIM,0,-8.68f,-.4f,cat?1.12f:2.05f,1.1f,7.3f,-.06f,0);
+            angled(torso,"spineGuard",cat?LEATHER:STEEL,0,4.1f,4.77f,bear?4.9f:cat?2.6f:4.1f,4.1f,1.25f,.12f,0);
+            for(int side:new int[]{-1,1}){
+                angled(torso,"breastRidge"+side,bear?STEEL:TRIM,side*2.15f,5.2f,-5.06f,cat?1.6f:2.6f,.8f,.85f,-.12f,side*.24f);
+                if(bear)angled(torso,"furLapel"+side,LINING,side*2.94f,1.46f,-4.06f,1.56f,3.12f,1.48f,-.13f,side*.26f);
+            }
+        }
 
         for(int side=0;side<2;side++){
             boolean right=side==0;
@@ -193,9 +212,19 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
                 if(cat)angled(bootPart,"highShaft",LEATHER,0,8.35f,-2.8f,4.4f,2.38f,.75f,.08f,0);
                 else angled(bootPart,"toeShell",STEEL,0,10.91f,-3.41f,4.5f,1.3f,1.3f,-.20f,0);
             }
+            if(tier>0){
+                angled(armPart,"outerLame",cat?LEATHER:STEEL,axis+sign*(bear?2.65f:2.35f),1.55f,.05f,1.15f,2.65f,5.2f,0,sign*.23f);
+                angled(thighPart,"outerGreave",STEEL,sign*1.74f,6.92f,-2.43f,1.33f,2.45f,2.12f,-.14f,sign*.12f);
+                angled(bootPart,"heelGuard",cat?LEATHER:STEEL,0,10.38f,2.58f,4.48f,2.13f,1.04f,.08f,0);
+            }
+            if(tier==2){
+                angled(armPart,"forearmRidge",cat?STEEL:TRIM,axis+sign*1.45f,5.98f,-3.7f,1.25f,2.85f,.84f,-.12f,sign*.10f);
+                angled(thighPart,"articulatedLame",cat?LEATHER:STEEL,sign*.73f,3.65f,-3.33f,cat?1.85f:2.75f,1.42f,.83f,-.23f,sign*.15f);
+                angled(bootPart,"toeRidge",cat?LEATHER:TRIM,0,11.04f,bear?-4.13f:-3.98f,bear?3.95f:3.25f,.7f,.88f,-.25f,0);
+            }
         }
         var model=TexturedModelData.of(data,64,96).createModel();
-        return java.util.stream.Stream.of("torso","arm0","arm1","thigh0","thigh1","boot0","boot1")
+        return java.util.stream.Stream.of("torso","arm0","arm1","thigh0","thigh1","boot0","boot1","helmet")
             .map(model::getChild).toArray(ModelPart[]::new);
     }
 
@@ -204,6 +233,7 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         if(player.isInvisible())return;
         var model=getContextModel();
         int slim=player.getSkinTextures().model()==net.minecraft.client.util.SkinTextures.Model.SLIM?1:0;
+        renderSlot(player,EquipmentSlot.HEAD,slim,matrices,buffers,light,7,model.head);
         renderSlot(player,EquipmentSlot.CHEST,slim,matrices,buffers,light,0,model.body,model.rightArm,model.leftArm);
         renderSlot(player,EquipmentSlot.LEGS,slim,matrices,buffers,light,3,model.rightLeg,model.leftLeg);
         renderSlot(player,EquipmentSlot.FEET,slim,matrices,buffers,light,5,model.rightLeg,model.leftLeg);
@@ -213,7 +243,7 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
             VertexConsumerProvider buffers,int light,int first,ModelPart... parents){
         if(!(player.getEquippedStack(slot).getItem() instanceof SchoolArmor armor))return;
         var school=armor.school();
-        var pieces=models[school.ordinal()][slim];
+        var pieces=models[school.ordinal()][slim][armor.tier()];
         var texture=Identifier.of("witchersbestiary","textures/models/armor/"+school.name().toLowerCase(java.util.Locale.ROOT)+"_details.png");
         var vertices=buffers.getBuffer(RenderLayer.getEntityCutout(texture));
         for(int i=0;i<parents.length;i++){
