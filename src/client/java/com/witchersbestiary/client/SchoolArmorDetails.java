@@ -204,8 +204,74 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
             angled(boot,"sole",LEATHER,0,11.82f,-.45f,4.79f,.65f,7.33f,0,0);
             for(int layer=0;layer<(master?3:2);layer++)
                 angled(boot,"greave"+layer,layer==0?edge:armor,0,8.28f+layer*.82f,-2.91f+layer*.13f,4.32f-layer*.17f,.84f,1.02f,.15f,0);
+            finishLimb(arm,thigh,boot,school,axis,sign,tier);
         }
+        finishArmor(torso,helmet,school,tier);
         return parts(data);
+    }
+
+    private static void finishArmor(ModelPartData torso, ModelPartData helmet, SchoolArmor.School school, int tier){
+        boolean bear=school==SchoolArmor.School.BEAR, cat=school==SchoolArmor.School.CAT;
+        boolean master=tier==2;
+        float front=tier==0?(bear?-5.6f:-5.15f):bear?-5.82f:-5.64f;
+        if(tier>0){
+            strap(torso,"harnessFront",2.8f,front-.34f,.61f);
+            strap(torso,"harnessBack",-2.7f,5.78f,-.62f);
+            angled(torso,"beltStud",TRIM,0,9.05f,-5.61f,2.01f,1.36f,.62f,0,.12f);
+        }
+        if(bear){
+            for(int side:new int[]{-1,1}){
+                float span=master?3.5f:tier==1?3.02f:2.12f;
+                angled(torso,"furBib"+side,LINING,side*2.98f,1.35f,-4.28f,span,master?3.4f:2.16f,1.9f,-.24f,side*.26f);
+                angled(torso,"ribLock"+side,TRIM,side*2.85f,4.78f,front,.77f,1.2f,.84f,-.15f,side*.24f);
+                angled(helmet,"ironTemple"+side,STEEL,side*4.54f,-4.14f,1.04f,.82f,master?4.6f:3.45f,master?5.8f:4.9f,.1f,0);
+                if(master)angled(helmet,"forgedFlare"+side,STEEL,side*3.6f,-7.94f,-3.34f,2.5f,2.5f,3.05f,-.19f,side*.25f);
+            }
+            if(master)angled(torso,"bearBoss",TRIM,0,3.83f,front-.72f,2.67f,2.21f,1.22f,0,.785f);
+        }else if(cat){
+            angled(helmet,"hoodPeak",CLOTH,0,-7.76f,-4.65f,master?7.26f:7.75f,1.83f,2.35f,-.35f,0);
+            for(int side:new int[]{-1,1}){
+                angled(helmet,"hoodSeam"+side,LEATHER,side*4.27f,-5.47f,-1.16f,.7f,4.13f,6.37f,.2f,side*.15f);
+                if(master)angled(helmet,"point"+side,STEEL,side*3.15f,-8.68f,-2.56f,1.33f,3.65f,1.65f,-.20f,side*.29f);
+            }
+            angled(torso,"scarfTie",CLOTH,2.45f,2.24f,5.04f,1.55f,master?4.85f:3.06f,1.03f,.14f,-.28f);
+            angled(torso,"utilityPouch",LEATHER,-3.51f,9.15f,-3.72f,1.92f,2.32f,2.24f,.05f,-.18f);
+            angled(torso,"pouchClasp",TRIM,-3.51f,9.16f,-4.94f,.77f,.66f,.47f,0,-.18f);
+        }else{
+            for(int side:new int[]{-1,1}){
+                angled(torso,"gildedRib"+side,TRIM,side*2.23f,2.48f,front,3.45f,.57f,.88f,-.12f,side*.31f);
+                angled(helmet,"templeFrame"+side,TRIM,side*4.42f,-4.4f,-2.4f,.62f,3.43f,3.6f,-.18f,0);
+                if(master)for(int feather=0;feather<3;feather++)
+                    angled(helmet,"crestFeather"+side+"_"+feather,TRIM,side*(4.76f+feather*.26f),
+                        -7.59f-feather*.48f,-.66f+feather*.88f,.69f,2.1f+feather*.35f,2.72f,-.53f,side*.34f);
+            }
+            angled(torso,"sunSeal",TRIM,0,4.16f,front-.61f,master?2.45f:1.62f,master?2.45f:1.62f,.82f,0,.785f);
+        }
+        if(master){
+            float x=cat?-2.3f:0;
+            angled(torso,"rearBadge",TRIM,x,5.19f,5.77f,cat?1.45f:2.25f,1.58f,.68f,.14f,.785f);
+        }
+    }
+
+    private static void finishLimb(ModelPartData arm, ModelPartData thigh, ModelPartData boot,
+            SchoolArmor.School school, float axis, float side, int tier){
+        boolean bear=school==SchoolArmor.School.BEAR, cat=school==SchoolArmor.School.CAT;
+        boolean master=tier==2;
+        float cap=bear?4.3f:cat?3.14f:3.85f;
+        angled(thigh,"kneecap",STEEL,0,6.01f,-3.98f,cap,1.51f,.89f,-.16f,0);
+        angled(boot,"heelStrap",cat?TRIM:STEEL,0,10.17f,3.22f,cat?3.7f:4.45f,.67f,1.08f,.13f,0);
+        if(tier==0)return;
+        angled(arm,"elbowShell",cat?LEATHER:STEEL,axis+side*.62f,4.29f,2.74f,cat?2.6f:3.69f,2.05f,1.25f,.24f,side*.08f);
+        angled(thigh,"outerTasset",cat?LEATHER:STEEL,side*(master?2.72f:2.35f),2.1f,-.51f,
+            master?1.6f:1.13f,master?4.7f:3.32f,bear?5.98f:4.65f,.13f,side*.21f);
+        if(master){
+            float shoulder=bear?5.95f:cat?4.6f:5.56f;
+            angled(arm,"pauldronMantle",bear?LINING:STEEL,axis+side*.63f,-2.73f,-.12f,
+                shoulder,bear?1.94f:1.39f,bear?6.68f:6.18f,-.09f,side*.29f);
+            angled(arm,"pauldronRim",bear?STEEL:TRIM,axis+side*.91f,-1.72f,-3.02f,
+                shoulder-.52f,.57f,.89f,.03f,side*.27f);
+            angled(boot,"instepRidge",cat?LEATHER:STEEL,0,10.55f,-3.65f,cap,1.62f,1.23f,-.27f,0);
+        }
     }
 
     private static ModelPart[] parts(ModelData data){
@@ -335,7 +401,9 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
                 angled(thighPart,"articulatedLame",cat?LEATHER:STEEL,sign*.73f,3.65f,-3.33f,cat?1.85f:2.75f,1.42f,.83f,-.23f,sign*.15f);
                 angled(bootPart,"toeRidge",cat?LEATHER:TRIM,0,11.04f,bear?-4.13f:-3.98f,bear?3.95f:3.25f,.7f,.88f,-.25f,0);
             }
+            finishLimb(armPart,thighPart,bootPart,school,axis,sign,tier);
         }
+        finishArmor(torso,helmet,school,tier);
         return parts(data);
     }
 
