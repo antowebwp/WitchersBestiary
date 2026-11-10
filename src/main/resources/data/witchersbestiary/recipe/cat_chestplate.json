@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "L L",
+    "STS",
+    "SSS"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "S": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "item": "witchersbestiary:nekker_claw"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:cat_chestplate"
+  }
+}

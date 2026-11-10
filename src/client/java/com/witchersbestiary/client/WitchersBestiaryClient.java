@@ -30,7 +30,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.MUD_CLOD,context->new net.minecraft.client.render.entity.FlyingItemEntityRenderer<>(context,.8f,false));
         EntityRendererRegistry.register(ModEntities.INFERNAL_BASILISK,InfernalBasiliskRenderer::new);
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((c,w)->{if(w!=null)com.witchersbestiary.alchemy.AlchemyTooltips.rebuild(w);});
-        net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type,renderer,helper,context)->{if(renderer instanceof net.minecraft.client.render.entity.PlayerEntityRenderer player)helper.register(new RootFeatureRenderer(player));});
+        net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type,renderer,helper,context)->{if(renderer instanceof net.minecraft.client.render.entity.PlayerEntityRenderer player){helper.register(new RootFeatureRenderer(player));helper.register(new SchoolArmorDetails(player));}});
         EntityRendererRegistry.register(ModEntities.LESHEN, LeshenRenderer::new);
         EntityRendererRegistry.register(ModEntities.LESHEN_WOLF, WolfEntityRenderer::new);
         EntityRendererRegistry.register(ModEntities.DROWNER,DrownerRenderer::new);

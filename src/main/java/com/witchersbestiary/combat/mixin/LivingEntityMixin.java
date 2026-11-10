@@ -54,6 +54,9 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
         amount=com.witchersbestiary.combat.ProgressiveDifficulty.damage(source,amount);
         amount=com.witchersbestiary.accessory.HunterAccessories.protect(victim,source,com.witchersbestiary.artifact.Artifacts.protection(victim,source,amount));
         amount=com.witchersbestiary.equipment.armory.ArmoryCombat.apply(victim,source,amount);
+        float armorAdjusted=com.witchersbestiary.equipment.armory.SchoolArmor.damage(victim,source,amount);
+        if(amount>0&&armorAdjusted==0)return false;
+        amount=armorAdjusted;
         var oil=Float.isFinite(amount)&&amount>0?com.witchersbestiary.alchemy.InventoryOils.prepare(victim,source):null;
         float before=victim.getHealth(),absorption=victim.getAbsorptionAmount();
         var enchantmentHit=com.witchersbestiary.enchantment.SwordEnchantments.capture(victim,source);

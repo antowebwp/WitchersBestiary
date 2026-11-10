@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "L L",
+    "STS",
+    "SSS"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "S": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "item": "witchersbestiary:fiend_horn"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:bear_chestplate"
+  }
+}

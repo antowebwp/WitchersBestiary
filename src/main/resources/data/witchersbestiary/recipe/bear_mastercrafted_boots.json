@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  },
+  "base": {
+    "item": "witchersbestiary:bear_enhanced_boots"
+  },
+  "addition": {
+    "item": "witchersbestiary:gravebound_steel_fragment"
+  },
+  "result": {
+    "id": "witchersbestiary:bear_mastercrafted_boots"
+  }
+}

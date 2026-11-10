@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  },
+  "base": {
+    "item": "witchersbestiary:bear_helmet"
+  },
+  "addition": {
+    "item": "witchersbestiary:venom_gland"
+  },
+  "result": {
+    "id": "witchersbestiary:bear_enhanced_helmet"
+  }
+}

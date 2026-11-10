@@ -32,6 +32,7 @@ public final class WitchersBestiary implements ModInitializer {
         com.witchersbestiary.artifact.ModArtifacts.initialize();
         com.witchersbestiary.workshop.ModWorkshop.initialize();
         ModItems.initialize();
+        com.witchersbestiary.equipment.armory.SchoolArmor.initialize();
         com.witchersbestiary.signs.SignLessonItem.initialize();
         com.witchersbestiary.signs.SignManager.initialize();
         com.witchersbestiary.sorcery.Sorcery.initialize();

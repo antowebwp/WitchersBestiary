@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": {
+    "item": "minecraft:netherite_upgrade_smithing_template"
+  },
+  "base": {
+    "item": "witchersbestiary:cat_chestplate"
+  },
+  "addition": {
+    "item": "witchersbestiary:venom_gland"
+  },
+  "result": {
+    "id": "witchersbestiary:cat_enhanced_chestplate"
+  }
+}

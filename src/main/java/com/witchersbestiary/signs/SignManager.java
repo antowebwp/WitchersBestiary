@@ -1,4 +1,5 @@
 package com.witchersbestiary.signs;
+import com.witchersbestiary.equipment.armory.SchoolArmor;
 import java.util.*;import net.minecraft.server.network.ServerPlayerEntity;import net.minecraft.server.world.ServerWorld;import net.minecraft.entity.*;import net.minecraft.entity.mob.*;import net.minecraft.entity.passive.*;import net.minecraft.entity.effect.*;import net.minecraft.entity.damage.*;import net.minecraft.registry.*;import net.minecraft.registry.tag.DamageTypeTags;import net.minecraft.util.*;import net.minecraft.util.math.*;import net.minecraft.particle.*;import net.minecraft.sound.*;import net.minecraft.text.Text;import net.fabricmc.fabric.api.networking.v1.*;import net.fabricmc.fabric.api.event.lifecycle.v1.*;
 public final class SignManager {
  public static final RegistryKey<DamageType> DAMAGE=RegistryKey.of(RegistryKeys.DAMAGE_TYPE,Identifier.of("witchersbestiary:sign"));
@@ -13,7 +14,7 @@ public final class SignManager {
  public static boolean yrdenExposed(LivingEntity e){return EXPOSED.getOrDefault(e.getUuid(),Long.MIN_VALUE)>e.getWorld().getTime();}
  private record Redirect(UUID owner,UUID target,long until){}
  private static final Map<UUID,Redirect> REDIRECTS=new HashMap<>();
- private static final class Runtime {UUID session=UUID.randomUUID();long sequence=-1;int requestWindow,requests;float shield;int shieldTicks,trapTicks;Vec3d trap;List<Vec3d> traps=List.of();int trapForm,shieldForm,breathTicks;RegistryKey<net.minecraft.world.World> dimension;}
+ private static final class Runtime {UUID session=UUID.randomUUID();long sequence=-1;int requestWindow,requests;float shield;int shieldTicks,trapTicks;Vec3d trap;List<Vec3d> traps=List.of();int trapForm,shieldForm,breathTicks;float trapDamageMultiplier=1,breathDamageMultiplier=1;RegistryKey<net.minecraft.world.World> dimension;}
  private static Runtime runtime(ServerPlayerEntity p){var r=ACTIVE.computeIfAbsent(p.getUuid(),k->new Runtime());var dimension=p.getWorld().getRegistryKey();if(r.dimension!=null&&r.dimension!=dimension){r.shield=0;r.shieldTicks=0;r.trapTicks=0;r.trap=null;r.breathTicks=0;clearBurns(p.getServer(),p.getUuid());}r.dimension=dimension;return r;}
  public static SignPlayerState state(ServerPlayerEntity p){return SignLedger.get(p.getServer()).player(p.getUuid());}
  public static boolean calmed(LivingEntity e){Long until=CALM.get(e.getUuid());return until!=null&&until>e.getWorld().getTime();}
@@ -74,7 +75,7 @@ public final class SignManager {
   ServerPlayNetworking.send(p,new SignPackets.Mastery(player.points(),values));
  }
  private static int level(ServerPlayerEntity p,SignType sign,SignPlayerState.Upgrade node){return state(p).level(sign,node);}
- private static double range(ServerPlayerEntity p,SignType sign){return sign.range+.35*level(p,sign,SignPlayerState.Upgrade.RANGE);}
+ private static double range(ServerPlayerEntity p,SignType sign){return (sign.range+.35*level(p,sign,SignPlayerState.Upgrade.RANGE))*SchoolArmor.signRange(p);}
  private static List<LivingEntity> targets(ServerPlayerEntity p,SignType sign,double radius,double angle,boolean ground){
   var origin=p.getEyePos();var look=p.getRotationVec(1);
   var found=p.getServerWorld().getEntitiesByClass(LivingEntity.class,p.getBoundingBox().expand(radius),e->enemy(p,e)
@@ -95,19 +96,20 @@ public final class SignManager {
   if(sign==SignType.YRDEN&&!validTrap(w,trap))return false;
   if(!player.commit(sign,request,form))return false;
   SignLedger.get(p.getServer()).markDirty();r.dimension=w.getRegistryKey();p.swingHand(Hand.OFF_HAND,true);
+  float combo=targets.isEmpty()&&sign!=SignType.QUEN&&sign!=SignType.YRDEN&&!(sign==SignType.IGNI&&form==2) ? 1 : SchoolArmor.signCombo(p);
   int duration=level(p,sign,SignPlayerState.Upgrade.DURATION);
   int power=level(p,sign,SignPlayerState.Upgrade.POWER),effect=level(p,sign,SignPlayerState.Upgrade.EFFECT);
   switch(sign){
    case IGNI,AARD->{
-    float damage=(sign==SignType.IGNI?6.24f:1.44f)*(1+.1f*power);
-    if(sign==SignType.IGNI&&form==2){r.breathTicks=24+duration*4;damage*=.42f;}
+    float damage=(sign==SignType.IGNI?6.24f:1.44f)*(1+.1f*power)*SchoolArmor.signDamage(p)*combo;
+    if(sign==SignType.IGNI&&form==2){r.breathTicks=24+duration*4;r.breathDamageMultiplier=SchoolArmor.signDamage(p)*combo;damage*=.42f;}
     for(var target:targets.stream().limit(12).toList())hit(p,target,sign,form,damage,duration,effect);
     if(form==1)for(int i=0;i<16;i++){double a=i*Math.PI/8;burst(w,p.getPos().add(2*Math.cos(a),.65,2*Math.sin(a)),sign,1);}
     else coneParticles(w,sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos(),p.getRotationVec(1),sign);
    }
-   case QUEN->{r.shield=12+power*2;r.shieldTicks=240+duration*20;r.shieldForm=form;burst(w,p.getPos().add(0,1,0),sign,16);}
+   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;burst(w,p.getPos().add(0,1,0),sign,16);}
    case YRDEN->{
-    r.trap=trap;r.trapForm=form;r.trapTicks=200+duration*20;
+    r.trap=trap;r.trapForm=form;r.trapDamageMultiplier=SchoolArmor.signDamage(p)*combo;r.trapTicks=Math.round((200+duration*20)*combo);
     var centers=new ArrayList<Vec3d>();centers.add(trap);
     if(form==2)for(int side:new int[]{-1,1}){var edge=trap.add(p.getRotationVec(1).multiply(1,0,1).normalize().rotateY((float)(side*Math.PI/2)).multiply(2.7));if(validTrap(w,edge))centers.add(edge);}
     r.traps=List.copyOf(centers);
@@ -116,7 +118,7 @@ public final class SignManager {
     int count=form==0||form==2?1:Math.min(6,targets.size());
     for(int i=0;i<count;i++){
      var target=(MobEntity)targets.get(i);awardCombat(p,target);
-     long until=w.getTime()+(large(target)?30:sign.duration+duration*15+effect*6);
+     long until=w.getTime()+(large(target)?30:Math.round((sign.duration+duration*15+effect*6)*combo));
      MobEntity redirected=null;
      if((form==2||form==3)&&!large(target)){
       final int index=i;
@@ -207,7 +209,7 @@ public final class SignManager {
  }
  public static void sync(ServerPlayerEntity p){if(!ServerPlayNetworking.canSend(p,SignPackets.View.ID))return;var s=state(p);var r=runtime(p);ServerPlayNetworking.send(p,new SignPackets.View(r.session,s.learned(),s.selected().ordinal(),(float)s.concentration(),s.cooldown(s.selected()),r.shield,r.shieldTicks,r.trapTicks,s.cooldown(SignType.IGNI),s.cooldown(SignType.AARD),s.cooldown(SignType.QUEN),s.cooldown(SignType.YRDEN),s.cooldown(SignType.AXII)));}
  private static void tickTrap(ServerPlayerEntity player,Runtime runtime){
-  var world=player.getServerWorld();double radius=(runtime.trapForm==2?1.85:3)+.35*level(player,SignType.YRDEN,SignPlayerState.Upgrade.RANGE);
+  var world=player.getServerWorld();double radius=((runtime.trapForm==2?1.85:3)+.35*level(player,SignType.YRDEN,SignPlayerState.Upgrade.RANGE))*SchoolArmor.signRange(player);
   int effect=level(player,SignType.YRDEN,SignPlayerState.Upgrade.EFFECT);
   for(var center:runtime.traps){
    for(var target:world.getEntitiesByClass(LivingEntity.class,new Box(center.add(-radius,-1,-radius),center.add(radius,3,radius)),
@@ -216,7 +218,7 @@ public final class SignManager {
     var hit=TRAP_HITS.get(target.getUuid());
     if(hit==null||hit.dimension()!=world.getRegistryKey()||hit.next()<=world.getTime()){
      TRAP_HITS.put(target.getUuid(),new TrapHit(world.getRegistryKey(),world.getTime()+40));
-     if(target.damage(source(player,SignType.YRDEN),(runtime.trapForm==3?2:1)+.25f*level(player,SignType.YRDEN,SignPlayerState.Upgrade.POWER)))awardCombat(player,target);
+     if(target.damage(source(player,SignType.YRDEN),((runtime.trapForm==3?2:1)+.25f*level(player,SignType.YRDEN,SignPlayerState.Upgrade.POWER))*runtime.trapDamageMultiplier))awardCombat(player,target);
     }
     if(target instanceof com.witchersbestiary.combat.CategorizedMonster monster&&monster.getMonsterCategory()==com.witchersbestiary.combat.MonsterCategory.SPECTER)EXPOSED.put(target.getUuid(),world.getTime()+15);
    }
@@ -236,14 +238,14 @@ public final class SignManager {
  }
  private static void tick(net.minecraft.server.MinecraftServer server){
   for(var player:server.getPlayerManager().getPlayerList()){
-   var runtime=runtime(player);state(player).tick();
+   var runtime=runtime(player);state(player).tick(1+.15*SchoolArmor.fraction(player,SchoolArmor.School.GRIFFIN));
    if(!allowed(player)){runtime.shield=0;runtime.shieldTicks=0;runtime.trapTicks=0;runtime.breathTicks=0;}
    if(runtime.shieldTicks>0&&--runtime.shieldTicks==0)runtime.shield=0;
    if(runtime.trapTicks>0){runtime.trapTicks--;if(server.getTicks()%10==0)tickTrap(player,runtime);}
    if(runtime.breathTicks>0&&--runtime.breathTicks%6==0){
     int power=level(player,SignType.IGNI,SignPlayerState.Upgrade.POWER);
     for(var target:targets(player,SignType.IGNI,range(player,SignType.IGNI),37.5,false).stream().limit(12).toList())
-     hit(player,target,SignType.IGNI,2,1.8f+.2f*power,0,0);
+     hit(player,target,SignType.IGNI,2,(1.8f+.2f*power)*runtime.breathDamageMultiplier,0,0);
     coneParticles(player.getServerWorld(),player.getEyePos(),player.getRotationVec(1),SignType.IGNI);
    }
    if(server.getTicks()%10==0)sync(player);

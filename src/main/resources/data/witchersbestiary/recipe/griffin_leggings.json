@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "LTL",
+    "S S"
+  ],
+  "key": {
+    "L": {
+      "item": "minecraft:leather"
+    },
+    "S": {
+      "item": "minecraft:iron_ingot"
+    },
+    "T": {
+      "item": "witchersbestiary:griffin_feather"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:griffin_leggings"
+  }
+}
