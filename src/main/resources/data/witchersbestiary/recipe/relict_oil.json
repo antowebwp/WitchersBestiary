@@ -1,11 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
       "item": "witchersbestiary:forest_essence"
     },
     {
-      "item": "witchersbestiary:ancient_leshen_heart"
+      "item": "minecraft:poppy"
+    },
+    {
+      "item": "minecraft:brown_mushroom"
     },
     {
       "item": "minecraft:honeycomb"

@@ -3,19 +3,14 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "witchersbestiary:ogroid_essence"
+      "item": "minecraft:flint"
     },
     {
-      "item": "witchersbestiary:ogroid_essence"
+      "item": "minecraft:bone"
     },
-    [
-      {
-        "item": "witchersbestiary:ogroid_fang"
-      },
-      {
-        "item": "witchersbestiary:nekker_claw"
-      }
-    ],
+    {
+      "item": "minecraft:charcoal"
+    },
     {
       "item": "minecraft:honeycomb"
     },

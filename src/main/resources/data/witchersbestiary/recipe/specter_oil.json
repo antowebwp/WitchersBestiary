@@ -3,10 +3,13 @@
   "category": "misc",
   "ingredients": [
     {
-      "tag": "witchersbestiary:specter_essences"
+      "item": "minecraft:amethyst_shard"
     },
     {
-      "tag": "witchersbestiary:specter_remains"
+      "item": "minecraft:white_tulip"
+    },
+    {
+      "item": "minecraft:soul_sand"
     },
     {
       "item": "minecraft:honeycomb"

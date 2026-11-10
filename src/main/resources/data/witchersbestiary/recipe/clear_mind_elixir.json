@@ -3,10 +3,13 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "witchersbestiary:fiend_eye"
+      "item": "witchersbestiary:forest_essence"
     },
     {
-      "item": "witchersbestiary:forest_essence"
+      "item": "minecraft:honey_bottle"
+    },
+    {
+      "item": "minecraft:glow_berries"
     },
     {
       "item": "minecraft:glass_bottle"

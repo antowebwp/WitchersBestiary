@@ -83,7 +83,7 @@ public final class InfernalBasiliskEntity extends TameableEntity implements GeoE
     @Override public boolean canImmediatelyDespawn(double distance){return !isTamed()&&!hasCustomName();}
     @Override public boolean cannotDespawn(){return isTamed()||super.cannotDespawn();}
     @Override public boolean canTarget(LivingEntity target){return !isOwner(target)&&!(target instanceof TameableEntity pet&&isTamed()&&getOwnerUuid()!=null&&getOwnerUuid().equals(pet.getOwnerUuid()))&&super.canTarget(target);}
-    private long lastFeedTick=Long.MIN_VALUE;
+    private final com.witchersbestiary.entity.PetFeeding feedingCooldown = new com.witchersbestiary.entity.PetFeeding();
     public static int foodHealing(ItemStack stack){
         if(stack.isOf(Items.BLAZE_ROD))return 12;if(stack.isOf(Items.BLAZE_POWDER))return 8;
         if(stack.isIn(net.minecraft.registry.tag.TagKey.of(net.minecraft.registry.RegistryKeys.ITEM,net.minecraft.util.Identifier.of("witchersbestiary","basilisk_cooked_meat"))))return 6;
@@ -93,20 +93,8 @@ public final class InfernalBasiliskEntity extends TameableEntity implements GeoE
     @Override public ActionResult interactMob(PlayerEntity player,Hand hand){
         var stack=player.getStackInHand(hand);
         if(isTamed()&&isOwner(player)){
-            int healing=foodHealing(stack);
-            if(healing>0){
-                if(hand==Hand.OFF_HAND&&foodHealing(player.getMainHandStack())>0)return ActionResult.PASS;
-                if(!getWorld().isClient&&getHealth()<getMaxHealth()&&lastFeedTick!=getWorld().getTime()){
-                    float before=getHealth();heal(healing);
-                    if(getHealth()>before){
-                        lastFeedTick=getWorld().getTime();if(!player.isCreative())stack.decrement(1);
-                        playSound(SoundEvents.ENTITY_GENERIC_EAT,.7f,.75f);
-                    }
-                }
-                return ActionResult.success(getWorld().isClient);
-            }
-            // Let the normal second-hand pass feed before an empty-main-hand mount/mode action.
-            if(hand==Hand.MAIN_HAND&&stack.isEmpty()&&foodHealing(player.getOffHandStack())>0)return ActionResult.PASS;
+            var feeding=feedingCooldown.interact(this,player,hand,getOwnerUuid(),InfernalBasiliskEntity::foodHealing);
+            if(feeding!=null)return feeding;
         }
         if(hand!=Hand.MAIN_HAND)return ActionResult.PASS;
         if(!isTamed()&&stack.isOf(ModItems.MOLTEN_HEART)){

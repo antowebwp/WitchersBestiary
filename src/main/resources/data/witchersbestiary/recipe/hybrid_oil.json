@@ -3,13 +3,13 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "witchersbestiary:hybrid_essence"
+      "item": "minecraft:feather"
     },
     {
-      "item": "witchersbestiary:griffin_feather"
+      "item": "minecraft:rabbit_hide"
     },
     {
-      "item": "witchersbestiary:griffin_claw"
+      "item": "minecraft:wheat_seeds"
     },
     {
       "item": "minecraft:honeycomb"

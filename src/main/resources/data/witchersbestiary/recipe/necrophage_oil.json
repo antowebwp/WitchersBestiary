@@ -1,11 +1,15 @@
 {
   "type": "minecraft:crafting_shapeless",
+  "category": "misc",
   "ingredients": [
     {
-      "item": "witchersbestiary:drowner_essence"
+      "item": "minecraft:rotten_flesh"
     },
     {
-      "item": "witchersbestiary:drowner_claw"
+      "item": "minecraft:red_mushroom"
+    },
+    {
+      "item": "minecraft:bone_meal"
     },
     {
       "item": "minecraft:honeycomb"

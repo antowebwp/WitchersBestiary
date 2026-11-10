@@ -13,6 +13,38 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 
 public final class UnicornTests implements FabricGameTest {
+    @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
+    public void ownerFeedingSpendsOneAndPreservesMount(TestContext c) {
+        var world=c.getWorld();
+        var at=c.getAbsolutePos(new BlockPos(1,2,1));
+        var owner=c.createMockCreativeServerPlayerInWorld();
+        var stranger=c.createMockCreativeServerPlayerInWorld();
+        owner.changeGameMode(GameMode.SURVIVAL);
+        var horse=Unicorns.TYPE.create(world);
+        for(var entity:java.util.List.of(horse,owner,stranger))
+            entity.refreshPositionAndAngles(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
+        horse.bondWithPlayer(owner);
+        world.spawnEntity(horse);
+        horse.saddle(new ItemStack(Items.SADDLE),null);
+        var food=new ItemStack(Items.CARROT,3);
+        owner.setStackInHand(Hand.MAIN_HAND,food);
+        horse.interactMob(owner,Hand.MAIN_HAND);
+        c.assertTrue(food.getCount()==3&&!owner.hasVehicle(),"Full health does not spend food or accidentally mount");
+        horse.setHealth(horse.getMaxHealth()-9);
+        float before=horse.getHealth();
+        stranger.setStackInHand(Hand.MAIN_HAND,new ItemStack(Items.CARROT));
+        horse.interactMob(stranger,Hand.MAIN_HAND);
+        c.assertTrue(horse.getHealth()==before,"Stranger cannot feed");
+        horse.interactMob(owner,Hand.MAIN_HAND);
+        c.assertTrue(horse.getHealth()==before+4&&food.getCount()==(owner.isCreative()?3:2),"One carrot restores four HP");
+        horse.interactMob(owner,Hand.MAIN_HAND);
+        c.assertTrue(horse.getHealth()==before+4&&food.getCount()==(owner.isCreative()?3:2),"Cooldown rejects duplicate feeding");
+        owner.setStackInHand(Hand.MAIN_HAND,ItemStack.EMPTY);
+        horse.interactMob(owner,Hand.MAIN_HAND);
+        c.assertTrue(owner.getVehicle()==horse,"Empty hand still mounts");
+        owner.stopRiding();horse.discard();owner.discard();stranger.discard();c.complete();
+    }
+
     @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE, tickLimit=30)
     public void ownershipRidingRecoveryAndSave(TestContext c) {
         var world=c.getWorld();

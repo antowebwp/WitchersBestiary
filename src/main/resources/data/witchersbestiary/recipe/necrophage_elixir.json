@@ -3,19 +3,16 @@
   "category": "misc",
   "ingredients": [
     {
-      "tag": "witchersbestiary:monster_essences"
-    },
-    {
-      "tag": "witchersbestiary:monster_essences"
-    },
-    {
       "item": "minecraft:rotten_flesh"
     },
     {
-      "item": "minecraft:glass_bottle"
+      "item": "minecraft:brown_mushroom"
     },
     {
       "item": "witchersbestiary:bone_dust"
+    },
+    {
+      "item": "minecraft:glass_bottle"
     }
   ],
   "result": {

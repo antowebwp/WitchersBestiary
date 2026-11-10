@@ -109,6 +109,7 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
         if (!(entity instanceof PlayerEntity player && ownedBy(player))) super.pushAwayFrom(entity);
     }
 
+    private final com.witchersbestiary.entity.PetFeeding feedingCooldown = new com.witchersbestiary.entity.PetFeeding();
     @Override public ActionResult interactMob(PlayerEntity player, Hand hand) {
         var food = player.getStackInHand(hand);
         boolean meat = food.isOf(Items.BEEF) || food.isOf(Items.PORKCHOP) || food.isOf(Items.MUTTON);
@@ -133,6 +134,11 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
             return ActionResult.success(getWorld().isClient);
         }
         if (!canAccess(player)) return ActionResult.PASS;
+        if (!player.isSneaking()) {
+            var feeding = feedingCooldown.interact(this, player, hand, getOwnerUuid(),
+                com.witchersbestiary.entity.PetFeeding::meat);
+            if (feeding != null) return feeding;
+        }
         if (player.isSneaking()) {
             if (player instanceof ServerPlayerEntity serverPlayer) {
                 serverPlayer.openHandledScreen(new ExtendedScreenHandlerFactory<Integer>() {

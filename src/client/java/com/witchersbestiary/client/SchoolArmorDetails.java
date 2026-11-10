@@ -19,7 +19,7 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         super(context);
         for(var school:SchoolArmor.School.values())for(int slim=0;slim<2;slim++)
             for(int tier=0;tier<3;tier++)
-                models[school.ordinal()][slim][tier]=bake(school,slim!=0,tier);
+                models[school.ordinal()][slim][tier]=tier==0?bake(school,slim!=0,tier):bakeAdvanced(school,slim!=0,tier);
     }
 
     private static void box(ModelPartBuilder part,int material,float x,float y,float z,float w,float h,float d){
@@ -132,6 +132,86 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
                         .6f+feather*.92f,.64f,1.72f+feather*.22f,2.55f,-.44f,side*.26f);
             }
         }
+    }
+
+    private static ModelPart[] bakeAdvanced(SchoolArmor.School school, boolean slim, int tier){
+        var data=new ModelData();
+        var root=data.getRoot();
+        boolean master=tier==2, bear=school==SchoolArmor.School.BEAR, cat=school==SchoolArmor.School.CAT;
+        int armor=cat?LEATHER:STEEL, edge=bear?LINING:TRIM;
+        float width=bear?9.2f:cat?8.15f:8.75f;
+        var torso=child(root,"torso",ModelPartBuilder.create());
+        angled(torso,"foundation",armor,0,4.7f,0,width,8.2f,8.95f,0,0);
+        if(bear){
+            for(int row=0;row<3;row++){
+                angled(torso,"rib"+row,STEEL,0,2.7f+row*2.07f,-4.71f,width-row*.64f,1.95f,1.75f,-.15f,0);
+                angled(torso,"backRib"+row,STEEL,0,3.2f+row*2.05f,4.55f,width-.75f-row*.38f,1.76f,1.1f,.17f,0);
+            }
+            for(int lock=-2;lock<=2;lock++){
+                float drop=master?3.65f:2.4f;
+                angled(torso,"mantle"+lock,LINING,lock*1.6f,1.05f,4.57f,1.9f,drop-Math.abs(lock)*.32f,2.1f,.23f,lock*.13f);
+            }
+        }else if(cat){
+            for(int row=0;row<4;row++){
+                angled(torso,"leatherFold"+row,row==0?CLOTH:LEATHER,0,2.0f+row*1.52f,-4.5f,7.8f-row*.55f,1.72f,.94f,-.19f,.09f);
+                angled(torso,"backFold"+row,LEATHER,0,2.3f+row*1.45f,4.43f,7.5f-row*.38f,1.29f,.92f,.11f,-.09f);
+            }
+            angled(torso,"scarf",CLOTH,0,.84f,0,8.15f,1.75f,9.35f,0,.08f);
+        }else{
+            for(int side:new int[]{-1,1}){
+                angled(torso,"breast"+side,STEEL,side*1.94f,3.45f,-4.81f,4.03f,5.13f,1.35f,-.14f,side*.18f);
+                angled(torso,"backShield"+side,STEEL,side*1.97f,4.2f,4.54f,3.91f,5.9f,1.28f,.15f,-side*.10f);
+            }
+            angled(torso,"keel",TRIM,0,4.45f,-5.6f,1.45f,4.73f,.78f,-.13f,0);
+        }
+        angled(torso,"girdle",LEATHER,0,8.96f,0,width+.22f,1.44f,9.35f,0,0);
+        angled(torso,"clasp",TRIM,0,8.98f,-4.93f,1.86f,1.46f,.86f,0,0);
+        if(master){
+            float panelWidth=bear?5.48f:cat?2.48f:4.15f;
+            float panelX=cat?2.16f:0;
+            angled(torso,"rearPanel",CLOTH,panelX,7.62f,5.05f,panelWidth,7.72f,.86f,.12f,cat?-.13f:0);
+            angled(torso,"rearPanelTrim",edge,panelX,11.17f,5.61f,panelWidth,.67f,.48f,0,cat?-.13f:0);
+            angled(torso,"upperKeel",cat?STEEL:TRIM,0,2.8f,-5.59f,bear?4.12f:cat?2.05f:3.61f,2.1f,1.21f,-.12f,.12f);
+            angled(torso,"lumbarShell",armor,0,7.31f,4.97f,width-.39f,2.1f,1.38f,.14f,0);
+        }
+        var helmet=child(root,"helmet",ModelPartBuilder.create());
+        helmetShell(helmet,school,tier);
+        angled(helmet,"visor",cat?CLOTH:STEEL,0,-6.52f,-4.97f,bear?8.94f:8.52f,1.66f,1.23f,-.16f,0);
+        for(int side=0;side<2;side++){
+            float sign=side==0?-1:1;
+            float axis=sign*(slim?.5f:1);
+            float shoulder=bear?(master?6.9f:6.05f):cat?(side==0&&master?5.32f:4.24f):master?6.18f:5.45f;
+            var arm=child(root,"arm"+side,ModelPartBuilder.create());
+            for(int layer=0;layer<(master?3:2);layer++)
+                angled(arm,"shoulder"+layer,layer==0&&bear?LINING:armor,axis+sign*(.38f+layer*.23f),
+                    -2.18f+layer*1.52f,.03f,shoulder-layer*.42f,1.46f,5.88f-layer*.15f,0,sign*(.15f+layer*.08f));
+            angled(arm,"vambrace",armor,axis,6.14f,-.02f,cat?4.85f:5.53f,3.68f,5.86f,0,sign*.08f);
+            angled(arm,"braceEdge",edge,axis,7.67f,0,cat?5.04f:5.72f,.65f,6.12f,0,sign*.08f);
+            if(master)angled(arm,"outerShield",STEEL,axis+sign*1.98f,5.69f,-.53f,1.43f,3.41f,4.64f,-.12f,sign*.14f);
+
+            var thigh=child(root,"thigh"+side,ModelPartBuilder.create());
+            angled(thigh,"cuisse",cat?LEATHER:STEEL,0,2.55f,0,4.1f,5.02f,6.14f,0,0);
+            angled(thigh,"tasset",armor,sign*.84f,2.52f,-2.78f,2.97f,4.55f,1.31f,-.13f,sign*.13f);
+            angled(thigh,"rearGuard",armor,0,4.49f,2.98f,3.78f,3.62f,1.05f,.17f,0);
+            angled(thigh,"knee",STEEL,0,5.8f,-3.28f,cat?3.02f:3.82f,2.17f,1.55f,-.13f,0);
+            angled(thigh,"kneeStrap",LEATHER,0,5.87f,.19f,4.21f,.65f,6.28f,0,0);
+            if(master)angled(thigh,"sideShield",armor,sign*2.05f,4.03f,0,1.36f,4.7f,6.29f,0,sign*.12f);
+
+            var boot=child(root,"boot"+side,ModelPartBuilder.create());
+            angled(boot,"bootBody",LEATHER,0,10.42f,-.24f,4.6f,3.61f,6.18f,0,0);
+            angled(boot,"heelCup",armor,0,10.39f,2.64f,4.49f,2.62f,1.45f,.10f,0);
+            angled(boot,"toeCap",STEEL,0,11.02f,-3.02f,4.52f,2.07f,2.05f,-.12f,0);
+            angled(boot,"sole",LEATHER,0,11.82f,-.45f,4.79f,.65f,7.33f,0,0);
+            for(int layer=0;layer<(master?3:2);layer++)
+                angled(boot,"greave"+layer,layer==0?edge:armor,0,8.28f+layer*.82f,-2.91f+layer*.13f,4.32f-layer*.17f,.84f,1.02f,.15f,0);
+        }
+        return parts(data);
+    }
+
+    private static ModelPart[] parts(ModelData data){
+        var model=TexturedModelData.of(data,64,96).createModel();
+        return java.util.stream.Stream.of("torso","arm0","arm1","thigh0","thigh1","boot0","boot1","helmet")
+            .map(model::getChild).toArray(ModelPart[]::new);
     }
 
     private static ModelPart[] bake(SchoolArmor.School school,boolean slim,int tier){
@@ -256,9 +336,7 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
                 angled(bootPart,"toeRidge",cat?LEATHER:TRIM,0,11.04f,bear?-4.13f:-3.98f,bear?3.95f:3.25f,.7f,.88f,-.25f,0);
             }
         }
-        var model=TexturedModelData.of(data,64,96).createModel();
-        return java.util.stream.Stream.of("torso","arm0","arm1","thigh0","thigh1","boot0","boot1","helmet")
-            .map(model::getChild).toArray(ModelPart[]::new);
+        return parts(data);
     }
 
     @Override public void render(MatrixStack matrices,VertexConsumerProvider buffers,int light,AbstractClientPlayerEntity player,

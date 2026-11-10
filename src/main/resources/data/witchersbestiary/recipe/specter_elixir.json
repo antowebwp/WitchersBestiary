@@ -3,13 +3,13 @@
   "category": "misc",
   "ingredients": [
     {
-      "tag": "witchersbestiary:specter_essences"
+      "item": "minecraft:amethyst_shard"
     },
     {
-      "tag": "witchersbestiary:specter_essences"
+      "item": "minecraft:glowstone_dust"
     },
     {
-      "tag": "witchersbestiary:specter_remains"
+      "item": "minecraft:soul_sand"
     },
     {
       "item": "minecraft:glass_bottle"

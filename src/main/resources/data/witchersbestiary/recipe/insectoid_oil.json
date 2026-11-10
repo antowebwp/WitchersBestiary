@@ -3,13 +3,13 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "witchersbestiary:endrega_essence"
+      "item": "minecraft:spider_eye"
     },
     {
-      "item": "witchersbestiary:chitin_plate"
+      "item": "minecraft:string"
     },
     {
-      "item": "witchersbestiary:venom_gland"
+      "item": "minecraft:brown_mushroom"
     },
     {
       "item": "minecraft:honeycomb"

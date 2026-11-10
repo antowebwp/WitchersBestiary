@@ -86,6 +86,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     public byte gait() { return dataTracker.get(GAIT); }
     public boolean waiting() { return waiting; }
 
+    private final com.witchersbestiary.entity.PetFeeding feedingCooldown = new com.witchersbestiary.entity.PetFeeding();
     @Override public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
         if (recovering()) return ActionResult.PASS;
@@ -104,12 +105,18 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             return ActionResult.success(getWorld().isClient);
         }
         if (!player.getUuid().equals(getOwnerUuid())) return ActionResult.PASS;
+        if (!player.isSneaking()) {
+            var feeding = feedingCooldown.interact(this, player, hand, getOwnerUuid(),
+                food -> food.isOf(Items.GOLDEN_APPLE) ? 8 : food.isOf(Items.GOLDEN_CARROT) ? 6 :
+                    food.isOf(Items.APPLE) || food.isOf(Items.CARROT) ? 4 : 0);
+            if (feeding != null) return feeding;
+        }
         if (player.isSneaking() && stack.isEmpty()) {
             if (!getWorld().isClient) {
                 waiting = !waiting;
                 getNavigation().stop();
                 player.sendMessage(Text.translatable("unicorn.witchersbestiary." + (waiting ? "wait" : "follow"))
-                    .append(" · ").append(speedStatus()), true);
+                    .append(" В· ").append(speedStatus()), true);
             }
             return ActionResult.success(getWorld().isClient);
         }
@@ -197,7 +204,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private Text speedStatus() {
         var status = Text.translatable("unicorn.witchersbestiary.speed", speedLevel, MAX_SPEED_LEVEL);
         if (speedLevel < MAX_SPEED_LEVEL) {
-            status.append(" · ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
+            status.append(" В· ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
                 (int) ridingDistance, distanceForLevel(speedLevel)));
         }
         return status;
