@@ -23,14 +23,15 @@ final class SchoolArmorTooltip {
             var player=MinecraftClient.getInstance().player;
             int pieces=player==null?0:SchoolArmor.equippedPieces(player,school);
             boolean suspended=player!=null&&FistClient.status()!=null;
+            float average=pieces==0?armor.tier():SchoolArmor.averageTier(player,school);
             float bonus=suspended?0:SchoolArmor.fraction(pieces);
             if(player!=null)lines.add(Text.translatable(KEY+"pieces",pieces).formatted(suspended?Formatting.GRAY:color));
             if(suspended)lines.add(Text.translatable(KEY+"paused").formatted(Formatting.GRAY));
-            lines.add(Text.translatable(KEY+"partial",percent(school.monsterReduction,bonus)).formatted(bonus>0?Formatting.GREEN:Formatting.GRAY));
+            lines.add(Text.translatable(KEY+"partial",percent(SchoolArmor.monsterReduction(school,average),bonus)).formatted(bonus>0?Formatting.GREEN:Formatting.GRAY));
             if(school.swordDamage>0)
-                lines.add(Text.translatable(KEY+"sword",percent(school.swordDamage,bonus)).formatted(bonus>0?Formatting.GREEN:Formatting.GRAY));
+                lines.add(Text.translatable(KEY+"sword",percent(SchoolArmor.swordDamage(school,average),bonus)).formatted(bonus>0?Formatting.GREEN:Formatting.GRAY));
             else lines.add(Text.translatable(KEY+"signs",percent(SchoolArmor.SIGN_RANGE,bonus),
-                percent(SchoolArmor.SIGN_DAMAGE,bonus)).formatted(bonus>0?Formatting.GREEN:Formatting.GRAY));
+                percent(SchoolArmor.signDamageBonus(average),bonus)).formatted(bonus>0?Formatting.GREEN:Formatting.GRAY));
             String id=school.name().toLowerCase(Locale.ROOT);
             lines.add(Text.translatable(KEY+"full",Text.translatable(KEY+id+".effect"))
                 .formatted(pieces==4&&!suspended?Formatting.GREEN:Formatting.GRAY));
@@ -41,11 +42,11 @@ final class SchoolArmorTooltip {
             lines.add(Text.translatable(KEY+"thresholds",Math.round(SchoolArmor.fraction(2)*100),
                 Math.round(SchoolArmor.fraction(3)*100),Math.round(SchoolArmor.fraction(4)*100)).formatted(Formatting.GRAY));
             var detail=switch(school){
-                case BEAR->Text.translatable(KEY+id+".detail",SchoolArmor.BEAR_HIT,SchoolArmor.BEAR_GUARD,
+                case BEAR->Text.translatable(KEY+id+".detail",SchoolArmor.BEAR_HIT,percent(SchoolArmor.guardBonus(average),1),
                     SchoolArmor.BEAR_WINDOW/20,SchoolArmor.BEAR_READY/20);
-                case CAT->Text.translatable(KEY+id+".detail",SchoolArmor.CAT_DODGE,SchoolArmor.CAT_REPRISAL,
+                case CAT->Text.translatable(KEY+id+".detail",percent(SchoolArmor.dodgeChance(average),1),SchoolArmor.CAT_REPRISAL,
                     SchoolArmor.CAT_WINDOW/20,SchoolArmor.CAT_READY/20);
-                case GRIFFIN->Text.translatable(KEY+id+".detail",SchoolArmor.COMBO_CASTS,SchoolArmor.SIGN_COMBO);
+                case GRIFFIN->Text.translatable(KEY+id+".detail",SchoolArmor.COMBO_CASTS,percent(SchoolArmor.comboBonus(average),1));
             };
             lines.add(detail.formatted(Formatting.GRAY));
             lines.add(Text.translatable(KEY+"eligible").formatted(Formatting.DARK_GRAY));
@@ -53,7 +54,7 @@ final class SchoolArmorTooltip {
         });
     }
 
-    private static String percent(int max,float fraction){
+    private static String percent(float max,float fraction){
         return String.format(Locale.ROOT,"%.1f",max*fraction).replaceFirst("\\.0$","");
     }
 }

@@ -39,6 +39,14 @@ public final class SchoolArmorTests implements FabricGameTest {
                 float next=SchoolArmor.damage(player,world.getDamageSources().mobAttack(fiend),10);
                 c.assertTrue(Math.abs(incoming-7)<.001&&Math.abs(next-4.55f)<.001,"Bear defense and follow-up absorption");
             }
+            if(school==SchoolArmor.School.GRIFFIN){
+                player.equipStack(EquipmentSlot.HEAD,Registries.ITEM.get(Identifier.of("witchersbestiary:griffin_mastercrafted_helmet")).getDefaultStack());
+                player.equipStack(EquipmentSlot.CHEST,Registries.ITEM.get(Identifier.of("witchersbestiary:griffin_mastercrafted_chestplate")).getDefaultStack());
+                c.assertTrue(Math.abs(SchoolArmor.signDamage(player)-1.35f)<.001f,"Mixed armor grants 35 percent");
+                player.equipStack(EquipmentSlot.LEGS,Registries.ITEM.get(Identifier.of("witchersbestiary:griffin_mastercrafted_leggings")).getDefaultStack());
+                player.equipStack(EquipmentSlot.FEET,Registries.ITEM.get(Identifier.of("witchersbestiary:griffin_mastercrafted_boots")).getDefaultStack());
+                c.assertTrue(Math.abs(SchoolArmor.signDamage(player)-1.45f)<.001f,"Mastercrafted armor grants 45 percent");
+            }
             player.equipStack(EquipmentSlot.HEAD,Items.IRON_HELMET.getDefaultStack());
             c.assertTrue(SchoolArmor.pieces(player,school)==3&&SchoolArmor.fraction(player,school)==.7f,
                 "Equipment swap recomputes partial bonus");

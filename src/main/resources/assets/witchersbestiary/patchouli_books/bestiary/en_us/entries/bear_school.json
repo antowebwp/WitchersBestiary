@@ -5,11 +5,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Up to 30%% less monster damage and 5%% more sword damage against monsters. Full set: a hit of 8 HP arms 35%% reduction on the next eligible hit within 4 seconds, with an 8 second cooldown."
+      "text": "Basic set: 30%% less monster damage and 5%% more sword damage against monsters. Full set: a hit of 8 HP arms 35%% reduction on the next eligible hit within 4 seconds, with an 8 second cooldown."
     },
     {
       "type": "patchouli:text",
       "text": "Two pieces grant 40%% of the bonus, three grant 70%%, and four grant 100%% plus the full-set effect. Mix tiers freely. Official bouts suspend school bonuses. Hold Shift over a piece for details."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Monster damage reduction: 30 / 35 / 40%%. Guard: 35 / 40 / 45%%. Values are for Basic, Enhanced and Mastercrafted armor. Mixed tiers use their average."
     },
     {
       "type": "patchouli:crafting",

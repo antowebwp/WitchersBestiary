@@ -82,14 +82,38 @@ public final class SchoolArmor extends ArmorItem {
         return switch(pieces){case 2->.4f;case 3->.7f;case 4->1;default->0;};
     }
 
+    public static float averageTier(LivingEntity player, School school){
+        int total=0, count=0;
+        for(var slot:SLOTS){
+            if(player.getEquippedStack(slot).getItem() instanceof SchoolArmor armor && armor.school==school){
+                total+=armor.tier;
+                count++;
+            }
+        }
+        return count==0?0:(float)total/count;
+    }
+
+    public static float monsterReduction(School school,float tier){
+        return school.monsterReduction+(school==School.BEAR?5*tier:0);
+    }
+
+    public static float swordDamage(School school,float tier){
+        return school.swordDamage+(school==School.CAT?5*tier:0);
+    }
+
+    public static float signDamageBonus(float tier){return SIGN_DAMAGE+10*tier;}
+    public static float comboBonus(float tier){return SIGN_COMBO+5*tier;}
+    public static float guardBonus(float tier){return BEAR_GUARD+5*tier;}
+    public static float dodgeChance(float tier){return CAT_DODGE+3*tier;}
+
     public static float signRange(ServerPlayerEntity p){return 1+(SIGN_RANGE/100f)*fraction(p,School.GRIFFIN);}
-    public static float signDamage(ServerPlayerEntity p){return 1+(SIGN_DAMAGE/100f)*fraction(p,School.GRIFFIN);}
+    public static float signDamage(ServerPlayerEntity p){return 1+(signDamageBonus(averageTier(p,School.GRIFFIN))/100f)*fraction(p,School.GRIFFIN);}
     public static float signCombo(ServerPlayerEntity p){
         var state=STATES.computeIfAbsent(p,key->new State());
         if(pieces(p,School.GRIFFIN)!=4){state.casts=0;return 1;}
         if(++state.casts<COMBO_CASTS)return 1;
         state.casts=0;
-        return 1+SIGN_COMBO/100f;
+        return 1+comboBonus(averageTier(p,School.GRIFFIN))/100f;
     }
 
     public static float damage(LivingEntity victim, DamageSource source,float amount){
@@ -99,20 +123,20 @@ public final class SchoolArmor extends ArmorItem {
             var state=STATES.computeIfAbsent(p,key->new State());
             long now=p.getWorld().getTime();
             if(pieces(p,School.CAT)==4&&now>=state.catReady&&!p.blockedByShield(source)
-                &&p.timeUntilRegen<=10&&p.getRandom().nextFloat()<CAT_DODGE/100f){
+                &&p.timeUntilRegen<=10&&p.getRandom().nextFloat()<dodgeChance(averageTier(p,School.CAT))/100f){
                 state.catReady=now+CAT_READY;state.catUntil=now+CAT_WINDOW;return 0;
             }
             boolean bear=pieces(p,School.BEAR)==4;
-            if(bear&&state.bearUntil>now&&!p.blockedByShield(source)&&p.timeUntilRegen<=10){state.bearUntil=0;amount*=1-BEAR_GUARD/100f;}
+            if(bear&&state.bearUntil>now&&!p.blockedByShield(source)&&p.timeUntilRegen<=10){state.bearUntil=0;amount*=1-guardBonus(averageTier(p,School.BEAR))/100f;}
             else if(bear&&amount>=BEAR_HIT&&now>=state.bearReady&&!p.blockedByShield(source)&&p.timeUntilRegen<=10){
                 state.bearReady=now+BEAR_READY;state.bearUntil=now+BEAR_WINDOW;
             }
-            return amount*(1-(School.GRIFFIN.monsterReduction/100f)*fraction(p,School.GRIFFIN)-(School.BEAR.monsterReduction/100f)*fraction(p,School.BEAR)-(School.CAT.monsterReduction/100f)*fraction(p,School.CAT));
+            return amount*(1-(School.GRIFFIN.monsterReduction/100f)*fraction(p,School.GRIFFIN)-(monsterReduction(School.BEAR,averageTier(p,School.BEAR))/100f)*fraction(p,School.BEAR)-(School.CAT.monsterReduction/100f)*fraction(p,School.CAT));
         }
         if(victim instanceof CategorizedMonster&&(!(victim instanceof Tameable pet)||pet.getOwnerUuid()==null)
             &&source.getAttacker() instanceof ServerPlayerEntity p
             &&source.isOf(net.minecraft.entity.damage.DamageTypes.PLAYER_ATTACK)&&p.getMainHandStack().getItem() instanceof SwordItem){
-            amount*=1+(School.BEAR.swordDamage/100f)*fraction(p,School.BEAR)+(School.CAT.swordDamage/100f)*fraction(p,School.CAT);
+            amount*=1+(School.BEAR.swordDamage/100f)*fraction(p,School.BEAR)+(swordDamage(School.CAT,averageTier(p,School.CAT))/100f)*fraction(p,School.CAT);
             var state=STATES.get(p);
             if(state!=null&&pieces(p,School.CAT)==4&&state.catUntil>p.getWorld().getTime()&&p.canSee(victim)
                 &&!victim.blockedByShield(source)&&victim.timeUntilRegen<=10){

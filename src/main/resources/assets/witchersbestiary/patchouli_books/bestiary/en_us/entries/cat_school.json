@@ -5,11 +5,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Up to 8%% less monster damage and 20%% more sword damage. Full set: 12%% dodge chance and 25%% more damage on your next eligible sword hit within 6 seconds. Cooldown: 5 seconds."
+      "text": "Basic set: 8%% less monster damage and 20%% more sword damage. Full set: 12%% dodge chance and 25%% more damage on your next eligible sword hit within 6 seconds. Cooldown: 5 seconds."
     },
     {
       "type": "patchouli:text",
       "text": "Two pieces grant 40%% of the bonus, three grant 70%%, and four grant 100%% plus the full-set effect. Mix tiers freely. Official bouts suspend school bonuses. Hold Shift over a piece for details."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Sword damage: +20 / 25 / 30%%. Dodge chance: 12 / 15 / 18%%. Values are for Basic, Enhanced and Mastercrafted armor. Mixed tiers use their average."
     },
     {
       "type": "patchouli:crafting",

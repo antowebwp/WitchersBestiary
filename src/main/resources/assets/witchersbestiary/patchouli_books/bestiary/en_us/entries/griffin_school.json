@@ -5,11 +5,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Up to 12%% less monster damage, 15%% more sign range and 25%% more sign damage. Full set: every fourth eligible cast gains a 1.2 multiplier."
+      "text": "Basic set: 12%% less monster damage, 15%% more sign range and 25%% more sign damage. Full set: every fourth eligible cast gains a 1.2 multiplier."
     },
     {
       "type": "patchouli:text",
       "text": "Two pieces grant 40%% of the bonus, three grant 70%%, and four grant 100%% plus the full-set effect. Mix tiers freely. Official bouts suspend school bonuses. Hold Shift over a piece for details."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Sign damage: 25 / 35 / 45%%. Fourth eligible cast: +20 / 25 / 30%%. Values are for Basic, Enhanced and Mastercrafted armor. Mixed tiers use their average."
     },
     {
       "type": "patchouli:crafting",
