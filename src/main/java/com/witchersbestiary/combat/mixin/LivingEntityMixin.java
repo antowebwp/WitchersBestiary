@@ -63,7 +63,10 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
         amount=com.witchersbestiary.enchantment.SwordEnchantments.damage(enchantmentHit,amount);
         boolean result=original.call(source,AlchemyDamage.withOil(victim,source,amount,oil));
         float actual=Math.max(0,before-victim.getHealth());
-        if(result&&actual>0){com.witchersbestiary.alchemy.InventoryOils.commit(oil);com.witchersbestiary.accessory.HunterAccessories.afterDamage(victim,source,actual);}
+        if(result&&actual>0){com.witchersbestiary.alchemy.InventoryOils.commit(oil);
+            if(oil!=null&&victim instanceof com.witchersbestiary.entity.monster.HigherVampireEntity vampire)
+                vampire.suppressRegeneration(85);
+            com.witchersbestiary.accessory.HunterAccessories.afterDamage(victim,source,actual);}
         if(result)com.witchersbestiary.enchantment.SwordEnchantments.after(victim,enchantmentHit,actual+Math.max(0,absorption-victim.getAbsorptionAmount()));
         return result;
     }

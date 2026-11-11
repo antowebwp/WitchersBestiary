@@ -35,4 +35,78 @@ public final class HigherVampireTests implements FabricGameTest {
             context.complete();
         });
     }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 245)
+    public void advancesOnceAndPersistsDefeat(TestContext context) {
+        var world = context.getWorld();
+        var pos = context.getAbsolutePos(new BlockPos(4, 2, 4));
+        world.setBlockState(pos.down(), Blocks.STONE.getDefaultState());
+        var vampire = ModEntities.HIGHER_VAMPIRE.create(world);
+        vampire.refreshPositionAndAngles(pos.getX() + .5, pos.getY(), pos.getZ() + .5, 0, 0);
+        world.spawnEntity(vampire);
+        context.assertTrue(vampire.getMaxHealth() == 600, "Solo base health");
+        vampire.setHealth(390);
+
+        context.runAtTick(6, () -> context.assertTrue(vampire.isTransforming(), "65% triggers transition"));
+        context.runAtTick(85, () -> {
+            context.assertTrue(vampire.isHybrid() && !vampire.isFinalPhase(), "True combat form at 65%");
+            context.assertTrue(vampire.getHealth() == 390, "No phase heal");
+            vampire.setHealth(149);
+        });
+        context.runAtTick(90, () -> {
+            context.assertTrue(vampire.isFinalPhase(), "Final phase below 25%");
+            vampire.setHealth(170);
+            var target = net.minecraft.entity.EntityType.IRON_GOLEM.create(world);
+            target.refreshPositionAndAngles(pos.getX()+.5, pos.getY(), pos.getZ()+6.5, 180, 0);
+            vampire.setAiDisabled(true);
+            vampire.setTarget(target);
+            vampire.suppressRegeneration(75);
+        });
+        context.runAtTick(145, () -> context.assertTrue(vampire.getHealth() == 170, "Suppression postpones healing"));
+        context.runAtTick(170, () -> {
+            context.assertTrue(vampire.getHealth() == 173, "Regeneration restores three health per pulse");
+            vampire.setTarget(null);
+            context.assertTrue(vampire.isFinalPhase(), "Healing does not revert the phase");
+            vampire.damage(world.getDamageSources().genericKill(), 1000);
+            context.assertTrue(vampire.isDefeated() && vampire.getHealth() == 1, "Defeat retains the entity");
+            context.assertTrue(!vampire.damage(world.getDamageSources().mobAttack(vampire), 5), "Defeated entity is inert");
+            var saved = vampire.writeNbt(new net.minecraft.nbt.NbtCompound());
+            var loaded = ModEntities.HIGHER_VAMPIRE.create(world);
+            loaded.readNbt(saved);
+            context.assertTrue(loaded.isDefeated() && loaded.isHybrid(), "Defeat and form persist");
+            context.assertTrue(loaded.getUuid().equals(vampire.getUuid()), "UUID persists");
+            context.complete();
+        });
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 180)
+    public void closeAttacksHaveWindupAndRelease(TestContext context) {
+        var world = context.getWorld();
+        var pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
+        for (int x = -3; x <= 3; x++) for (int z = -3; z <= 3; z++) {
+            world.setBlockState(pos.add(x, -1, z), Blocks.STONE.getDefaultState());
+        }
+        var target = net.minecraft.entity.EntityType.IRON_GOLEM.create(world);
+        target.setAiDisabled(true);
+        target.refreshPositionAndAngles(pos.getX()+.5, pos.getY(), pos.getZ()+3.05, 180, 0);
+        world.spawnEntity(target);
+        float startingHealth = target.getHealth();
+        var vampire = ModEntities.HIGHER_VAMPIRE.create(world);
+        vampire.refreshPositionAndAngles(pos.getX()+.5, pos.getY(), pos.getZ()+.5, 0, 0);
+        world.spawnEntity(vampire);
+        vampire.setTarget(target);
+        boolean[] armed = {false}, damaged = {false};
+        context.runAtEveryTick(() -> {
+            String clip = vampire.activeCombatClip();
+            if (!armed[0] && clip.startsWith("claw")) {
+                context.assertTrue(target.getHealth() == startingHealth, "Claws do not hit on their first frame");
+                armed[0] = true;
+            }
+            if (armed[0] && target.getHealth() < startingHealth) damaged[0] = true;
+            if (damaged[0] && clip.isEmpty()) {
+                target.discard();
+                context.complete();
+            }
+        });
+    }
 }
