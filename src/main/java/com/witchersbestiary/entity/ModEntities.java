@@ -53,6 +53,7 @@ public final class ModEntities {
     public static final EntityType<WerewolfEntity> WEREWOLF=Registry.register(Registries.ENTITY_TYPE,Identifier.of(WitchersBestiary.MOD_ID,"werewolf"),
             EntityType.Builder.create(WerewolfEntity::new,SpawnGroup.MONSTER).dimensions(1.15f,2.8f).maxTrackingRange(12).build(WitchersBestiary.MOD_ID+":werewolf"));
 
+    public static final EntityType<com.witchersbestiary.entity.monster.HigherVampireEntity> HIGHER_VAMPIRE=Registry.register(Registries.ENTITY_TYPE,Identifier.of(WitchersBestiary.MOD_ID,"higher_vampire"),EntityType.Builder.create(com.witchersbestiary.entity.monster.HigherVampireEntity::new,SpawnGroup.MONSTER).dimensions(.68f,2.02f).maxTrackingRange(12).build(WitchersBestiary.MOD_ID+":higher_vampire"));
     public static final EntityType<com.witchersbestiary.entity.monster.KatakanEntity> KATAKAN=Registry.register(Registries.ENTITY_TYPE,Identifier.of(WitchersBestiary.MOD_ID,"katakan"),EntityType.Builder.create(com.witchersbestiary.entity.monster.KatakanEntity::new,SpawnGroup.MONSTER).dimensions(2.1f,2.6f).maxTrackingRange(12).build(WitchersBestiary.MOD_ID+":katakan"));
 
     public static final EntityType<com.witchersbestiary.entity.monster.WraithEntity> WRAITH=Registry.register(Registries.ENTITY_TYPE,Identifier.of(WitchersBestiary.MOD_ID,"wraith"),EntityType.Builder.create(com.witchersbestiary.entity.monster.WraithEntity::new,SpawnGroup.MONSTER).dimensions(.8f,2.7f).maxTrackingRange(12).build(WitchersBestiary.MOD_ID+":wraith"));
@@ -86,6 +87,8 @@ public final class ModEntities {
         FogletSpawns.initialize();
         NoonwraithSpawns.initialize();
         WerewolfSpawns.initialize();
+        FabricDefaultAttributeRegistry.register(HIGHER_VAMPIRE,com.witchersbestiary.entity.monster.HigherVampireEntity.createAttributes());
+        com.witchersbestiary.entity.monster.HigherVampireEntity.registerCommands();
         FabricDefaultAttributeRegistry.register(KATAKAN,com.witchersbestiary.entity.monster.KatakanEntity.createAttributes());
         com.witchersbestiary.world.KatakanSpawns.initialize();
     }

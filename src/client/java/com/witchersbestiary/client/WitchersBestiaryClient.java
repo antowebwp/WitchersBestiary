@@ -44,6 +44,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         EntityRendererRegistry.register(ModEntities.GRIFFIN,GriffinRenderer::new);
         EntityRendererRegistry.register(ModEntities.NEKKER,NekkerRenderer::new);
         EntityRendererRegistry.register(ModEntities.BONECRUSHER,BonecrusherRenderer::new);
+        EntityRendererRegistry.register(ModEntities.HIGHER_VAMPIRE,HigherVampireRenderer::new);
         EntityRendererRegistry.register(ModEntities.KATAKAN,KatakanRenderer::new);
         EntityRendererRegistry.register(ModEntities.WEREWOLF, WerewolfRenderer::new);
     }

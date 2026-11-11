@@ -885,5 +885,7 @@
   "tooltip.witchersbestiary.school_armor.cat.detail": "Шанс уклонения %s%%; следующий подходящий удар мечом получает +%s%% в течение %s с. Перезарядка: %s с.",
   "tooltip.witchersbestiary.school_armor.griffin.detail": "Каждое %s-е подходящее применение усиливается на %s%%.",
   "tooltip.witchersbestiary.school_armor.eligible": "Бонусы действуют против подходящих неприручённых чудовищ. Блок щитом и кадры неуязвимости могут помешать реакции.",
-  "tooltip.witchersbestiary.school_armor.tier_details": "Ступени можно смешивать. Улучшения повышают прочность и твёрдость брони. Зачарования показаны отдельно."
+  "tooltip.witchersbestiary.school_armor.tier_details": "Ступени можно смешивать. Улучшения повышают прочность и твёрдость брони. Зачарования показаны отдельно.",
+  "entity.witchersbestiary.higher_vampire": "Высший вампир",
+  "item.witchersbestiary.higher_vampire_spawn_egg": "Яйцо призыва высшего вампира"
 }

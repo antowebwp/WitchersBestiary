@@ -57,6 +57,7 @@ public final class ModItems {
     public static final Item VAMPIRE_FANG=register("vampire_fang",new com.witchersbestiary.accessory.HunterAccessoryItem(new Item.Settings().rarity(Rarity.RARE),"fang"));
     public static final Item VAMPIRE_ELIXIR=register("vampire_elixir",new HunterElixirItem(new Item.Settings().maxCount(16),ModEffects.VAMPIRE_HUNTER));
     public static final Item VAMPIRE_OIL=register("vampire_oil",new WeaponOilItem(new Item.Settings().maxCount(16),"vampire_oil",MonsterCategory.VAMPIRE));
+    public static final Item HIGHER_VAMPIRE_SPAWN_EGG=register("higher_vampire_spawn_egg",new SpawnEggItem(ModEntities.HIGHER_VAMPIRE,0x42343b,0x802f3d,new Item.Settings()));
     public static final Item KATAKAN_SPAWN_EGG=register("katakan_spawn_egg",new SpawnEggItem(ModEntities.KATAKAN,0x6b777e,0xcabc98,new Item.Settings()));
     public static final Item KATAKAN_ESSENCE=register("katakan_essence",new Item(new Item.Settings()));
     public static final Item KATAKAN_CLAW=register("katakan_claw",new Item(new Item.Settings()));
