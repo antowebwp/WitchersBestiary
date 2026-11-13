@@ -51,6 +51,7 @@ final class HigherVampireCombat {
     private final List<Shot> shots = new ArrayList<>();
     private Move action, last, follow;
     private LivingEntity victim, grabbed;
+    private Vec3d landingAim = Vec3d.ZERO;
     private Vec3d facing = Vec3d.ZERO, direction = Vec3d.ZERO;
     private int elapsed, recovery, nextScan, nextPath, nextSwitch, nextControl, controlledUntil, lastHit, hiddenTicks, landTick;
     private boolean airborne, chained;
@@ -276,7 +277,7 @@ final class HigherVampireCombat {
                         && hit(grabbed, 16, .15)) boss.heal(5);
             }
             case WING -> {
-                if (elapsed == 11) sector(4.25, -.06, 15, 1.1);
+                if (elapsed == 11) sector(3.85, -.06, 15, 1.1);
             }
             case LEAP, DIVE -> flight();
             case VOLLEY -> {
@@ -294,7 +295,7 @@ final class HigherVampireCombat {
                 if (elapsed == 17 || elapsed == 23 || elapsed == 29) shoot(true);
             }
         }
-        if (elapsed >= action.duration || landTick != 0 && elapsed >= landTick + 9) finish();
+        if (elapsed >= (landTick == 0 ? action.duration : landTick + 13)) finish();
     }
 
     private void groundStep(double speed) {
@@ -305,7 +306,8 @@ final class HigherVampireCombat {
     private void flight() {
         boolean dive = action == Move.DIVE;
         if (elapsed == 8) {
-            Vec3d rise = direction.multiply(dive ? .24 : .63).add(0, dive ? .63 : .72, 0);
+            double leapSpeed = Math.clamp(CombatMotion.distance(boss, victim) / 11, .35, .92);
+            Vec3d rise = direction.multiply(dive ? .24 : leapSpeed).add(0, dive ? .63 : .72, 0);
             if (!CombatMotion.safeStep(boss, rise, false)) {
                 elapsed = action.duration;
                 return;
@@ -320,15 +322,22 @@ final class HigherVampireCombat {
                 boss.setVelocity(0, .03, 0);
             }
             if (elapsed == 23) {
-                direction = CombatMotion.face(boss, motion.lead(victim, 4, 1.5), 360);
+                landingAim = motion.lead(victim, 4, 1.5);
+                direction = CombatMotion.face(boss, landingAim, 360);
                 facing = direction;
                 boss.playSound(SoundEvents.ENTITY_PHANTOM_SWOOP, 1, .8f);
             }
             if (elapsed == 28) {
                 boss.combatClip("flight_move");
                 boss.setNoGravity(false);
-                Vec3d plunge = direction.multiply(1.05).add(0, -.55, 0);
+            }
+            if (elapsed >= 28 && !boss.isOnGround()) {
+                Vec3d delta = landingAim.subtract(boss.getPos()).multiply(1, 0, 1);
+                double speed = Math.min(1.38, delta.length());
+                Vec3d plunge = delta.normalize().multiply(speed).add(0, -Math.clamp(
+                        (boss.getY()-landingAim.y)*.22, .34, .85), 0);
                 if (CombatMotion.safeStep(boss, plunge, false)) boss.setVelocity(plunge);
+                else boss.setVelocity(0, Math.min(0, boss.getVelocity().y), 0);
             }
             if (elapsed > 8 && elapsed < 17 && boss.verticalCollision) {
                 boss.setNoGravity(false);
