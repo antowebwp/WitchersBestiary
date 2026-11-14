@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "witchersbestiary:alchemy/cursed_materials"
+    },
+    {
+      "item": "minecraft:sweet_berries"
+    },
+    {
+      "item": "witchersbestiary:bone_dust"
+    },
+    {
+      "item": "minecraft:glass_bottle"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:cursed_elixir",
+    "count": 1
+  }
+}

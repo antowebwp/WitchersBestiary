@@ -1,7 +1,7 @@
 {
   "type": "minecraft:smithing_transform",
   "template": {
-    "item": "minecraft:netherite_upgrade_smithing_template"
+    "item": "witchersbestiary:cat_enhanced_template"
   },
   "base": {
     "item": "witchersbestiary:cat_helmet"

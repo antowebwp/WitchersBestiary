@@ -118,6 +118,11 @@ public final class ModItems {
     public static final Item MUD_CLOD=register("mud_clod",new Item(new Item.Settings()));
     public static final Item WATER_HAG_HEAD=register("water_hag_head",new BlockItem(ModBlocks.WATER_HAG_HEAD,new Item.Settings().rarity(Rarity.RARE)));
     public static final Item GRAVE_HAG_HEAD=register("grave_hag_head",new BlockItem(ModBlocks.GRAVE_HAG_HEAD,new Item.Settings().rarity(Rarity.RARE)));
+    public static final java.util.List<Item> SCHOOL_TEMPLATES = java.util.stream.Stream.of("cat", "griffin", "bear")
+            .flatMap(school -> java.util.stream.Stream.of("enhanced", "mastercrafted")
+                    .map(tier -> register(school + "_" + tier + "_template", new Item(new Item.Settings()))))
+            .toList();
+
     public static void initialize() {
         ModItemGroups.initialize();
     }

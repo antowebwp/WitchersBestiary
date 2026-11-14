@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DMD",
+    "DTD",
+    "DMD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "M": {
+      "item": "witchersbestiary:ogroid_fang"
+    },
+    "T": {
+      "item": "witchersbestiary:bear_mastercrafted_template"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:bear_mastercrafted_template",
+    "count": 2
+  }
+}

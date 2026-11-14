@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "witchersbestiary:item/cat_enhanced_template"
+  }
+}

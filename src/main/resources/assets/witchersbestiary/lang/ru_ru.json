@@ -901,5 +901,11 @@
   "item.witchersbestiary.crimson_phylactery.progress": "Запечатывание: %s%%",
   "item.witchersbestiary.crimson_phylactery.claim": "Заберите Кровавое наследие на доске, когда освободите место.",
   "tracking.witchersbestiary.finding.higher_vampire.blood_trace": "Пятна крови на месте исчезновения путника.",
-  "tracking.witchersbestiary.finding.higher_vampire.mist_residue": "Неестественный холод выдаёт подход к гробнице."
+  "tracking.witchersbestiary.finding.higher_vampire.mist_residue": "Неестественный холод выдаёт подход к гробнице.",
+  "item.witchersbestiary.cat_enhanced_template": "Шаблон улучшения школы Кота",
+  "item.witchersbestiary.cat_mastercrafted_template": "Шаблон мастерского улучшения школы Кота",
+  "item.witchersbestiary.griffin_enhanced_template": "Шаблон улучшения школы Грифона",
+  "item.witchersbestiary.griffin_mastercrafted_template": "Шаблон мастерского улучшения школы Грифона",
+  "item.witchersbestiary.bear_enhanced_template": "Шаблон улучшения школы Медведя",
+  "item.witchersbestiary.bear_mastercrafted_template": "Шаблон мастерского улучшения школы Медведя"
 }

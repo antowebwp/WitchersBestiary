@@ -1,7 +1,7 @@
 {
   "type": "minecraft:smithing_transform",
   "template": {
-    "item": "minecraft:netherite_upgrade_smithing_template"
+    "item": "witchersbestiary:griffin_enhanced_template"
   },
   "base": {
     "item": "witchersbestiary:griffin_helmet"

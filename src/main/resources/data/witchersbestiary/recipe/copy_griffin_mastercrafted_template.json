@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DMD",
+    "DTD",
+    "DMD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "M": {
+      "item": "witchersbestiary:griffin_feather"
+    },
+    "T": {
+      "item": "witchersbestiary:griffin_mastercrafted_template"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:griffin_mastercrafted_template",
+    "count": 2
+  }
+}

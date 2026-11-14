@@ -28,7 +28,13 @@ public final class ArcaneMerchant extends PathAwareEntity implements GeoEntity {
  private void generateOffers(){generateOffers(getUuid().getMostSignificantBits());}
  private void generateOffers(long seed){add("minecraft:glass_bottle",2,16);add("minecraft:red_mushroom",3,12);add("bone_dust",5,12);add("drowner_essence",12,8);add("ghoul_claw",10,8);add("necrophage_oil",52,4);add("necrophage_elixir",64,3);if(mode==Mode.WANDERING){add("minecraft:bread",6,12);add("minecraft:cooked_beef",12,8);add("minecraft:cooked_porkchop",12,8);add("minecraft:golden_carrot",24,6);add("griffin_feather",180,2);add("gravebound_steel_fragment",260,2);add("nekker_claw",14,5);add("chitin_plate",23,5);add("venom_gland",32,4);add("wraith_remains",34,4);}
  var stockRandom=new Random(mode==Mode.WANDERING?getUuid().getLeastSignificantBits():seed);if(stockRandom.nextInt(4)==0){String[][] swords={{"steel_hunter_sword","2500"},{"silver_witcher_sword","4500"},{"grave_blade","7000"}};var sword=swords[stockRandom.nextInt(swords.length)];add(sword[0],Long.parseLong(sword[1]),1);}
- String[][] rare={{"wraith_essence","24"},{"katakan_essence","30"},{"hybrid_essence","26"},{"ogroid_essence","26"},{"cursed_oil","72"},{"vampire_elixir","90"},{"griffin_claw","145"},{"ogroid_fang","84"},{"fiend_horn","165"},{"fiend_eye","275"},{"volcanic_gland","118"},{"molten_heart","340"},{"wraith_head","230"},{"vampire_fang","84"}};var choices=new ArrayList<>(List.of(rare));Collections.shuffle(choices,new Random(seed));for(int i=0;i<3;i++)add(choices.get(i)[0],Long.parseLong(choices.get(i)[1]),2);}
+ String[][] rare={{"wraith_essence","24"},{"katakan_essence","30"},{"hybrid_essence","26"},{"ogroid_essence","26"},{"cursed_oil","72"},{"vampire_elixir","90"},{"griffin_claw","145"},{"ogroid_fang","84"},{"fiend_horn","165"},{"fiend_eye","275"},{"volcanic_gland","118"},{"molten_heart","340"},{"wraith_head","230"},{"vampire_fang","84"}};var choices=new ArrayList<>(List.of(rare));Collections.shuffle(choices,new Random(seed));for(int i=0;i<3;i++)add(choices.get(i)[0],Long.parseLong(choices.get(i)[1]),2);
+  var templates = new Random(seed ^ 0x493CCL);
+  int school = templates.nextInt(3);
+  boolean mastercrafted = templates.nextInt(5) == 0;
+  add(List.of("cat", "griffin", "bear").get(school)
+      + (mastercrafted ? "_mastercrafted_template" : "_enhanced_template"), mastercrafted ? 480 : 180, 1);
+ }
  private void rotateOffers(){
   var previous=offers.stream().map(o->o.id).collect(java.util.stream.Collectors.toSet());
   for(int attempt=0;attempt<16;attempt++){

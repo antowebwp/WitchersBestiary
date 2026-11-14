@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "DMD",
+    "DTD",
+    "DMD"
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "M": {
+      "item": "witchersbestiary:venom_gland"
+    },
+    "T": {
+      "item": "witchersbestiary:cat_mastercrafted_template"
+    }
+  },
+  "result": {
+    "id": "witchersbestiary:cat_mastercrafted_template",
+    "count": 2
+  }
+}

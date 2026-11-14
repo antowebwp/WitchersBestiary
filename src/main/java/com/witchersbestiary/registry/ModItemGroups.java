@@ -58,7 +58,7 @@ public final class ModItemGroups {
                             INGREDIENTS.forEach(entries::add);
                             ELIXIRS.forEach(entries::add);
                             OILS.forEach(entries::add);
-                            entries.add(ModItems.HUNTER_MEDALLION);entries.add(ModItems.VAMPIRE_FANG);
+                            ModItems.SCHOOL_TEMPLATES.forEach(entries::add); entries.add(ModItems.HUNTER_MEDALLION);entries.add(ModItems.VAMPIRE_FANG);
                             entries.add(com.witchersbestiary.lure.ModLures.LESHEN_LURE);entries.add(com.witchersbestiary.lure.ModLures.FIEND_LURE);entries.add(com.witchersbestiary.lure.ModLures.GRIFFIN_LURE);
                             entries.add(ModItems.STEEL_HUNTER_SWORD);entries.add(ModItems.SILVER_WITCHER_SWORD);entries.add(ModItems.BLOOD_LEGACY);entries.add(ModItems.CRIMSON_PHYLACTERY);entries.add(ModItems.GRAVE_BLADE);entries.add(ModItems.BONECRUSHER_CLUB);entries.add(ModItems.BESTIARY);entries.add(ModItems.GRIMOIRE);
                         }).build());

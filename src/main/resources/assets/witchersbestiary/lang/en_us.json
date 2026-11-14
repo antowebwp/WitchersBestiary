@@ -901,5 +901,11 @@
   "item.witchersbestiary.crimson_phylactery.progress": "Sealing: %s%%",
   "item.witchersbestiary.crimson_phylactery.claim": "Claim Blood Legacy from the contract board when you have space.",
   "tracking.witchersbestiary.finding.higher_vampire.blood_trace": "Blood stains where a traveller vanished.",
-  "tracking.witchersbestiary.finding.higher_vampire.mist_residue": "An unnatural chill marks the approach to the tomb."
+  "tracking.witchersbestiary.finding.higher_vampire.mist_residue": "An unnatural chill marks the approach to the tomb.",
+  "item.witchersbestiary.cat_enhanced_template": "Cat Upgrade Template",
+  "item.witchersbestiary.cat_mastercrafted_template": "Cat Mastercrafted Template",
+  "item.witchersbestiary.griffin_enhanced_template": "Griffin Upgrade Template",
+  "item.witchersbestiary.griffin_mastercrafted_template": "Griffin Mastercrafted Template",
+  "item.witchersbestiary.bear_enhanced_template": "Bear Upgrade Template",
+  "item.witchersbestiary.bear_mastercrafted_template": "Bear Mastercrafted Template"
 }
