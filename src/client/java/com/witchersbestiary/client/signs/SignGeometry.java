@@ -49,7 +49,7 @@ final class SignGeometry {
                 double age = time-effect.start;
                 double fade = Math.clamp((effect.end-time)/3,0,1);
                 switch (SignType.byIndex(p.sign())) {
-                    case IGNI -> flame(context.consumers().getBuffer(FLAME),matrix,origin,delta,p.form(),p.radius(),age,fade);
+                    case IGNI -> FireVfx.render(context.consumers().getBuffer(FireVfx.LAYER),matrix,origin,delta,p.form(),p.radius(),age,fade);
                     case AARD -> wave(out,matrix,origin,delta,p.form(),p.radius(),age,fade);
                     case YRDEN -> seal(out,matrix,origin.add(0,.029,0),p.radius(),p.form(),age,fade);
                     case AXII -> {
@@ -77,54 +77,6 @@ final class SignGeometry {
                 }
             }
         });
-    }
-
-    private static final RenderLayer FLAME = RenderLayer.getEntityTranslucent(
-            net.minecraft.util.Identifier.of("witchersbestiary", "textures/effect/igni_flame.png"));
-
-    private static void flame(VertexConsumer out, Matrix4f m, Vec3d o, Vec3d delta,
-            int form, float arc, double age, double fade) {
-        double reach = delta.length();
-        if (reach < .032) return;
-        boolean breath = form == 2;
-        double front = reach * (breath ? 1 : Math.min(1, (age + 1) / 5));
-        var axis = delta.normalize();
-        var side = axis.crossProduct(new Vec3d(0,1,0)).normalize();
-        if (side.lengthSquared() < .05) side = new Vec3d(1,0,0);
-        var up = side.crossProduct(axis);
-        for (int ray = 0; ray < (breath ? 1 : form == 1 ? 12 : 7); ray++) {
-            double angle = form == 1 ? ray * Math.PI / 6 : Math.toRadians(arc) * ((ray - 3) / 3.0);
-            var direction = breath ? axis : axis.multiply(Math.cos(angle)).add(side.multiply(Math.sin(angle)));
-            var cross = direction.crossProduct(up).normalize();
-            int cells = breath ? 7 : 4;
-            for (int cell = 0; cell < cells; cell++) {
-                double t = cell / (double) cells;
-                double length = Math.min(front * (1-t), front * (breath ? .35 : .48));
-                var start = o.add(direction.multiply(front*t));
-                var end = start.add(direction.multiply(length));
-                double pulse = 1 + .13*Math.sin(age*.9 + cell*2 + ray);
-                double width = pulse * (breath ? .37 : .28 + .53*t);
-                int frame = Math.floorMod((int)(age*1.4) + cell + ray, 4);
-                int alpha = (int)(fade*(breath ? 230 : 198));
-                sprite(out,m,start,end,up.multiply(width),frame,alpha);
-                sprite(out,m,start,end,cross.multiply(width*.8),frame,alpha);
-            }
-        }
-    }
-
-    private static void sprite(VertexConsumer out,Matrix4f matrix,Vec3d start,Vec3d end,
-            Vec3d offset,int frame,int alpha) {
-        float u0=(frame*64+.5f)/256, u1=(frame*64+63.5f)/256;
-        flameVertex(out,matrix,start.subtract(offset),u0,1,alpha);
-        flameVertex(out,matrix,end.subtract(offset),u1,1,alpha);
-        flameVertex(out,matrix,end.add(offset),u1,0,alpha);
-        flameVertex(out,matrix,start.add(offset),u0,0,alpha);
-    }
-
-    private static void flameVertex(VertexConsumer out,Matrix4f matrix,Vec3d p,float u,float v,int alpha) {
-        out.vertex(matrix,(float)p.x,(float)p.y,(float)p.z).color(255,255,255,alpha)
-                .texture(u,v).overlay(net.minecraft.client.render.OverlayTexture.DEFAULT_UV)
-                .light(0xF000F0).normal(0,1,0);
     }
 
     private static void sigilStroke(VertexConsumer out,Matrix4f m,Vec3d a,Vec3d b,int color,int alpha){
