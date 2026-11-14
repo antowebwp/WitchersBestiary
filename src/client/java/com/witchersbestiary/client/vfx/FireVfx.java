@@ -1,14 +1,13 @@
-package com.witchersbestiary.client.signs;
+package com.witchersbestiary.client.vfx;
 
 import net.minecraft.client.render.*;
-import net.minecraft.util.Identifier;
+
 import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
-/** Closed, independently advected flame lobes with a wrapped animated surface. */
+/** Closed, independently advected flame lobes with procedural color and opacity. */
 final class FireVfx {
-    static final RenderLayer LAYER = RenderLayer.getEntityTranslucentEmissive(
-            Identifier.of("witchersbestiary", "textures/effect/igni_flame.png"));
+    static final RenderLayer LAYER = RenderLayer.getDebugQuads();
     private static final int RINGS = 7, SIDES = 9;
     private static final Vec3d UP = new Vec3d(0,1,0);
 
@@ -48,7 +47,7 @@ final class FireVfx {
     private static void mesh(VertexConsumer out,Matrix4f matrix,Vec3d origin,Vec3d axis,Vec3d right,Vec3d up,
                              double start,double end,double width,double age,double seed,int layer,int alpha) {
         if(end-start<.03||alpha<5)return;
-        int frame=Math.floorMod((int)(age*1.5+seed),4);
+
         Vec3d[] previous=null;
         for(int ring=0;ring<=RINGS;ring++) {
             double t=ring/(double)RINGS;
@@ -65,17 +64,27 @@ final class FireVfx {
             }
             if(previous!=null)for(int k=0;k<SIDES;k++) {
                 int next=(k+1)%SIDES;
-                vertex(out,matrix,previous[k],frame,layer,ring-1,k,alpha);
-                vertex(out,matrix,current[k],frame,layer,ring,k,alpha);
-                vertex(out,matrix,current[next],frame,layer,ring,k+1,alpha);
-                vertex(out,matrix,previous[next],frame,layer,ring-1,k+1,alpha);
+                vertex(out,matrix,previous[k],age+seed,layer,ring-1,k,alpha);
+                vertex(out,matrix,current[k],age+seed,layer,ring,k,alpha);
+                vertex(out,matrix,current[next],age+seed,layer,ring,k+1,alpha);
+                vertex(out,matrix,previous[next],age+seed,layer,ring-1,k+1,alpha);
             }
             previous=current;
         }
     }
-    private static void vertex(VertexConsumer out,Matrix4f matrix,Vec3d p,int frame,int layer,int ring,int side,int alpha) {
-        out.vertex(matrix,(float)p.x,(float)p.y,(float)p.z).color(255,255,255,alpha)
-                .texture((frame*64+.5f+63f*ring/RINGS)/256,(layer*32+.5f+31f*side/SIDES)/96)
-                .overlay(OverlayTexture.DEFAULT_UV).light(0xF000F0).normal(0,1,0);
+    private static void vertex(VertexConsumer out, Matrix4f matrix, Vec3d p,
+                               double phase, int layer, int ring, int side, int alpha) {
+        double t = ring / (double) RINGS;
+        double angle = side * Math.PI * 2 / SIDES;
+        double heat = .5 + .5 * Math.sin(phase * .9 - t * 8 + 2 * angle);
+        double edge = Math.sin(Math.PI * t);
+        int green = (int) (switch (layer) {
+            case 0 -> 202 + 53 * heat;
+            case 1 -> 87 + 108 * heat;
+            default -> 25 + 59 * heat;
+        });
+        int blue = (int) (layer == 0 ? 67 + 174 * heat : 12 + 24 * heat);
+        out.vertex(matrix, (float) p.x, (float) p.y, (float) p.z)
+                .color(255, green, blue, (int) (alpha * edge * (.45 + .55 * heat)));
     }
 }

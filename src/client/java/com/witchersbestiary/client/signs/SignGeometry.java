@@ -1,6 +1,7 @@
 package com.witchersbestiary.client.signs;
 
 import com.witchersbestiary.signs.SignPackets;
+import com.witchersbestiary.client.vfx.VfxManager;
 import com.witchersbestiary.signs.SignType;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -18,17 +19,21 @@ final class SignGeometry {
     private static final LinkedHashMap<Key, Effect> EFFECTS = new LinkedHashMap<>();
 
     static void initialize() {
+        VfxManager.initialize();
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> EFFECTS.clear());
         ClientPlayNetworking.registerGlobalReceiver(SignPackets.Visual.ID, (packet, ctx) -> ctx.client().execute(() -> {
             var world = ctx.client().world;
             if (world == null || SignType.byIndex(packet.sign()) == null) return;
+            if (packet.sign() == SignType.IGNI.ordinal()) {
+                VfxManager.igni(packet, world.getTime());
+                return;
+            }
             var key = new Key(packet.owner(), packet.sign(),
                     packet.sign() == SignType.YRDEN.ordinal() ? packet.from() : Vec3d.ZERO);
             if (!EFFECTS.containsKey(key) && EFFECTS.size() >= 64) EFFECTS.pollFirstEntry();
             long now = world.getTime();
             var previous = EFFECTS.get(key);
-            boolean persistent = packet.sign() == SignType.YRDEN.ordinal()
-                    || packet.sign() == SignType.IGNI.ordinal() && packet.form() == 2;
+            boolean persistent = packet.sign() == SignType.YRDEN.ordinal();
             EFFECTS.put(key, new Effect(packet, persistent && previous != null && previous.end > now
                     ? previous.start : now, now + packet.ticks()));
         }));
@@ -49,7 +54,6 @@ final class SignGeometry {
                 double age = time-effect.start;
                 double fade = Math.clamp((effect.end-time)/3,0,1);
                 switch (SignType.byIndex(p.sign())) {
-                    case IGNI -> FireVfx.render(context.consumers().getBuffer(FireVfx.LAYER),matrix,origin,delta,p.form(),p.radius(),age,fade);
                     case AARD -> wave(out,matrix,origin,delta,p.form(),p.radius(),age,fade);
                     case YRDEN -> seal(out,matrix,origin.add(0,.029,0),p.radius(),p.form(),age,fade);
                     case AXII -> {
