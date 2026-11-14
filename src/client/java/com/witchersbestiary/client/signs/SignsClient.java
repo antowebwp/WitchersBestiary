@@ -9,6 +9,7 @@ public final class SignsClient {
  public static SignPackets.Mastery mastery;
  private static int heldTicks;
  private static boolean longCast, channeling;
+ private static boolean breath(int selected,int slot){return selected==SignType.IGNI.ordinal()&&mastery!=null&&mastery.form(selected,slot)==2;}
  static boolean showLoadout(){return view!=null&&mastery!=null&&mastery.unlocked(view.selected())!=1;}
  public static void initialize(){QuenShellRenderer.initialize();menu=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.witchersbestiary.sign_menu",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_R,"key.categories.gameplay"));cast=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.witchersbestiary.sign_cast",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_G,"key.categories.gameplay"));settings=KeyBindingHelper.registerKeyBinding(new KeyBinding("key.witchersbestiary.sign_hud",InputUtil.Type.KEYSYM,GLFW.GLFW_KEY_UNKNOWN,"key.categories.gameplay"));ClientPlayNetworking.registerGlobalReceiver(SignPackets.View.ID,(p,c)->c.client().execute(()->view=p));ClientPlayNetworking.registerGlobalReceiver(SignPackets.Mastery.ID,(p,c)->c.client().execute(()->mastery=p));ClientPlayConnectionEvents.DISCONNECT.register((h,c)->{view=null;mastery=null;sequence=0;heldTicks=0;longCast=false;channeling=false;});ClientTickEvents.END_CLIENT_TICK.register(c->{
   boolean down=held(c,cast);
@@ -25,10 +26,20 @@ public final class SignsClient {
    heldTicks=0;longCast=false;castHeld=down;return;}
   if(down){
    if(!castHeld){heldTicks=0;longCast=false;}
-   if(++heldTicks==8){send(6,view.selected());longCast=true;channeling=view.selected()==SignType.IGNI.ordinal()&&mastery!=null&&mastery.form(view.selected(),1)==2;}
+   int selected=view.selected();
+   boolean primary=breath(selected,0), secondary=breath(selected,1);
+   if(++heldTicks==8){
+    if(primary||secondary){send(secondary?10:9,selected);channeling=true;}
+    else send(6,selected);
+    longCast=true;
+   }else if(channeling&&heldTicks%6==2)send(8,selected);
   }else{
    if(channeling){send(7,view.selected());channeling=false;}
-   if((castHeld&&heldTicks>0&&!longCast)||(!castHeld&&queued))send(1,view.selected());
+   if((castHeld&&heldTicks>0&&!longCast)||(!castHeld&&queued)){
+    int selected=view.selected();
+    if(!breath(selected,0))send(1,selected);
+    else if(!breath(selected,1))send(6,selected);
+   }
    heldTicks=0;longCast=false;
   }
   castHeld=down;

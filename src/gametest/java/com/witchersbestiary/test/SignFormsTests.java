@@ -20,7 +20,7 @@ public final class SignFormsTests implements FabricGameTest {
 
     @GameTest(templateName=ARENA)
     public void igniFormsAndAardForces(TestContext c) {
-        for(int form=1;form<=3;form++){
+        for(int form:new int[]{1,3}){
             var p=equipped(c,SignType.IGNI,form);var foe=fixtures.target(c,p);
             if(form==1)foe.setPosition(p.getX(),p.getY(),p.getZ()-3);
             c.assertTrue(SignManager.cast(p,1,1)&&foe.isOnFire()&&foe.getHealth()<20,"Igni form damages and burns: "+form);
