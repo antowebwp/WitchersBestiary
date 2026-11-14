@@ -35,7 +35,7 @@
       "com.witchersbestiary.test.Stage21ITests",
       "com.witchersbestiary.test.UnicornTests","com.witchersbestiary.test.UnicornHealingTests","com.witchersbestiary.test.NekkerCompanionTests","com.witchersbestiary.test.TrollCompanionTests","com.witchersbestiary.test.TrollFieldTests","com.witchersbestiary.test.CompanionGuardTests","com.witchersbestiary.test.SchoolArmorTests","com.witchersbestiary.test.SchoolArmorTransferTests"
     ],
-    "main": [
+    "main": ["com.witchersbestiary.test.TombProbe",
       "com.witchersbestiary.test.Stage20ENetworkServer",
       "com.witchersbestiary.test.Stage21ANetworkServer",
       "com.witchersbestiary.test.Stage21BNetworkServer",
@@ -51,3 +51,4 @@
     "fabric-gametest-api-v1": "*"
   }
 }
+
