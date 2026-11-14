@@ -51,6 +51,13 @@ loom {
   'witchersbestiary-client-tests' { sourceSet sourceSets.clientSmoke }
  }
  runs {
+  arcaneFxCapture {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.arcaneFxCapture=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/arcane-fx-preview/client'
+  }
   stage16Heads {
    client()
    source sourceSets.clientSmoke
