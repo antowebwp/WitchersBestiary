@@ -20,7 +20,7 @@ final class VillageMerchantReview implements ClientModInitializer {
     private volatile boolean positioned;
     private volatile int merchantId;
     private String previous;
-    private boolean turnedPage;
+    private int pageFrames;
 
     public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
@@ -94,17 +94,18 @@ final class VillageMerchantReview implements ClientModInitializer {
                 String offers = handler.snapshot.get("offers").toString();
                 if (phase == 4) {
                     if (!(client.currentScreen instanceof com.witchersbestiary.client.merchant.MerchantScreen screen)) return;
-                    if (!turnedPage) {
+                    if (pageFrames == 0) {
                         for (var child : screen.children()) {
                             if (child instanceof net.minecraft.client.gui.widget.ButtonWidget button
                                     && button.getMessage().getString().equals(">")) {
                                 button.onPress();
-                                turnedPage = true;
+                                pageFrames = 1;
                                 break;
                             }
                         }
                         return;
                     }
+                    if (++pageFrames < 8) return;
                     previous = offers;
                     capture(client, "before");
                     phase = 5;
