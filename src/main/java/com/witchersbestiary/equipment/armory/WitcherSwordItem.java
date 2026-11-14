@@ -31,6 +31,11 @@ public final class WitcherSwordItem extends SwordItem {
   float bonus=ArmoryCombat.bonus(new ItemStack(this),living)*(float)Math.clamp(full>0?baseDamage/full:0,0,1);
   ArmoryCombat.prepare(living,source,bonus);return 0;
  }
- @Override public boolean postHit(ItemStack stack,LivingEntity target,LivingEntity attacker){boolean result=super.postHit(stack,target,attacker);ArmoryCombat.afterHit(this,target,attacker);return result;}
- @Override public void appendTooltip(ItemStack stack,TooltipContext context,List<Text> tooltip,TooltipType type){super.appendTooltip(stack,context,tooltip,type);if(kind!=Kind.STEEL)tooltip.add(Text.translatable("tooltip.witchersbestiary."+(kind==Kind.SILVER?"silver_witcher_sword":"grave_blade")).formatted(Formatting.AQUA));}
+ @Override public boolean postHit(ItemStack stack,LivingEntity target,LivingEntity attacker){boolean result=super.postHit(stack,target,attacker);ArmoryCombat.afterHit(this,target,attacker);
+  if(this==com.witchersbestiary.registry.ModItems.BLOOD_LEGACY&&!target.getWorld().isClient
+      &&target.isAlive()&&target.hurtTime>0&&target.getAttacker()==attacker)
+   com.witchersbestiary.alchemy.BleedingEffect.inflict(target,1);
+  return result;}
+ @Override public void appendTooltip(ItemStack stack,TooltipContext context,List<Text> tooltip,TooltipType type){super.appendTooltip(stack,context,tooltip,type);if(this==com.witchersbestiary.registry.ModItems.BLOOD_LEGACY)
+  tooltip.add(Text.translatable("tooltip.witchersbestiary.blood_legacy").formatted(Formatting.RED));if(kind!=Kind.STEEL)tooltip.add(Text.translatable("tooltip.witchersbestiary."+(kind==Kind.SILVER?"silver_witcher_sword":"grave_blade")).formatted(Formatting.AQUA));}
 }

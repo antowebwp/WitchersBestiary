@@ -30,6 +30,8 @@ final class HigherVampireCombat {
         WING(23, 75, null, "wing_attack"),
         LEAP(50, 100, null, "jump"),
         DIVE(57, 155, null, "wing_spread"),
+        BLOOD_SHOT(25, 56, null, "blood_volley"),
+        FEINT(24, 75, "dodge", null),
         VOLLEY(36, 105, null, "blood_volley"),
         BURST(38, 180, null, "blood_burst"),
         SWARM(33, 230, null, "blood_swarm");
@@ -54,7 +56,8 @@ final class HigherVampireCombat {
     private Vec3d landingAim = Vec3d.ZERO;
     private Vec3d facing = Vec3d.ZERO, direction = Vec3d.ZERO;
     private int elapsed, recovery, nextScan, nextPath, nextSwitch, nextControl, controlledUntil, lastHit, hiddenTicks, landTick;
-    private boolean airborne, chained;
+    private boolean airborne;
+    private int chainLength;
     private Vec3d dodgeStart = Vec3d.ZERO;
     private float dodgeHealth;
 
@@ -156,11 +159,11 @@ final class HigherVampireCombat {
             }
         }
         if (boss.age >= nextPath) {
-            nextPath = boss.age + (boss.isFinalPhase() ? 6 : 9);
+            nextPath = boss.age + (boss.isFinalPhase() ? 5 : 7);
             if (distance < 1.4 && boss.canSee(target)) {
                 boss.getNavigation().stop();
             } else {
-                boss.getNavigation().startMovingTo(target, boss.isFinalPhase() ? 1.28 : 1.08);
+                boss.getNavigation().startMovingTo(target, boss.isFinalPhase() ? 1.34 : 1.16);
             }
         }
     }
@@ -173,11 +176,11 @@ final class HigherVampireCombat {
             Move next = follow;
             follow = null;
             if (eligible(next, target, distance, close)) {
-                chained = true;
+                chainLength++;
                 return next;
             }
         }
-        chained = false;
+        chainLength = 1;
         Move selected = null;
         double best = 0;
         for (Move move : Move.values()) {
@@ -191,7 +194,8 @@ final class HigherVampireCombat {
                 case GRAB -> 2;
                 case WING -> players(4).size() > 1 ? 12 : 5;
                 case LEAP, DIVE -> !close || stalled ? 9 : 4;
-                case VOLLEY -> distance > 7 ? 9 : 3;
+                case VOLLEY, BLOOD_SHOT -> distance > 7 ? 9 : 3;
+                case FEINT -> 3;
                 case BURST, SWARM -> 4;
             };
             double score = Math.pow(boss.getRandom().nextDouble(), 1 / weight);
@@ -216,7 +220,8 @@ final class HigherVampireCombat {
             case LEAP -> boss.isOnGround() && distance >= 3.2 && distance <= 11 && Math.abs(target.getY()-boss.getY()) < 5;
             case DIVE -> boss.isOnGround() && distance <= 19 && (distance > 6 || !close)
                     && boss.getWorld().isSpaceEmpty(boss, boss.getBoundingBox().stretch(0, 2.3, 0));
-            case VOLLEY -> distance >= 4.5 && distance <= 25;
+            case FEINT -> close && boss.isOnGround() && distance >= 1.5 && distance <= 3.4;
+            case VOLLEY, BLOOD_SHOT -> distance >= 4.5 && distance <= 25;
             case BURST -> close && distance < 5;
             case SWARM -> boss.isFinalPhase() && distance <= 18;
         };
@@ -228,7 +233,7 @@ final class HigherVampireCombat {
         elapsed = 0;
         facing = CombatMotion.face(boss, motion.lead(target, 3, 1.1), 360);
         direction = facing;
-        if (move == Move.DODGE) {
+        if (move == Move.DODGE || move == Move.FEINT) {
             dodgeStart = boss.getPos();
             dodgeHealth = boss.getHealth();
             int choice = boss.getRandom().nextInt(3);
@@ -265,6 +270,14 @@ final class HigherVampireCombat {
                 }
                 if (elapsed == 19) sector(reach, .3, claw + 3, .45);
             }
+            case FEINT -> {
+                if (elapsed >= 3 && elapsed <= 6) groundStep(.49);
+                if (elapsed == 9) {
+                    facing = CombatMotion.face(boss, victim.getPos(), 95);
+                    boss.combatClip("claw_attack_left");
+                }
+                if (elapsed == 15) sector(reach, .38, claw, .15);
+            }
             case DODGE -> {
                 if (elapsed >= 3 && elapsed <= 7) groundStep(.62);
             }
@@ -274,14 +287,20 @@ final class HigherVampireCombat {
                     grabbed.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(StatusEffects.SLOWNESS, 9, 1));
                 }
                 if (elapsed == 21 && grabbed != null && CombatMotion.contact(boss, grabbed, facing, 2.1, .3)
-                        && hit(grabbed, 16, .15)) boss.heal(5);
+                        && hit(grabbed, 16, .15)) {
+                    boss.heal(5);
+                    com.witchersbestiary.alchemy.BleedingEffect.inflict(grabbed, 2);
+                }
             }
             case WING -> {
                 if (elapsed == 11) sector(3.85, -.06, 15, 1.1);
             }
             case LEAP, DIVE -> flight();
+            case BLOOD_SHOT -> {
+                if (elapsed == 14) shoot(false, 0);
+            }
             case VOLLEY -> {
-                if (elapsed == 14 || elapsed == 19 || elapsed == 24 || (boss.isFinalPhase() && elapsed == 29)) shoot(false);
+                if (elapsed == 14) for (int i = -1; i <= 1; i++) shoot(false, i * .15f);
             }
             case BURST -> {
                 if (elapsed < 24 && elapsed % 4 == 0) ring(world, 4.9);
@@ -292,10 +311,10 @@ final class HigherVampireCombat {
                 }
             }
             case SWARM -> {
-                if (elapsed == 17 || elapsed == 23 || elapsed == 29) shoot(true);
+                if (elapsed == 17 || elapsed == 23 || elapsed == 29) shoot(true, 0);
             }
         }
-        if (elapsed >= (landTick == 0 ? action.duration : landTick + 13)) finish();
+        if (elapsed >= (landTick == 0 ? action.duration : landTick + 10)) finish();
     }
 
     private void groundStep(double speed) {
@@ -360,16 +379,18 @@ final class HigherVampireCombat {
         recovery = boss.isFinalPhase() ? (boss.getHealth() < boss.getMaxHealth()*.10f ? 4 : 6) : 10;
         if (finished == Move.DODGE && boss.getPos().squaredDistanceTo(dodgeStart) > .36
                 && boss.getHealth() >= dodgeHealth && boss.getRandom().nextBoolean()) follow = Move.LEFT;
-        if (boss.isFinalPhase() && !chained && boss.getRandom().nextFloat() < .68f) {
+        if (boss.isHybrid() && chainLength < (boss.isFinalPhase() ? 4 : 2) && boss.getRandom().nextFloat() < .76f) {
             follow = switch (finished) {
-                case LEFT, RIGHT, COMBO -> Move.WING;
+                case LEFT, RIGHT -> Move.WING;
                 case LEAP -> landed ? Move.BURST : null;
-                case VOLLEY -> Move.DASH;
+                case VOLLEY, BLOOD_SHOT -> Move.DASH;
+                case WING -> Move.BLOOD_SHOT;
+                case COMBO -> Move.WING;
                 case DASH -> Move.COMBO;
                 default -> null;
             };
         }
-        if (chained || finished == Move.BURST || finished == Move.DIVE) recovery += 7;
+        if (follow == null && (chainLength > 1 || finished == Move.BURST)) recovery += 8;
     }
 
     private void sector(double radius, double dot, float damage, double push) {
@@ -393,15 +414,24 @@ final class HigherVampireCombat {
 
     private boolean hit(LivingEntity target, float damage, double push) {
         if (!target.damage(boss.getDamageSources().mobAttack(boss), damage)) return false;
+        if (action != null) {
+            int bleed = switch (action) {
+                case LEFT, RIGHT, COMBO, TRIPLE, DASH, FEINT -> boss.getRandom().nextFloat() < .35f ? 1 : 0;
+                case DIVE -> boss.getRandom().nextFloat() < .50f ? 2 : 0;
+                case BURST -> boss.isFinalPhase() ? 2 : 0;
+                default -> 0;
+            };
+            if (bleed > 0) com.witchersbestiary.alchemy.BleedingEffect.inflict(target, bleed);
+        }
         lastHit = boss.age;
         if (push > 0) target.takeKnockback(push, boss.getX()-target.getX(), boss.getZ()-target.getZ());
         return true;
     }
 
-    private void shoot(boolean swarm) {
+    private void shoot(boolean swarm, float yaw) {
         if (!valid(victim, 30) || !boss.canSee(victim) || shots.size() >= 12) return;
         Vec3d origin = boss.getPos().add(0, 1.65, 0);
-        Vec3d velocity = victim.getBoundingBox().getCenter().subtract(origin).normalize().multiply(swarm ? .49 : .79);
+        Vec3d velocity = victim.getBoundingBox().getCenter().subtract(origin).normalize().rotateY(yaw).multiply(swarm ? .49 : .79);
         shots.add(new Shot(origin, velocity, swarm ? 38 : 34, swarm));
         boss.playSound(swarm ? SoundEvents.ENTITY_BAT_TAKEOFF : SoundEvents.ENTITY_BLAZE_SHOOT, .7f, swarm ? .8f : 1.4f);
     }
@@ -422,7 +452,9 @@ final class HigherVampireCombat {
                     new Box(start, end).expand(width + .3), e -> e instanceof ServerPlayerEntity p && valid(p, 56), (float)width);
             if (entity != null && world.raycast(new RaycastContext(start, entity.getEntity().getBoundingBox().getCenter(),
                     RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, boss)).getType() == HitResult.Type.MISS) {
-                hit((LivingEntity)entity.getEntity(), shot.swarm ? 9 : 12, 0);
+                var target = (LivingEntity) entity.getEntity();
+                if (hit(target, shot.swarm ? 9 : 12, 0) && boss.isFinalPhase())
+                    com.witchersbestiary.alchemy.BleedingEffect.inflict(target, shot.swarm ? 3 : 2);
             }
             if (shot.swarm) {
                 Vec3d side = new Vec3d(-shot.velocity.z, 0, shot.velocity.x).normalize().multiply(.38);

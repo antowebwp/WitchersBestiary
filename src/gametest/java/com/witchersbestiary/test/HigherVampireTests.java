@@ -109,4 +109,38 @@ public final class HigherVampireTests implements FabricGameTest {
             }
         });
     }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 110)
+    public void bleedingExpiresAndVictoryDropsOnce(TestContext context) {
+        var world = context.getWorld();
+        var pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
+        world.setBlockState(pos.down(), Blocks.STONE.getDefaultState());
+        var target = net.minecraft.entity.EntityType.IRON_GOLEM.create(world);
+        target.refreshPositionAndAngles(pos.getX()+.5, pos.getY(), pos.getZ()+.5, 0, 0);
+        target.setAiDisabled(true);
+        world.spawnEntity(target);
+        var effect = com.witchersbestiary.registry.ModEffects.BLEEDING;
+        com.witchersbestiary.alchemy.BleedingEffect.inflict(target, 2);
+        com.witchersbestiary.alchemy.BleedingEffect.inflict(target, 1);
+        context.assertTrue(target.getStatusEffect(effect).getAmplifier()==1, "Weaker hit cannot downgrade Bleeding");
+        context.runAtTick(85, () -> {
+            context.assertTrue(target.getHealth()<target.getMaxHealth()&&!target.hasStatusEffect(effect), "Bleeding damages and expires");
+            target.discard();
+            var boss = ModEntities.HIGHER_VAMPIRE.create(world);
+            boss.refreshPositionAndAngles(pos.getX()+.5, pos.getY(), pos.getZ()+.5, 0, 0);
+            var nbt = new net.minecraft.nbt.NbtCompound();
+            nbt.putBoolean("HybridForm",true);
+            nbt.putBoolean("FinalPhase",true);
+            boss.readCustomDataFromNbt(nbt);
+            world.spawnEntity(boss);
+            var player = context.createMockPlayer(net.minecraft.world.GameMode.SURVIVAL);
+            var source = world.getDamageSources().playerAttack(player);
+            boss.damage(source, 1000);
+            boss.damage(source, 1000);
+            var drops = world.getEntitiesByClass(net.minecraft.entity.ItemEntity.class, boss.getBoundingBox().expand(3),
+                    item -> item.getStack().isOf(com.witchersbestiary.registry.ModItems.BLOOD_LEGACY));
+            context.assertTrue(boss.isDefeated()&&drops.size()==1, "Final player victory drops exactly one sword");
+            context.complete();
+        });
+    }
 }

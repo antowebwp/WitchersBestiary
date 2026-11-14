@@ -51,7 +51,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
 
     public static DefaultAttributeContainer.Builder createAttributes() {
         return createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH, 600)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, .37)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, .415)
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 56)
                 .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, .72);
     }
@@ -235,6 +235,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
 
     @Override public void onDeath(DamageSource source) {
         if (getWorld().isClient || isDefeated()) return;
+        boolean award = isFinalPhase() && (source.getAttacker() instanceof net.minecraft.entity.player.PlayerEntity);
         dataTracker.set(DEFEATED_HUMAN, !isHybrid());
         dataTracker.set(STAGE, DEFEATED);
         // A living, inert entity keeps its UUID and its persistent defeated pose.
@@ -243,6 +244,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         combat.cancel();
         setTarget(null);
         updateBossBar();
+        if (award) dropStack(new net.minecraft.item.ItemStack(com.witchersbestiary.registry.ModItems.BLOOD_LEGACY));
     }
 
     @Override public void writeCustomDataToNbt(NbtCompound nbt) {

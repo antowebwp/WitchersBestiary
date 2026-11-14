@@ -889,5 +889,7 @@
   "entity.witchersbestiary.higher_vampire": "Высший вампир",
   "item.witchersbestiary.higher_vampire_spawn_egg": "Яйцо призыва высшего вампира",
   "item.witchersbestiary.blood_legacy": "Кровавое наследие",
-  "companion.witchersbestiary.health": "Здоровье %s / %s"
+  "companion.witchersbestiary.health": "Здоровье %s / %s",
+  "effect.witchersbestiary.bleeding": "Кровотечение",
+  "tooltip.witchersbestiary.blood_legacy": "Накладывает кровотечение при попадании мечом."
 }

@@ -889,5 +889,7 @@
   "entity.witchersbestiary.higher_vampire": "Higher Vampire",
   "item.witchersbestiary.higher_vampire_spawn_egg": "Higher Vampire Spawn Egg",
   "item.witchersbestiary.blood_legacy": "Blood Legacy",
-  "companion.witchersbestiary.health": "Health %s / %s"
+  "companion.witchersbestiary.health": "Health %s / %s",
+  "effect.witchersbestiary.bleeding": "Bleeding",
+  "tooltip.witchersbestiary.blood_legacy": "Inflicts Bleeding on landed sword strikes."
 }
