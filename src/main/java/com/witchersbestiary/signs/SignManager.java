@@ -108,7 +108,8 @@ public final class SignManager {
     float damage=(sign==SignType.IGNI?6.24f:1.44f)*(1+.1f*power)*SchoolArmor.signDamage(p)*combo;
     for(var target:targets.stream().limit(12).toList())hit(p,target,sign,form,damage,duration,effect);
     var origin=sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos();
-    castWave(w,origin,p.getRotationVec(1),sign,form,range(p,sign));
+    visual(w,p.getId(),sign,form,9,origin,origin.add(p.getRotationVec(1).multiply(range(p,sign))),
+        form==1?180:sign==SignType.IGNI?37.5f:45);
    }
    case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;syncQuen(p,form,12);quenContour(w,p.getPos(),form,true);}
    case YRDEN->{
@@ -123,7 +124,7 @@ public final class SignManager {
      var target=(MobEntity)targets.get(i);awardCombat(p,target);
      if(target instanceof com.witchersbestiary.entity.monster.HigherVampireEntity vampire){
       vampire.interruptCombat(9);
-      axiiThreads(w,p.getEyePos(),target.getEyePos(),form);
+      visual(w,target.getId(),SignType.AXII,form,9,p.getEyePos(),target.getEyePos(),.42f);
       continue;
      }
      long until=w.getTime()+(large(target)?30:Math.round((sign.duration+duration*15+effect*6)*combo));
@@ -135,7 +136,7 @@ public final class SignManager {
      }
      if(redirected!=null){REDIRECTS.put(target.getUuid(),new Redirect(p.getUuid(),redirected.getUuid(),until));target.setTarget(redirected);}
      else {CALM.put(target.getUuid(),until);target.setTarget(null);target.getNavigation().stop();}
-     axiiThreads(w,p.getEyePos(),target.getEyePos(),form);
+     visual(w,target.getId(),SignType.AXII,form,(int)(until-w.getTime()),p.getEyePos(),target.getEyePos(),.42f);
     }
    }
   }
@@ -311,6 +312,12 @@ public final class SignManager {
    mob.setTarget(target);return false;
   });
  }
+ private static void visual(ServerWorld world,int owner,SignType sign,int form,int ticks,Vec3d from,Vec3d to,float radius){
+  var packet=new SignPackets.Visual(owner,sign.ordinal(),form,ticks,from,to,radius);
+  for(var viewer:world.getPlayers(p->p.squaredDistanceTo(from)<48*48))
+   if(ServerPlayNetworking.canSend(viewer,SignPackets.Visual.ID))ServerPlayNetworking.send(viewer,packet);
+ }
+
  private static void startBreath(ServerPlayerEntity p,int slot){
   var r=runtime(p);var state=state(p);
   if(r.breathTicks>0||!allowed(p)||p.currentScreenHandler!=p.playerScreenHandler
@@ -340,10 +347,7 @@ public final class SignManager {
   var end=clipBreath(p,eye,eye.add(look.multiply(range(p,SignType.IGNI))));
   var start=eye.add(look.multiply(Math.min(.35,eye.distanceTo(end))));
   double length=start.distanceTo(end);
-  for(double d=0;d<length;d+=.31){
-   var point=start.add(look.multiply(d));
-   world.spawnParticles(ParticleTypes.FLAME,point.x,point.y,point.z,1,.065,.065,.065,.004);
-  }
+  visual(world,p.getId(),SignType.IGNI,2,4,start,end,.45f);
   if(elapsed%20==1)world.playSound(null,p.getBlockPos(),SoundEvents.ITEM_FIRECHARGE_USE,SoundCategory.PLAYERS,.35f,.68f);
   if(elapsed%10!=1||length<.01)return;
   int power=level(p,SignType.IGNI,SignPlayerState.Upgrade.POWER);
@@ -381,7 +385,15 @@ public final class SignManager {
      syncQuen(player,runtime.shieldForm,Math.min(runtime.shieldTicks,12));
     }
    }
-   if(runtime.trapTicks>0){runtime.trapTicks--;if(server.getTicks()%10==0)tickTrap(player,runtime);}
+   if(runtime.trapTicks>0){
+    runtime.trapTicks--;
+    if(server.getTicks()%10==0) {
+     tickTrap(player,runtime);
+     float radius=(float)(((runtime.trapForm==2?1.85:3)+.35*level(player,SignType.YRDEN,SignPlayerState.Upgrade.RANGE))*SchoolArmor.signRange(player));
+     for(var center:runtime.traps)visual(player.getServerWorld(),player.getId(),SignType.YRDEN,runtime.trapForm,
+         Math.min(runtime.trapTicks,12),center,center,radius);
+    }
+   }
    tickBreath(player,runtime);
    if(server.getTicks()%10==0)sync(player);
   }

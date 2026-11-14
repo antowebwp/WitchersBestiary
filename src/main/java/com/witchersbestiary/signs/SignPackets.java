@@ -21,5 +21,14 @@ public final class SignPackets {
   },b->new QuenShell(b.readVarInt(),b.readUnsignedByte(),b.readUnsignedByte()));
   public Id<QuenShell> getId(){return ID;}
  }
- public static void initialize(){PayloadTypeRegistry.playC2S().register(Intent.ID,Intent.CODEC);PayloadTypeRegistry.playS2C().register(View.ID,View.CODEC);PayloadTypeRegistry.playS2C().register(QuenShell.ID,QuenShell.CODEC);PayloadTypeRegistry.playS2C().register(Mastery.ID,Mastery.CODEC);ServerPlayNetworking.registerGlobalReceiver(Intent.ID,(p,c)->c.server().execute(()->SignManager.intent(c.player(),p)));}
+ public record Visual(int owner,int sign,int form,int ticks,net.minecraft.util.math.Vec3d from,
+                      net.minecraft.util.math.Vec3d to,float radius) implements CustomPayload {
+  public static final Id<Visual> ID=new Id<>(Identifier.of("witchersbestiary:sign_visual"));
+  public static final PacketCodec<RegistryByteBuf,Visual> CODEC=PacketCodec.of((p,b)->{
+   b.writeVarInt(p.owner);b.writeByte(p.sign);b.writeByte(p.form);b.writeVarInt(p.ticks);
+   b.writeVec3d(p.from);b.writeVec3d(p.to);b.writeFloat(p.radius);
+  },b->new Visual(b.readVarInt(),b.readUnsignedByte(),b.readUnsignedByte(),b.readVarInt(),b.readVec3d(),b.readVec3d(),b.readFloat()));
+  public Id<Visual> getId(){return ID;}
+ }
+ public static void initialize(){PayloadTypeRegistry.playS2C().register(Visual.ID,Visual.CODEC);PayloadTypeRegistry.playC2S().register(Intent.ID,Intent.CODEC);PayloadTypeRegistry.playS2C().register(View.ID,View.CODEC);PayloadTypeRegistry.playS2C().register(QuenShell.ID,QuenShell.CODEC);PayloadTypeRegistry.playS2C().register(Mastery.ID,Mastery.CODEC);ServerPlayNetworking.registerGlobalReceiver(Intent.ID,(p,c)->c.server().execute(()->SignManager.intent(c.player(),p)));}
 }
