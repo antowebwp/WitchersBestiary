@@ -171,6 +171,7 @@ final class VampireReviewClient implements ClientModInitializer {
                     if (ticks < 20) return;
                     if (client.player.getInventory().count(ModItems.CRIMSON_PHYLACTERY) != 1)
                         throw new IllegalStateException("Accepted hunt did not sync exactly one phylactery");
+                    capture(client, "empty-phylactery");
                     KeyBinding.onKeyPressed(InputUtil.fromKeyCode(86, 0));
                     approach(client);
                 }
@@ -250,8 +251,54 @@ final class VampireReviewClient implements ClientModInitializer {
                     if (crowns != 2000 || hunt.status() != ContractInstance.Status.REWARDED)
                         throw new IllegalStateException("Unexpected reward: " + crowns + " crowns, " + hunt.status());
                     client.options.useKey.setPressed(false);
+                    var relic = client.player.getMainHandStack();
+                    if (!VampireHunt.isSealed(relic)) return;
                     capture(client, "reward");
+                    capture(client, "sealed-phylactery");
                     Files.writeString(output.resolve("result.txt"), "Sealed hunt " + hunt.id() + " status=" + hunt.status() + " crowns=" + crowns);
+                    var group = net.minecraft.registry.Registries.ITEM_GROUP.get(
+                            com.witchersbestiary.registry.ModItemGroups.WITCHERS_BESTIARY_KEY);
+                    net.minecraft.item.ItemGroups.updateDisplayContext(client.player.networkHandler.getEnabledFeatures(),
+                            false, client.world.getRegistryManager());
+                    if (!group.contains(new net.minecraft.item.ItemStack(ModItems.BLOOD_LEGACY))
+                            || !group.contains(new net.minecraft.item.ItemStack(ModItems.CRIMSON_PHYLACTERY)))
+                        throw new IllegalStateException("Items missing from creative tab");
+                    client.setScreen(new net.minecraft.client.gui.screen.ingame.InventoryScreen(client.player));
+                    next(15);
+                }
+                case 15 -> {
+                    if (ticks < 15) return;
+                    capture(client, "blood-legacy-inventory");
+                    client.setScreen(null);
+                    for (int i = 0; i < 9; i++) {
+                        if (client.player.getInventory().getStack(i).isOf(ModItems.BLOOD_LEGACY))
+                            client.player.getInventory().selectedSlot = i;
+                    }
+                    client.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_FRONT);
+                    next(16);
+                }
+                case 16 -> {
+                    if (ticks < 15) return;
+                    capture(client, "blood-legacy-third-person");
+                    next(98);
+                    server(client, () -> {
+                        var server = client.getServer();
+                        var player = server.getPlayerManager().getPlayerList().getFirst();
+                        for (int slot = 0; slot < 36; slot++) if (player.getInventory().getStack(slot).isOf(com.witchersbestiary.economy.Currency.CROWN)) player.getInventory().setStack(slot, net.minecraft.item.ItemStack.EMPTY);
+                        for (var item : java.util.List.of(ModItems.BLOOD_LEGACY, ModItems.CRIMSON_PHYLACTERY)) {
+                            int before = player.getInventory().count(item);
+                            var id = net.minecraft.registry.Registries.ITEM.getId(item);
+                            server.getCommandManager().executeWithPrefix(
+                                    player.getCommandSource().withLevel(2), "give @s " + id);
+                            if (player.getInventory().count(item) != before + 1)
+                                throw new IllegalStateException("Give failed: " + id);
+                        }
+                        next(17);
+                    });
+                }
+                case 17 -> {
+                    Files.writeString(output.resolve("item-audit.txt"),
+                            "PASS creative entries, both give IDs, first reward and sealed state");
                     next(99);
                     client.scheduleStop();
                 }

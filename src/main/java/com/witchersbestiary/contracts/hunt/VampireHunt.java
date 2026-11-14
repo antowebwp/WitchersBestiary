@@ -90,6 +90,10 @@ public final class VampireHunt extends Item {
         stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbt));
     }
 
+    public static boolean isSealed(ItemStack stack) {
+        return data(stack).getInt("State") == SEALED;
+    }
+
     private static NbtCompound data(ItemStack stack) {
         return stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
     }

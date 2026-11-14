@@ -1,0 +1,6 @@
+{
+  "parent": "witchersbestiary:item/crimson_phylactery",
+  "textures": {
+    "metal": "witchersbestiary:item/crimson_phylactery_sealed"
+  }
+}

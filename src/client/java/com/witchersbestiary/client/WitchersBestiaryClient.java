@@ -14,6 +14,11 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         com.witchersbestiary.client.fist.FistClient.initialize();
         com.witchersbestiary.client.unicorn.UnicornRenderer.initialize();
         com.witchersbestiary.client.compat.SkillTreeKeyCompat.initialize();
+        net.minecraft.client.item.ModelPredicateProviderRegistry.register(
+                com.witchersbestiary.registry.ModItems.CRIMSON_PHYLACTERY,
+                net.minecraft.util.Identifier.of("witchersbestiary", "sealed"),
+                (stack, world, entity, seed) ->
+                        com.witchersbestiary.contracts.hunt.VampireHunt.isSealed(stack) ? 1 : 0);
         SchoolArmorTooltip.initialize();
         com.witchersbestiary.client.signs.SignsClient.initialize();
         com.witchersbestiary.client.sorcery.SorceryClient.initialize();
