@@ -123,6 +123,13 @@ public final class ModItems {
                     .map(tier -> register(school + "_" + tier + "_template", new Item(new Item.Settings()))))
             .toList();
 
+    public static final java.util.List<Item> MUTAGENS = com.witchersbestiary.alchemy.MutagenItem.registerAll();
+
+    public static final java.util.List<Item> BOMBS =
+            java.util.stream.IntStream.range(0, com.witchersbestiary.alchemy.WitcherBombItem.IDS.size())
+                    .mapToObj(index -> register(com.witchersbestiary.alchemy.WitcherBombItem.IDS.get(index),
+                            new com.witchersbestiary.alchemy.WitcherBombItem(index))).toList();
+
     public static void initialize() {
         ModItemGroups.initialize();
     }

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:mutagen_necrophage_1"
+    },
+    {
+      "item": "witchersbestiary:mutagen_ogroid_1"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:mutagen_necrophage_ogroid_1"
+  }
+}

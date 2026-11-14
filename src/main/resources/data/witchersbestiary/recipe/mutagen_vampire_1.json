@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "witchersbestiary:alchemy/vampire_materials"
+    },
+    {
+      "tag": "witchersbestiary:alchemy/vampire_materials"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:mutagen_vampire_1"
+  }
+}

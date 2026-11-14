@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "witchersbestiary:alchemy/hybrid_materials"
+    },
+    {
+      "tag": "witchersbestiary:alchemy/hybrid_materials"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:mutagen_hybrid_1"
+  }
+}

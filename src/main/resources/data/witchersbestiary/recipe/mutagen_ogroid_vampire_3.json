@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:mutagen_ogroid_3"
+    },
+    {
+      "item": "witchersbestiary:mutagen_vampire_3"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:mutagen_ogroid_vampire_3"
+  }
+}

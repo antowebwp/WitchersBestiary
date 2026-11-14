@@ -27,6 +27,10 @@ public final class AlchemyDamage {
         return withOil(victim,source,amount,com.witchersbestiary.alchemy.InventoryOils.prepare(victim,source));
     }
     public static float withOil(LivingEntity victim,DamageSource source,float amount,com.witchersbestiary.alchemy.InventoryOils.Use oil){
-        return elixirs(victim,source,amount)*(oil==null?1:1+com.witchersbestiary.alchemy.InventoryOils.BONUS);
+        float mutagens = !victim.getWorld().isClient && source.getAttacker() instanceof PlayerEntity player
+                && source.isOf(net.minecraft.entity.damage.DamageTypes.PLAYER_ATTACK)
+                ? com.witchersbestiary.alchemy.MutagenItem.multiplier(player,
+                        victim instanceof CategorizedMonster monster ? monster.getMonsterCategory() : null) : 1;
+        return elixirs(victim,source,amount)*mutagens*(oil==null?1:1+com.witchersbestiary.alchemy.InventoryOils.BONUS);
     }
 }

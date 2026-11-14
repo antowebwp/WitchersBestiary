@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:mutagen_hybrid_1"
+    },
+    {
+      "item": "witchersbestiary:mutagen_insectoid_1"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:mutagen_hybrid_insectoid_1"
+  }
+}

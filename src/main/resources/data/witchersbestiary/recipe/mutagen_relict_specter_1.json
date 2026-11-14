@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "witchersbestiary:mutagen_relict_1"
+    },
+    {
+      "item": "witchersbestiary:mutagen_specter_1"
+    }
+  ],
+  "result": {
+    "id": "witchersbestiary:mutagen_relict_specter_1"
+  }
+}
