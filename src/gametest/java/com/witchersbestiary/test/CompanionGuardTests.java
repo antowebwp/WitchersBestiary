@@ -12,7 +12,7 @@ import net.minecraft.test.*;
 import net.minecraft.util.math.BlockPos;
 
 public final class CompanionGuardTests implements FabricGameTest {
-    @GameTest(templateName="witchersbestiary:village_board_arena",tickLimit=320)
+    @GameTest(templateName="witchersbestiary:village_board_arena",tickLimit=335)
     public void bothPetsGuardAndRetreat(TestContext c) {
         var world=c.getWorld();
         var center=c.getAbsolutePos(new BlockPos(10,10,10));
@@ -91,6 +91,37 @@ public final class CompanionGuardTests implements FabricGameTest {
         c.runAtTick(290,()->{
             c.assertTrue(pets.stream().allMatch(pet->pet.isAlive()&&!pet.isTouchingWater()),
                 "Both pets escape a two-block-deep pool");
+            var feeder = c.createMockPlayer(net.minecraft.world.GameMode.SURVIVAL);
+            for (int i=0;i<2;i++) {
+                var pet=pets.get(i);
+                var ownership = new NbtCompound();
+                pet.writeCustomDataToNbt(ownership);
+                ownership.putUuid(prefixes.get(i)+"Owner", feeder.getUuid());
+                pet.readCustomDataFromNbt(ownership);
+                pet.setHealth(pet.getMaxHealth()*.10f);
+                pet.refreshPositionAndAngles(center.getX()+10.5,center.getY(),center.getZ()+.5,0,0);
+                feeder.refreshPositionAndAngles(pet.getX()+1,pet.getY(),pet.getZ(),0,0);
+                feeder.setStackInHand(net.minecraft.util.Hand.MAIN_HAND,ItemStack.EMPTY);
+                pet.interact(feeder,net.minecraft.util.Hand.MAIN_HAND); // Guard -> Follow
+                pet.interact(feeder,net.minecraft.util.Hand.MAIN_HAND); // Follow -> Wait
+                var saved=new NbtCompound();
+                pet.writeCustomDataToNbt(saved);
+                c.assertTrue(saved.getInt(prefixes.get(i)+"Mode")==1 && pet.getNavigation().isIdle(),"Wait stops a critically wounded companion");
+                float health=pet.getHealth();
+                feeder.setStackInHand(net.minecraft.util.Hand.MAIN_HAND,new ItemStack(i==0?Items.BEEF:Items.STONE,2));
+                pet.interact(feeder,net.minecraft.util.Hand.MAIN_HAND);
+                c.assertTrue(Math.abs(pet.getHealth()-health-6)<.01,"Owner food restores 6 HP");
+                pet.setHealth(pet.getMaxHealth()*.6f);
+                pet.writeCustomDataToNbt(saved);
+                c.assertTrue(saved.getInt(prefixes.get(i)+"Mode")==1,"Healing preserves Wait");
+                feeder.setStackInHand(net.minecraft.util.Hand.MAIN_HAND,ItemStack.EMPTY);
+                pet.interact(feeder,net.minecraft.util.Hand.MAIN_HAND);
+                pet.writeCustomDataToNbt(saved);
+                c.assertTrue(saved.getInt(prefixes.get(i)+"Mode")==2,"Owner can command Guard after feeding");
+                pet.interact(feeder,net.minecraft.util.Hand.MAIN_HAND);
+                pet.writeCustomDataToNbt(saved);
+                c.assertTrue(saved.getInt(prefixes.get(i)+"Mode")==0,"Owner can command Follow after feeding");
+            }
             pets.forEach(net.minecraft.entity.Entity::discard);owner.discard();c.complete();
         });
     }

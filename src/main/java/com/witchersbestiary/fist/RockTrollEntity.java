@@ -52,8 +52,11 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
  @Override protected ActionResult interactMob(PlayerEntity player,Hand hand){
   if(!FistFights.busy(player)&&!FistFights.busy(this)){
    var feeding=feedingCooldown.interact(this,player,hand,getOwnerUuid(),
-       com.witchersbestiary.entity.PetFeeding::meat);
-   if(feeding!=null)return feeding;
+       com.witchersbestiary.entity.PetFeeding::trollFood);
+   if(feeding!=null){
+    if(feeding!=ActionResult.PASS&&!getWorld().isClient)player.sendMessage(duty.status(this),true);
+    return feeding;
+   }
   }
   if(hand!=Hand.MAIN_HAND||!player.getStackInHand(hand).isEmpty()||!player.canInteractWithEntity(this,0)
       ||player.isSpectator()||!isAlive())return ActionResult.PASS;
@@ -80,7 +83,7 @@ public final class RockTrollEntity extends FistNpc implements Tameable {
    setTarget(null);
    resetAttack();
   }
-  var mode=CompanionDuty.label(duty.mode());
+  var mode=duty.status(this);
   player.sendMessage(player.isSneaking()?Text.translatable("troll.witchersbestiary.status",getDisplayName(),player.getDisplayName(),mode):mode,true);
   return ActionResult.CONSUME;
  }

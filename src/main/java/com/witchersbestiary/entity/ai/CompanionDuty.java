@@ -26,6 +26,10 @@ public final class CompanionDuty {
 
     public void cycle(MobEntity pet) {
         mode = Mode.values()[(mode.ordinal() + 1) % Mode.values().length];
+        retreating = false;
+        danger = null;
+        pet.getNavigation().stop();
+        pet.getMoveControl().moveTo(pet.getX(), pet.getY(), pet.getZ(), 0);
         post = guarding() ? pet.getPos() : null;
     }
 
@@ -35,6 +39,11 @@ public final class CompanionDuty {
             case WAIT -> "nekker.witchersbestiary.wait";
             case GUARD -> "companion.witchersbestiary.guard";
         });
+    }
+
+    public Text status(MobEntity pet) {
+        return label(mode).copy().append(" · ").append(Text.translatable("companion.witchersbestiary.health",
+                Math.round(pet.getHealth()*10)/10f, Math.round(pet.getMaxHealth()*10)/10f));
     }
 
     private boolean inside(Vec3d position) {
@@ -51,6 +60,7 @@ public final class CompanionDuty {
 
     // True means this tick belongs exclusively to escape or retreat.
     public boolean emergency(ServerWorld world, MobEntity pet, PlayerEntity owner, Runnable cancelAttack) {
+        if (waiting()) return false;
         if (pet.getHealth() >= pet.getMaxHealth()*.5f) retreating=false;
         else if (pet.getHealth() < pet.getMaxHealth()*.25f) retreating=true;
         boolean wet=pet.isTouchingWater();
@@ -162,6 +172,6 @@ public final class CompanionDuty {
         post=guarding()&&n.contains(prefix+"PostX") ? new Vec3d(n.getDouble(prefix+"PostX"),
             n.getDouble(prefix+"PostY"),n.getDouble(prefix+"PostZ")) : null;
         if(guarding()&&(post==null||!Double.isFinite(post.lengthSquared()))){mode=Mode.WAIT;post=null;}
-        retreating=n.getBoolean(prefix+"Retreating");
+        retreating=!waiting()&&n.getBoolean(prefix+"Retreating");
     }
 }

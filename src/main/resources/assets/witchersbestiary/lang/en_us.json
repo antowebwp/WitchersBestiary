@@ -887,5 +887,7 @@
   "tooltip.witchersbestiary.school_armor.eligible": "Monster bonuses target eligible, non-tamed monsters. Shield blocks and immunity frames can prevent full-set reactions.",
   "tooltip.witchersbestiary.school_armor.tier_details": "Tiers can mix. Upgrades increase durability and armor toughness. Enchantments are listed separately.",
   "entity.witchersbestiary.higher_vampire": "Higher Vampire",
-  "item.witchersbestiary.higher_vampire_spawn_egg": "Higher Vampire Spawn Egg"
+  "item.witchersbestiary.higher_vampire_spawn_egg": "Higher Vampire Spawn Egg",
+  "item.witchersbestiary.blood_legacy": "Blood Legacy",
+  "companion.witchersbestiary.health": "Health %s / %s"
 }

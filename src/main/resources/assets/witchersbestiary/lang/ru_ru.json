@@ -887,5 +887,7 @@
   "tooltip.witchersbestiary.school_armor.eligible": "Бонусы действуют против подходящих неприручённых чудовищ. Блок щитом и кадры неуязвимости могут помешать реакции.",
   "tooltip.witchersbestiary.school_armor.tier_details": "Ступени можно смешивать. Улучшения повышают прочность и твёрдость брони. Зачарования показаны отдельно.",
   "entity.witchersbestiary.higher_vampire": "Высший вампир",
-  "item.witchersbestiary.higher_vampire_spawn_egg": "Яйцо призыва высшего вампира"
+  "item.witchersbestiary.higher_vampire_spawn_egg": "Яйцо призыва высшего вампира",
+  "item.witchersbestiary.blood_legacy": "Кровавое наследие",
+  "companion.witchersbestiary.health": "Здоровье %s / %s"
 }

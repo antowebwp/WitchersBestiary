@@ -25,6 +25,19 @@ public final class PetFeeding {
         return stack.isIn(COOKED_MEAT) ? 6 : stack.isIn(RAW_MEAT) ? 4 : 0;
     }
 
+    public static int nekkerFood(ItemStack stack) {
+        if (stack.isOf(net.minecraft.item.Items.BEEF) || stack.isOf(net.minecraft.item.Items.PORKCHOP)
+                || stack.isOf(net.minecraft.item.Items.MUTTON)) return 6;
+        return stack.isOf(net.minecraft.item.Items.CHICKEN) || stack.isOf(net.minecraft.item.Items.RABBIT) ? 4 : 0;
+    }
+
+    public static int trollFood(ItemStack stack) {
+        if (stack.isOf(net.minecraft.item.Items.STONE) || stack.isOf(net.minecraft.item.Items.COBBLESTONE)
+                || stack.isOf(net.minecraft.item.Items.DEEPSLATE)) return 6;
+        return stack.isOf(net.minecraft.item.Items.ANDESITE) || stack.isOf(net.minecraft.item.Items.DIORITE)
+                || stack.isOf(net.minecraft.item.Items.GRANITE) ? 4 : 0;
+    }
+
     /** Returns null when the entity should continue its usual interaction. */
     public ActionResult interact(LivingEntity pet, PlayerEntity player, Hand hand, UUID owner,
             ToIntFunction<ItemStack> nutrition) {

@@ -29,7 +29,7 @@ public final class ModItemGroups {
     private static final List<Item> ELIXIRS = List.of(ModItems.RELICT_ELIXIR, ModItems.NECROPHAGE_ELIXIR, ModItems.SPECTER_ELIXIR,ModItems.CURSED_ELIXIR,ModItems.VAMPIRE_ELIXIR,ModItems.CLEAR_MIND_ELIXIR);
     private static final List<Item> OILS = List.of(ModItems.RELICT_OIL, ModItems.NECROPHAGE_OIL, ModItems.SPECTER_OIL,ModItems.CURSED_OIL,ModItems.VAMPIRE_OIL,ModItems.INSECTOID_OIL,ModItems.OGROID_OIL,ModItems.HYBRID_OIL);
     /** Add newly registered items here and to their appropriate category above. */
-    private static final List<Item> BASE_ITEMS = List.of(ModItems.STEEL_HUNTER_SWORD,ModItems.SILVER_WITCHER_SWORD,ModItems.GRAVE_BLADE,
+    private static final List<Item> BASE_ITEMS = List.of(ModItems.STEEL_HUNTER_SWORD,ModItems.SILVER_WITCHER_SWORD,ModItems.BLOOD_LEGACY,ModItems.GRAVE_BLADE,
             ModItems.GRAVE_HAG_SPAWN_EGG,ModItems.WATER_HAG_SPAWN_EGG, ModItems.LESHEN_SPAWN_EGG, ModItems.DROWNER_SPAWN_EGG, ModItems.GHOUL_SPAWN_EGG, ModItems.FOGLET_SPAWN_EGG,
             ModItems.WATER_HAG_HEAD, ModItems.GRAVE_HAG_HEAD, ModItems.LESHEN_HEAD, ModItems.DROWNER_HEAD, ModItems.GHOUL_HEAD, ModItems.FOGLET_HEAD,
             ModItems.GRAVEBOUND_STEEL_FRAGMENT,ModItems.GRAVE_HAG_TONGUE,ModItems.GRAVEYARD_ESSENCE,ModItems.NECROPHAGE_REMAINS,ModItems.SWAMP_GLAND,ModItems.MUDDY_CLAW,ModItems.MUD_CLOD,ModItems.FOREST_ESSENCE, ModItems.ANCIENT_LESHEN_HEART,

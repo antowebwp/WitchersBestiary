@@ -134,13 +134,15 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
             return ActionResult.success(getWorld().isClient);
         }
         if (!canAccess(player)) return ActionResult.PASS;
-        if (!player.isSneaking()) {
-            var feeding = feedingCooldown.interact(this, player, hand, getOwnerUuid(),
-                com.witchersbestiary.entity.PetFeeding::meat);
-            if (feeding != null) return feeding;
+        var feeding = feedingCooldown.interact(this, player, hand, getOwnerUuid(),
+            com.witchersbestiary.entity.PetFeeding::nekkerFood);
+        if (feeding != null) {
+            if (feeding != ActionResult.PASS && !getWorld().isClient) player.sendMessage(duty.status(this), true);
+            return feeding;
         }
         if (player.isSneaking()) {
             if (player instanceof ServerPlayerEntity serverPlayer) {
+                serverPlayer.sendMessage(duty.status(this), true);
                 serverPlayer.openHandledScreen(new ExtendedScreenHandlerFactory<Integer>() {
                     @Override public Integer getScreenOpeningData(ServerPlayerEntity p) { return getId(); }
                     @Override public Text getDisplayName() { return Text.translatable("nekker.witchersbestiary.title"); }
@@ -157,7 +159,7 @@ public final class NekkerEntity extends HostileEntity implements CategorizedMons
             setTarget(null);
             cancelCombatForStun();
             stopTriggeredAnim("action", null);
-            player.sendMessage(CompanionDuty.label(duty.mode()), true);
+            player.sendMessage(duty.status(this), true);
         }
         return ActionResult.success(getWorld().isClient);
     }
