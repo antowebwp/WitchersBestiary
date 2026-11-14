@@ -20,9 +20,16 @@ public final class SignFormsTests implements FabricGameTest {
 
     private static ServerPlayerEntity player(TestContext context) {
         // The embedded login fixture cannot negotiate Cardinal Components payloads.
-        var player = context.createMockCreativeServerPlayerInWorld();
+        var world = context.getWorld();
+        var id = java.util.UUID.randomUUID();
+        var profile = new com.mojang.authlib.GameProfile(id, "sign" + id.toString().substring(0, 8));
+        var data = net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
+        var player = new ServerPlayerEntity(world.getServer(), world, profile, data.syncedOptions());
+        player.networkHandler = new net.minecraft.server.network.ServerPlayNetworkHandler(world.getServer(),
+                new net.minecraft.network.ClientConnection(net.minecraft.network.NetworkSide.SERVERBOUND), player, data);
         player.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
         player.setNoGravity(true);
+        for (int tick = 0; tick < 61; tick++) player.tick();
         var position = context.getAbsolutePos(new BlockPos(6, 2, 6));
         player.refreshPositionAndAngles(position.getX() + .5, position.getY(), position.getZ() + .5, 0, 0);
         return player;
@@ -58,7 +65,12 @@ public final class SignFormsTests implements FabricGameTest {
         var scoreboard=c.getWorld().getScoreboard();var team=scoreboard.addTeam("wb_aura_test");
         scoreboard.addScoreHolderToTeam(p.getNameForScoreboard(),team);scoreboard.addScoreHolderToTeam(ally.getNameForScoreboard(),team);
         ally.setPosition(p.getX()+2,p.getY(),p.getZ());
-        c.assertTrue(SignManager.cast(p,1,1)&&SignManager.protect(ally,c.getWorld().getDamageSources().fall(),5)==0,"Aura shares finite shield with teammate");
+        c.getWorld().onPlayerConnected(p);
+        try {
+            c.assertTrue(SignManager.cast(p,1,1)&&SignManager.protect(ally,c.getWorld().getDamageSources().fall(),5)==0,"Aura shares finite shield with teammate");
+        } finally {
+            c.getWorld().removePlayer(p, net.minecraft.entity.Entity.RemovalReason.DISCARDED);
+        }
         scoreboard.removeTeam(team);p.discard();ally.discard();c.complete();
     }
 
