@@ -3,7 +3,7 @@ package com.witchersbestiary.test;
 import com.witchersbestiary.signs.*;
 import net.fabricmc.fabric.api.gametest.v1.FabricGameTest;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.*;
 
@@ -12,10 +12,20 @@ public final class SignFormsTests implements FabricGameTest {
     private final SignTests fixtures=new SignTests();
 
     ServerPlayerEntity equipped(TestContext c,SignType sign,int form) {
-        var p=fixtures.player(c);var state=SignManager.state(p);state.award(100);
+        var p=player(c);var state=SignManager.state(p);state.learn(sign);state.award(100);
         for(var node:SignPlayerState.Upgrade.values())state.upgrade(sign,node);
         c.assertTrue(state.unlock(sign,form)&&state.equip(sign,1,form)&&state.select(sign),"Alternate unlocked and equipped");
         return p;
+    }
+
+    private static ServerPlayerEntity player(TestContext context) {
+        // The embedded login fixture cannot negotiate Cardinal Components payloads.
+        var player = context.createMockCreativeServerPlayerInWorld();
+        player.changeGameMode(net.minecraft.world.GameMode.SURVIVAL);
+        player.setNoGravity(true);
+        var position = context.getAbsolutePos(new BlockPos(6, 2, 6));
+        player.refreshPositionAndAngles(position.getX() + .5, position.getY(), position.getZ() + .5, 0, 0);
+        return player;
     }
 
     @GameTest(templateName=ARENA)
@@ -44,7 +54,7 @@ public final class SignFormsTests implements FabricGameTest {
             c.assertTrue(SignManager.protect(p,c.getWorld().getDamageSources().mobAttack(foe),hit)<hit&&foe.getHealth()<20,"Quen burst or reflection damages hostile attacker");
             foe.discard();p.discard();
         }
-        var p=equipped(c,SignType.QUEN,3);var ally=fixtures.player(c);
+        var p=equipped(c,SignType.QUEN,3);var ally=player(c);
         var scoreboard=c.getWorld().getScoreboard();var team=scoreboard.addTeam("wb_aura_test");
         scoreboard.addScoreHolderToTeam(p.getNameForScoreboard(),team);scoreboard.addScoreHolderToTeam(ally.getNameForScoreboard(),team);
         ally.setPosition(p.getX()+2,p.getY(),p.getZ());
