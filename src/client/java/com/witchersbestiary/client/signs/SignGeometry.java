@@ -57,8 +57,21 @@ final class SignGeometry {
                         if(target==null||!target.isAlive())continue;
                         var head=target.getLerpedPos(context.tickCounter().getTickDelta(false)).subtract(camera)
                                 .add(0,target.getHeight()+.24,0);
-                        ring(out,matrix,head,.36+.04*p.form(),.025,12,age*.16,0xffce60,(int)(180*fade));
-                        if(age<7) tube(out,matrix,origin,head.subtract(origin),.027,.09,5,0xffd377,(int)(125*fade));
+                        var facing=camera.subtract(head.add(camera)).multiply(1,0,1).normalize();
+                        var side=new Vec3d(-facing.z,0,facing.x);
+                        var left=head.add(side.multiply(-.19)).add(0,.31,0);
+                        var right=head.add(side.multiply(.19)).add(0,.31,0);
+                        var tip=head.add(0,-.02,0);
+                        int green=0x8cffad;
+                        int opacity=(int)(235*fade);
+                        sigilStroke(out,matrix,left,right,green,opacity);
+                        sigilStroke(out,matrix,right,tip,green,opacity);
+                        sigilStroke(out,matrix,tip,left,green,opacity);
+                        sigilStroke(out,matrix,head.add(0,.21,0),right.add(0,-.10,0).subtract(side.multiply(.055)),green,opacity);
+                        for(int i=0;i<3;i++)
+                            ring(out,matrix,head.add(0,-.13-i*.095,0),.48-i*.035,.035,23,age*.14+i*.8,
+                                    i==0?0x56ff81:0x24d864,(int)((160-i*34)*fade));
+                        if(age<5) tube(out,matrix,origin,head.subtract(origin),.017,.035,5,0x46ef83,(int)(95*fade));
                     }
                     default -> { }
                 }
@@ -69,19 +82,46 @@ final class SignGeometry {
     private static void flame(VertexConsumer out,Matrix4f m,Vec3d o,Vec3d delta,int form,float arc,double age,double fade){
         if(delta.lengthSquared()<.001)return;
         if(form==1){ring(out,m,o,delta.length()*Math.min(1,(age+1)/7),.25,32,age*.04,0xff6328,(int)(165*fade));return;}
-        double length=form==2?1:Math.min(1,(age+1)/6);
-        var forward=delta.normalize();
-        double width=form==2?.33:delta.length()*Math.tan(Math.toRadians(arc))*.79*length;
-        for(int i=0;i<6;i++){
-            double begin=i/6.0,end=(i+1)/6.0;
-            double a=form==2?width:Math.max(.1,width*begin);
-            double b=form==2?width:Math.max(.1,width*end);
-            double ripple=1+.13*Math.sin(age*1.12-i*1.8);
-            var start=o.add(delta.multiply(begin*length));
-            var segment=forward.multiply(delta.length()*(end-begin)*length);
-            tube(out,m,start,segment,a*ripple,b*ripple,7,0xff511c,(int)(112*fade));
-            tube(out,m,start,segment,a*.44,b*.44,6,0xffd172,(int)(178*fade));
+        boolean breath=form==2;
+        double reach=delta.length();
+        double front=breath?1:Math.min(1,(age+1)/6);
+        var axis=delta.normalize();
+        var side=axis.crossProduct(new Vec3d(0,1,0)).normalize();
+        if(side.lengthSquared()<.05)side=new Vec3d(1,0,0);
+        var up=side.crossProduct(axis);
+        int count=breath?25:29;
+        for(int i=0;i<count;i++){
+            double seed=i*2.399963;
+            double phase=(i*.618033+age*(breath?.085:.046))%1;
+            double start=phase*front;
+            double length=Math.min(front-start,(breath?.18:.32)+.09*Math.sin(seed));
+            if(length<.025)continue;
+            double angle=seed+.32*Math.sin(age*.62+seed);
+            var radial=side.multiply(Math.cos(angle)).add(up.multiply(Math.sin(angle)));
+            var across=side.multiply(-Math.sin(angle)).add(up.multiply(Math.cos(angle)));
+            for(int band=0;band<3;band++){
+                int color=switch(band){case 0->0xec4316;case 1->0xff8e25;default->0xffdf76;};
+                double width=switch(band){case 0->1;case 1->.65;default->.30;};
+                int alpha=(int)((band==0?105:band==1?155:195)*fade*Math.min(1,(1-phase)*5));
+                Vec3d priorLeft=null,priorRight=null;
+                for(int step=0;step<=4;step++){
+                    double t=step/4.0, distance=start+length*t;
+                    double envelope=breath?.40:Math.min(1.45,reach*distance*Math.tan(Math.toRadians(arc))*.67);
+                    double edge=envelope*(.22+.47*Math.sin(t*2.1))*(.67+.29*Math.sin(seed+age*.73+t*5));
+                    var center=o.add(delta.multiply(distance)).add(radial.multiply(edge))
+                            .add(up.multiply(envelope*.28*t*t));
+                    double half=width*envelope*.38*Math.pow(Math.sin(Math.PI*t),.65);
+                    var left=center.subtract(across.multiply(half));
+                    var right=center.add(across.multiply(half));
+                    if(priorLeft!=null)quad(out,m,priorLeft,left,right,priorRight,color,alpha);
+                    priorLeft=left;priorRight=right;
+                }
+            }
         }
+    }
+
+    private static void sigilStroke(VertexConsumer out,Matrix4f m,Vec3d a,Vec3d b,int color,int alpha){
+        tube(out,m,a,b.subtract(a),.019,.019,5,color,alpha);
     }
 
     private static void wave(VertexConsumer out,Matrix4f m,Vec3d o,Vec3d delta,int form,float arc,double age,double fade){
