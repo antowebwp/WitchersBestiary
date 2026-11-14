@@ -1,6 +1,9 @@
 package com.witchersbestiary.test;
 
-import com.witchersbestiary.client.vfx.VfxManager;
+import com.witchersbestiary.client.signs.SignGeometry;
+import com.witchersbestiary.client.signs.QuenShellRenderer;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.decoration.ArmorStandEntity;
 import com.witchersbestiary.signs.SignPackets;
 import com.witchersbestiary.signs.SignType;
 import java.nio.file.Path;
@@ -13,16 +16,19 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.resource.DataConfiguration;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.*;
 import net.minecraft.world.gen.GeneratorOptions;
 import net.minecraft.world.gen.WorldPresets;
 import net.minecraft.world.level.LevelInfo;
 
 final class ArcaneFxCapture implements ClientModInitializer {
-    private static final String[] NAMES = {"igni_normal", "igni_breath_side", "igni_breath_45"};
+    private static final SignType[] SIGNS = {
+            SignType.IGNI, SignType.AARD, SignType.YRDEN, SignType.QUEN, SignType.AXII
+    };
+    private ArmorStandEntity target;
     private boolean started;
-    private int ticks, shot, frames;
+    private int ticks, shot;
+    private long captureAt = Long.MAX_VALUE;
     private CompletableFuture<Void> write;
 
     @Override
@@ -52,30 +58,50 @@ final class ArcaneFxCapture implements ClientModInitializer {
             if (!write.isDone()) return;
             write.join();
             write = null;
-            if (++shot == NAMES.length) {
+            if (++shot == SIGNS.length * 4) {
                 client.scheduleStop();
                 return;
             }
-            ticks = 59;
+            ticks = 48;
         }
-        if (shot >= NAMES.length || ++ticks < 60) return;
+        if (captureAt != Long.MAX_VALUE || shot >= SIGNS.length * 4 || ++ticks < 60) return;
+        var sign = SIGNS[shot / 4];
+        int form = shot % 4;
         client.player.setYaw(0);
-        client.player.setPitch(13);
-        var center = client.player.getEyePos().add(0, -.6, 6);
-        boolean diagonal = shot == 2;
-        var axis = diagonal ? new Vec3d(1, 0, 1).normalize() : new Vec3d(1, 0, 0);
-        var from = center.subtract(axis.multiply(2.5));
-        var to = center.add(axis.multiply(2.5));
-        boolean breath = shot != 0;
-        VfxManager.igni(new SignPackets.Visual(shot, SignType.IGNI.ordinal(), breath ? 2 : 0,
-                breath ? 8 : 9, from, to, breath ? .45f : 27f), client.world.getTime() - 4);
-        frames = 1;
+        client.player.setPitch(sign == SignType.YRDEN ? 26 : 8);
+        var feet = client.player.getPos().add(0, 0, 4);
+        if (target != null) {
+            client.world.removeEntity(target.getId(), net.minecraft.entity.Entity.RemovalReason.DISCARDED);
+            target = null;
+        }
+        if (sign == SignType.AXII || sign == SignType.QUEN) {
+            target = new ArmorStandEntity(EntityType.ARMOR_STAND, client.world);
+            target.setId(-100 - shot);
+            target.setPosition(feet);
+            target.equipStack(net.minecraft.entity.EquipmentSlot.HEAD,
+                    new net.minecraft.item.ItemStack(net.minecraft.item.Items.IRON_HELMET));
+            client.world.addEntity(target);
+        }
+        switch (sign) {
+            case QUEN -> QuenShellRenderer.accept(new SignPackets.QuenShell(target.getId(), form, 12));
+            case AXII -> SignGeometry.accept(new SignPackets.Visual(target.getId(), sign.ordinal(), form, 12,
+                    feet, feet, .42f));
+            case YRDEN -> SignGeometry.accept(new SignPackets.Visual(shot, sign.ordinal(), form, 12,
+                    feet, feet, form == 2 ? 1.85f : 3));
+            default -> {
+                var from = sign == SignType.AARD ? feet.add(0, 1, -1.5) : feet.add(-2.5, 1, 1);
+                var to = sign == SignType.AARD ? from.add(0, 0, 5) : from.add(5, 0, 0);
+                SignGeometry.accept(new SignPackets.Visual(shot, sign.ordinal(), form, 9,
+                        from, to, form == 1 ? 180 : sign == SignType.IGNI ? 37.5f : 45));
+            }
+        }
+        captureAt = client.world.getTime() + 4;
     }
 
     private void capture(MinecraftClient client) {
-        if (frames == 0 || write != null) return;
-        frames = 0;
-        var path = Path.of("..", NAMES[shot] + ".png");
+        if (client.world == null || client.world.getTime() < captureAt || write != null) return;
+        captureAt = Long.MAX_VALUE;
+        var path = Path.of("..", SIGNS[shot / 4].name().toLowerCase(java.util.Locale.ROOT) + "-" + shot % 4 + ".png");
         var image = ScreenshotRecorder.takeScreenshot(client.getFramebuffer());
         write = CompletableFuture.runAsync(() -> {
             try (image) {
