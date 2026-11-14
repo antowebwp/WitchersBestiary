@@ -13,7 +13,13 @@ public final class WanderingMerchantLifecycleTests implements FabricGameTest {
         var clock = server.getSaveProperties().getMainWorldProperties();
         var ledger = MerchantLedger.get(server);
         var origin = c.getAbsolutePos(new BlockPos(1, 2, 1));
-        var player = c.createMockCreativeServerPlayerInWorld();
+
+var id = java.util.UUID.randomUUID();
+var profile = new com.mojang.authlib.GameProfile(id, "trade" + id.toString().substring(0, 8));
+var data = net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
+var player = new net.minecraft.server.network.ServerPlayerEntity(world.getServer(), world, profile, data.syncedOptions());
+player.networkHandler = new net.minecraft.server.network.ServerPlayNetworkHandler(world.getServer(),
+        new net.minecraft.network.ClientConnection(net.minecraft.network.NetworkSide.SERVERBOUND), player, data);
         player.setNoGravity(true);
         player.refreshPositionAndAngles(origin.getX() + .5, origin.getY(), origin.getZ() + .5, 0, 0);
         c.runAtTick(10, () -> {
@@ -25,6 +31,7 @@ public final class WanderingMerchantLifecycleTests implements FabricGameTest {
                 for (int x = -5; x <= 5; x++) for (int z = -5; z <= 5; z++) {
                     world.getChunk(player.getChunkPos().x + x, player.getChunkPos().z + z);
                 }
+                world.onPlayerConnected(player);
                 ledger.nextWander = initialTime;
                 ledger.wanderer = null;
                 ledger.wanderDeparture = 0;
@@ -62,7 +69,7 @@ public final class WanderingMerchantLifecycleTests implements FabricGameTest {
                 ledger.nextWander = initialNext;
                 ledger.markDirty();
                 clock.setTime(initialTime);
-                player.discard();
+                world.removePlayer(player, net.minecraft.entity.Entity.RemovalReason.DISCARDED);
             }
             c.complete();
         });

@@ -51,6 +51,13 @@ loom {
   'witchersbestiary-client-tests' { sourceSet sourceSets.clientSmoke }
  }
  runs {
+  stage22hReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage22hReview=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/stage22h-review/client'
+  }
   stage22gReview {
    client()
    source sourceSets.clientSmoke

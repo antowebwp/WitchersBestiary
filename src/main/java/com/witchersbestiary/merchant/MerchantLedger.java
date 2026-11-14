@@ -3,7 +3,7 @@ import java.util.*;import net.minecraft.world.PersistentState;import net.minecra
 /** Durable settlement claims: unloaded or dead merchants never trigger duplicate creation. */
 public final class MerchantLedger extends PersistentState {
  public static final Type<MerchantLedger> TYPE=new Type<>(MerchantLedger::new,MerchantLedger::read,null);
- public static final class Claim {public UUID entity;public int attempts,searchVersion=2;public long next;}
+ public static final class Claim {public UUID entity;public int attempts,searchVersion=3;public long next;}
  public final Map<String,Claim> villages=new HashMap<>();public long nextWander;public long wanderDeparture;public UUID wanderer;private NbtCompound future;
  public boolean readOnly(){return future!=null;}
  public static MerchantLedger get(MinecraftServer s){return s.getOverworld().getPersistentStateManager().getOrCreate(TYPE,"witchersbestiary_arcane_merchants");}
