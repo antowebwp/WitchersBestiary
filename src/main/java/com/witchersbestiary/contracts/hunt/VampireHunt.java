@@ -34,10 +34,50 @@ public final class VampireHunt extends Item {
             throw new IllegalStateException("This legendary hunt has already been accepted");
     }
 
+    public static boolean prepare(ServerPlayerEntity player, ContractInstance c, BlockPos board) {
+        var world=player.getServerWorld();
+        var tombs=net.minecraft.registry.tag.TagKey.of(net.minecraft.registry.RegistryKeys.STRUCTURE,
+                com.witchersbestiary.world.graveyard.VampireTomb.ID);
+        BlockPos located=world.locateStructure(tombs,board,36,false);
+        if(located==null)return false;
+        var chunk=world.getChunk(located.getX()>>4,located.getZ()>>4);
+        var chamber=chunk.getStructureStarts().values().stream().flatMap(start->start.getChildren().stream())
+                .filter(com.witchersbestiary.world.graveyard.VampireTomb.Chamber.class::isInstance)
+                .map(com.witchersbestiary.world.graveyard.VampireTomb.Chamber.class::cast).findFirst().orElse(null);
+        if(chamber==null)return false;
+        var entry=chamber.entry();
+        c.hunt=new SwampHunt(world.getRegistryKey().getValue().toString(),board);
+        c.vampireArena=chamber.arena();
+        // Only the immediate approach is loaded for the existing two-clue route planner.
+        for(int dx=-4;dx<=4;dx++)for(int dz=-4;dz<=4;dz++) world.getChunk((entry.getX()>>4)+dx,(entry.getZ()>>4)+dz);
+        return com.witchersbestiary.contracts.tracking.Investigations.prepare(player,c,entry.north(3));
+    }
+
+    public static boolean awaken(ServerPlayerEntity owner, ContractInstance c) {
+        var world=owner.getServerWorld();var at=c.vampireArena;
+        if(at==null||c.hunt==null||c.vampire!=null||!first(c)||!c.owner().equals(owner.getUuid())
+                ||!c.hunt.dimension.equals(world.getRegistryKey().getValue().toString())
+                ||!owner.isAlive()||owner.isSpectator()||owner.squaredDistanceTo(at.toCenterPos())>12*12
+                ||!world.isChunkLoaded(at))return false;
+        var center=Vec3d.ofBottomCenter(at);
+        var box=net.minecraft.entity.EntityDimensions.changing(1.32f,3.2f).getBoxAt(center);
+        if(!world.isSpaceEmpty(box)||world.containsFluid(box)||!world.getOtherEntities(null,box).isEmpty())return false;
+        var boss=ModEntities.HIGHER_VAMPIRE.create(world);
+        if(boss==null)return false;
+        boss.refreshPositionAndAngles(center.x,center.y,center.z,180,0);
+        boss.markHuntBinding();boss.setTarget(owner);
+        if(!world.spawnEntity(boss))return false;
+        c.vampire=boss.getUuid();c.hunt.target=c.vampire;c.hunt.position=at;c.hunt.status=SwampHunt.Status.ACTIVE;
+        com.witchersbestiary.contracts.tracking.Investigations.targetSpawned(c,at);
+        ContractState.get(owner.getServer()).markDirty();
+        return true;
+    }
+
     public static void issue(ServerPlayerEntity player, ContractInstance contract) {
         if (!ID.equals(contract.definition().id())) return;
         var stack = new ItemStack(ModItems.CRIMSON_PHYLACTERY);
         save(stack, contract, EMPTY);
+        if(contract.investigation!=null)com.witchersbestiary.contracts.tracking.Investigations.accepted(player,contract);
         if (!player.getInventory().insertStack(stack)) player.dropItem(stack, false);
     }
 
@@ -70,7 +110,7 @@ public final class VampireHunt extends Item {
         if (store.readOnly() || boss.isDefeated() || boss.isHybrid() || boss.getWorld()!=owner.getWorld()) return false;
         var c = store.ownedBy(owner.getUuid()).stream().filter(h -> ID.equals(h.definition().id())
                 && h.status()==ContractInstance.Status.ACCEPTED && h.vampire==null).findFirst().orElse(null);
-        if (c==null || boss.hasHuntBinding()) return false;
+        if (c==null || c.vampireArena!=null || boss.hasHuntBinding()) return false;
         c.vampire=boss.getUuid();
         boss.markHuntBinding();
         store.markDirty();
@@ -135,6 +175,10 @@ public final class VampireHunt extends Item {
         var store=ContractState.get(player.getServer());
         boolean initial=first(c);
         if (initial && !c.credit(boss.getUuid(),player.getUuid(),ID,System.currentTimeMillis())) return;
+        if(initial&&c.hunt!=null){
+            c.hunt.status=SwampHunt.Status.DEAD;
+            c.investigation.stage=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.COMPLETED;
+        }
         c.vampire=null;
         c.replayGeneration++;
         save(stack,c,SEALED);

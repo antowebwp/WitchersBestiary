@@ -12,6 +12,7 @@ public final class ContractInstance {
     public String village;
     public UUID offer, generation, vampire;
     public int replayGeneration;
+    public net.minecraft.util.math.BlockPos vampireArena;
     private final UUID id, owner;
     private final ContractDefinition definition;
     private final long created, expires;
@@ -52,7 +53,7 @@ public final class ContractInstance {
     public NbtCompound toNbt() {
         var n = new NbtCompound(); if(offer!=null){n.putString("Village",village);n.putUuid("Offer",offer);n.putUuid("Generation",generation);} n.putUuid("Id", id); n.putUuid("Owner", owner);
         n.putString("Definition", definition.toJson().toString()); n.putString("Status", status.name()); n.putLong("Created", created);
-        var list = new NbtList(); kills.stream().sorted().forEach(k -> list.add(NbtString.of(k.toString()))); n.put("Kills", list); if(hunt!=null)n.put("Hunt",hunt.write());if(procedural!=null)n.put("Procedural",procedural.write());if(investigation!=null)n.put("Investigation",investigation.write()); if(vampire!=null)n.putUuid("Vampire",vampire); n.putInt("ReplayGeneration",replayGeneration); return n;
+        var list = new NbtList(); kills.stream().sorted().forEach(k -> list.add(NbtString.of(k.toString()))); n.put("Kills", list); if(hunt!=null)n.put("Hunt",hunt.write());if(procedural!=null)n.put("Procedural",procedural.write());if(investigation!=null)n.put("Investigation",investigation.write()); if(vampire!=null)n.putUuid("Vampire",vampire); n.putInt("ReplayGeneration",replayGeneration); if(vampireArena!=null)n.putLong("VampireArena",vampireArena.asLong()); return n;
     }
     public static ContractInstance fromNbt(NbtCompound n) {
         var j = com.google.gson.JsonParser.parseString(n.getString("Definition")).getAsJsonObject();
@@ -71,6 +72,7 @@ public final class ContractInstance {
         if(com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(d.id())&&c.procedural==null)throw new IllegalArgumentException("Missing saved procedural profile; refusing reroll");
         if(n.contains("Investigation")){c.investigation=com.witchersbestiary.contracts.tracking.ContractInvestigation.read(n.getCompound("Investigation"));if(!c.id.equals(c.investigation.contract)||!c.owner.equals(c.investigation.owner)||c.hunt==null||!c.hunt.dimension.equals(c.investigation.dimension))throw new IllegalArgumentException("Investigation owner mismatch");}
         if(n.containsUuid("Vampire"))c.vampire=n.getUuid("Vampire");
+        if(n.contains("VampireArena"))c.vampireArena=net.minecraft.util.math.BlockPos.fromLong(n.getLong("VampireArena"));
         c.replayGeneration=n.getInt("ReplayGeneration");
         return c;
     }

@@ -11,7 +11,14 @@
       {
         "item": "witchersbestiary:blood_legacy",
         "count": 1
+      },
+      {
+        "item": "witchersbestiary:witcher_crown",
+        "count": 2000
       }
     ]
+  },
+  "eligibility": {
+    "dimension": "minecraft:overworld"
   }
 }

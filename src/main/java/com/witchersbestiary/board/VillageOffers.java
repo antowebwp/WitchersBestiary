@@ -48,12 +48,15 @@ public final class VillageOffers extends PersistentState {
     public Generation current(String village, long age, List<String> eligible) {
         if (future != null) throw new IllegalStateException("Future village offer schema preserved read-only");
         var old = villages.get(village);
-        if (old != null && (!legendaryKey(village) || old.offers().size()==3) && (age < old.created() || age - old.created() < INTERVAL)) return old;
+        if (old != null && (age < old.created() || age - old.created() < INTERVAL)) return old;
         var pool = new ArrayList<>(new LinkedHashSet<>(eligible));
-        int slots = legendaryKey(village) ? 3 : 5;
+        boolean legends=legendaryKey(village);
+        boolean vampireCycle=legends && pool.size()>2 && Math.floorMod(age/INTERVAL+village.hashCode(),3)==0;
+        int slots = legends ? (vampireCycle?3:2) : 5;
         if (pool.size() < slots) throw new IllegalStateException("Five eligible species required");
         if (slots == 5) Collections.shuffle(pool);
-        else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst())) Collections.reverse(pool);
+        else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst()))
+            Collections.swap(pool,0,1);
         var offers = new ArrayList<Offer>(5);
         for (int i = 0; i < slots; i++) offers.add(new Offer(UUID.randomUUID(), pool.get(i)));
         var next = new Generation(UUID.randomUUID(), age, offers);

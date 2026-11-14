@@ -1,0 +1,7 @@
+{
+  "type": "witchersbestiary:ancient_vampire_tomb",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures",
+  "spawn_overrides": {},
+  "terrain_adaptation": "none"
+}

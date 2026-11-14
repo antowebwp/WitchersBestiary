@@ -893,11 +893,13 @@
   "effect.witchersbestiary.bleeding": "Кровотечение",
   "tooltip.witchersbestiary.blood_legacy": "Накладывает кровотечение при попадании мечом.",
   "item.witchersbestiary.crimson_phylactery": "Филактерий Багровой печати",
-  "hunt.witchersbestiary.higher_vampire": "Багровая печать",
-  "hunt.witchersbestiary.higher_vampire.description": "Запечатайте поверженного Высшего вампира. До появления гробницы бой привязывает оператор.",
+  "hunt.witchersbestiary.higher_vampire": "Кровь древних",
+  "hunt.witchersbestiary.higher_vampire.description": "Проследите путь к древней гробнице и запечатайте вампира.",
   "item.witchersbestiary.crimson_phylactery.state.0": "Пустой",
   "item.witchersbestiary.crimson_phylactery.state.1": "Запечатан · ПКМ для повторного боя",
   "item.witchersbestiary.crimson_phylactery.state.2": "Повторный бой · Запечатайте снова",
   "item.witchersbestiary.crimson_phylactery.progress": "Запечатывание: %s%%",
-  "item.witchersbestiary.crimson_phylactery.claim": "Заберите Кровавое наследие на доске, когда освободите место."
+  "item.witchersbestiary.crimson_phylactery.claim": "Заберите Кровавое наследие на доске, когда освободите место.",
+  "tracking.witchersbestiary.finding.higher_vampire.blood_trace": "Пятна крови на месте исчезновения путника.",
+  "tracking.witchersbestiary.finding.higher_vampire.mist_residue": "Неестественный холод выдаёт подход к гробнице."
 }

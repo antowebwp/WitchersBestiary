@@ -20,6 +20,7 @@ public final class WitchersBestiary implements ModInitializer {
         com.witchersbestiary.config.ModConfig.initialize();
         ModEntities.initialize();
         com.witchersbestiary.world.graveyard.GraveyardStructure.initialize();
+        com.witchersbestiary.world.graveyard.VampireTomb.initialize();
         com.witchersbestiary.world.graveyard.GraveyardHaunting.initialize();
         com.witchersbestiary.combat.ProgressiveDifficulty.initialize();
         ModBlocks.initialize();

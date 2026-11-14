@@ -47,6 +47,9 @@ public final class Contracts {
         if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c,board)){
             throw new IllegalStateException("No safe loaded hunt area within 350 blocks with two clues; contract not accepted");
         }
+        if (requireRoute && com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(definitionId)
+                && !com.witchersbestiary.contracts.hunt.VampireHunt.prepare(player,c,board))
+            throw new IllegalStateException("No reachable vampire tomb was found near this board");
         store.add(c); com.witchersbestiary.contracts.hunt.VampireHunt.issue(player,c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
     /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */
