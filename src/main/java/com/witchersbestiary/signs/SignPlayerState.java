@@ -4,6 +4,7 @@ import net.minecraft.nbt.NbtCompound;
 public final class SignPlayerState {
  public enum Upgrade { POWER, RANGE, DURATION, EFFECT, COST, REGEN }
  private final int[] upgrades=new int[30], unlocks=new int[5], slots=new int[10];
+ static final int MAX_POINTS = 100000;
  private int points;
  private long combatAwardAfter;
  private final java.util.Map<java.util.UUID,Long> recentTargets=new java.util.HashMap<>();
@@ -17,7 +18,25 @@ public final class SignPlayerState {
  public int level(SignType sign,Upgrade node){return upgrades[sign.ordinal()*6+node.ordinal()];}
  public int form(SignType sign,int slot){return slots[sign.ordinal()*2+slot];}
  public int unlocked(SignType sign){return unlocks[sign.ordinal()]|1;}
- public void award(int amount){points=Math.min(100000,points+Math.max(0,amount));}
+ public void award(int amount){points += Math.min(MAX_POINTS - points, Math.max(0, amount));}
+
+ void setPoints(int amount) {
+  points = Math.clamp(amount, 0, MAX_POINTS);
+ }
+
+ int resetMastery() {
+  int refund = 0;
+  for (int level : upgrades) refund += level * (level + 1);
+  for (int forms : unlocks)
+   for (int form = 1; form <= 3; form++)
+    if ((forms & (1 << form)) != 0) refund += 2 + form;
+  if (refund > MAX_POINTS - points) return -1;
+  java.util.Arrays.fill(upgrades, 0);
+  java.util.Arrays.fill(unlocks, 0);
+  java.util.Arrays.fill(slots, 0);
+  points += refund;
+  return refund;
+ }
  public boolean upgrade(SignType sign,Upgrade node){
   int index=sign.ordinal()*6+node.ordinal(), level=upgrades[index], price=2+level*2;
   if(!knows(sign)||level>=3||points<price)return false;
@@ -50,7 +69,7 @@ public final class SignPlayerState {
  }
  public void tick(double regeneration){for(int i=0;i<cooldowns.length;i++)if(cooldowns[i]>0)cooldowns[i]--;if(regenDelay>0)regenDelay--;else concentration=Math.min(100,concentration+(.25+.02*level(selected,Upgrade.REGEN))*regeneration);}
  public NbtCompound write(){var n=new NbtCompound();n.putInt("schema",2);n.putInt("points",points);n.putLong("combatAwardAfter",combatAwardAfter);var combat=new NbtCompound();recentTargets.forEach((target,until)->combat.putLong(target.toString(),until));n.put("recentTargets",combat);n.putIntArray("upgrades",upgrades);n.putIntArray("unlocks",unlocks);n.putIntArray("slots",slots);n.putInt("learned",learned);n.putInt("selected",selected.ordinal());n.putDouble("concentration",concentration);n.putInt("regenDelay",regenDelay);n.putIntArray("cooldowns",cooldowns);return n;}
- public static SignPlayerState read(NbtCompound n){var s=new SignPlayerState();s.learned=n.getInt("learned")&31;var selected=SignType.byIndex(n.getInt("selected"));if(selected!=null)s.selected=selected;double value=n.contains("concentration")?n.getDouble("concentration"):100;s.concentration=Double.isFinite(value)?Math.clamp(value,0,100):0;s.regenDelay=Math.clamp(n.getInt("regenDelay"),0,30);int[] saved=n.getIntArray("cooldowns");for(int i=0;i<Math.min(saved.length,5);i++)s.cooldowns[i]=Math.clamp(saved[i],0,SignType.values()[i].cooldown);s.points=Math.clamp(n.getInt("points"),0,100000);
+ public static SignPlayerState read(NbtCompound n){var s=new SignPlayerState();s.learned=n.getInt("learned")&31;var selected=SignType.byIndex(n.getInt("selected"));if(selected!=null)s.selected=selected;double value=n.contains("concentration")?n.getDouble("concentration"):100;s.concentration=Double.isFinite(value)?Math.clamp(value,0,100):0;s.regenDelay=Math.clamp(n.getInt("regenDelay"),0,30);int[] saved=n.getIntArray("cooldowns");for(int i=0;i<Math.min(saved.length,5);i++)s.cooldowns[i]=Math.clamp(saved[i],0,SignType.values()[i].cooldown);s.points=Math.clamp(n.getInt("points"),0,MAX_POINTS);
   s.combatAwardAfter=Math.max(0,n.getLong("combatAwardAfter"));
   var combat=n.getCompound("recentTargets");
   for(String key:combat.getKeys()){

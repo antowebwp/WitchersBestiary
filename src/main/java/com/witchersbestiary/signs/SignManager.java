@@ -408,6 +408,7 @@ public final class SignManager {
  }
  public static void initialize(){
   SignPackets.initialize();
+  SignSkillPointCommands.initialize();
   net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer,newPlayer,alive)->{ACTIVE.remove(newPlayer.getUuid());clearBurns(newPlayer.getServer(),newPlayer.getUuid());state(newPlayer).resetProtocol();sync(newPlayer);syncMastery(newPlayer);});
   net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents.AFTER_DEATH.register((entity,source)->{if(entity instanceof ServerPlayerEntity player){ACTIVE.remove(player.getUuid());clearBurns(player.getServer(),player.getUuid());}});
   ServerPlayConnectionEvents.JOIN.register((h,sender,server)->{state(h.player).resetProtocol();ACTIVE.remove(h.player.getUuid());sync(h.player);syncMastery(h.player);});

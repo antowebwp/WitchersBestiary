@@ -27,6 +27,7 @@
       "com.witchersbestiary.test.TournamentTests",
       "com.witchersbestiary.test.SwordEnchantmentTests",
       "com.witchersbestiary.test.SignTests",
+      "com.witchersbestiary.test.SignSkillPointTests",
       "com.witchersbestiary.test.SignFormsTests",
       "com.witchersbestiary.test.IgniBreathTests",
       "com.witchersbestiary.test.Stage22BWorldTests",
