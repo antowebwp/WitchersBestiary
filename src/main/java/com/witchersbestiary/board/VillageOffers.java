@@ -48,9 +48,9 @@ public final class VillageOffers extends PersistentState {
     public Generation current(String village, long age, List<String> eligible) {
         if (future != null) throw new IllegalStateException("Future village offer schema preserved read-only");
         var old = villages.get(village);
-        if (old != null && (age < old.created() || age - old.created() < INTERVAL)) return old;
+        if (old != null && (!legendaryKey(village) || old.offers().size()==3) && (age < old.created() || age - old.created() < INTERVAL)) return old;
         var pool = new ArrayList<>(new LinkedHashSet<>(eligible));
-        int slots = legendaryKey(village) ? 2 : 5;
+        int slots = legendaryKey(village) ? 3 : 5;
         if (pool.size() < slots) throw new IllegalStateException("Five eligible species required");
         if (slots == 5) Collections.shuffle(pool);
         else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst())) Collections.reverse(pool);
@@ -81,7 +81,7 @@ public final class VillageOffers extends PersistentState {
             var offers = new ArrayList<Offer>(); var ids = new HashSet<UUID>();
             var list = entry.getList("Offers", NbtElement.COMPOUND_TYPE);
             for (int j = 0; j < list.size(); j++) { var o = list.getCompound(j); if (!o.containsUuid("Id") || !ids.add(o.getUuid("Id"))) throw new IllegalStateException("Invalid saved offer UUID"); offers.add(new Offer(o.getUuid("Id"), o.getString("Definition"))); }
-            if (offers.size() != (legendaryKey(entry.getString("Village")) ? 2 : 5) || !entry.containsUuid("Generation")) throw new IllegalStateException("Invalid saved offer generation");
+            if ((legendaryKey(entry.getString("Village")) ? offers.size()!=2 && offers.size()!=3 : offers.size()!=5) || !entry.containsUuid("Generation")) throw new IllegalStateException("Invalid saved offer generation");
             state.villages.put(entry.getString("Village"), new Generation(entry.getUuid("Generation"), entry.getLong("Created"), offers));
         } }catch(RuntimeException invalid){state.villages.clear();state.future=n.copy();}
         return state;

@@ -111,7 +111,7 @@ public final class HigherVampireTests implements FabricGameTest {
     }
 
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 110)
-    public void bleedingExpiresAndVictoryDropsOnce(TestContext context) {
+    public void bleedingExpiresAndDefeatDoesNotDropSword(TestContext context) {
         var world = context.getWorld();
         var pos = context.getAbsolutePos(new BlockPos(3, 2, 3));
         world.setBlockState(pos.down(), Blocks.STONE.getDefaultState());
@@ -139,8 +139,69 @@ public final class HigherVampireTests implements FabricGameTest {
             boss.damage(source, 1000);
             var drops = world.getEntitiesByClass(net.minecraft.entity.ItemEntity.class, boss.getBoundingBox().expand(3),
                     item -> item.getStack().isOf(com.witchersbestiary.registry.ModItems.BLOOD_LEGACY));
-            context.assertTrue(boss.isDefeated()&&drops.size()==1, "Final player victory drops exactly one sword");
+            context.assertTrue(boss.canBeSealed()&&drops.isEmpty(), "Defeat opens sealing without dropping the reward");
             context.complete();
         });
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 20)
+    public void sealsAndReplaysWithoutDuplicateRewards(TestContext c) {
+        var world = c.getWorld();
+        var pos = c.getAbsolutePos(new BlockPos(3, 2, 3));
+        for(int x=-2;x<=2;x++) for(int z=-2;z<=8;z++)
+            world.setBlockState(pos.add(x,-1,z),Blocks.STONE.getDefaultState());
+        var owner=new net.minecraft.server.network.ServerPlayerEntity(world.getServer(),world,
+                new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(),"VampireFixture"),
+                net.minecraft.network.packet.c2s.common.SyncedClientOptions.createDefault());
+        owner.networkHandler=new net.minecraft.server.network.ServerPlayNetworkHandler(world.getServer(),
+                new net.minecraft.network.ClientConnection(net.minecraft.network.NetworkSide.SERVERBOUND),owner,
+                net.minecraft.server.network.ConnectedClientData.createDefault(owner.getGameProfile(),false));
+        owner.refreshPositionAndAngles(pos.getX()+.5,pos.getY(),pos.getZ()+.5,0,0);
+        var hunt=com.witchersbestiary.contracts.Contracts.assign(owner,com.witchersbestiary.contracts.hunt.VampireHunt.ID);
+        var item=com.witchersbestiary.registry.ModItems.CRIMSON_PHYLACTERY;
+        var sword=com.witchersbestiary.registry.ModItems.BLOOD_LEGACY;
+        var stack=owner.getInventory().main.stream().filter(i->i.isOf(item)).findFirst().orElseThrow();
+        owner.setStackInHand(net.minecraft.util.Hand.MAIN_HAND,stack);
+        var original=ModEntities.HIGHER_VAMPIRE.create(world);
+        original.refreshPositionAndAngles(owner.getX(),owner.getY(),owner.getZ()+3,180,0);
+        world.spawnEntity(original);
+        c.assertTrue(com.witchersbestiary.contracts.hunt.VampireHunt.bind(owner,original),"Contract binds one boss");
+        defeat(original,world);
+        var hand=net.minecraft.util.Hand.MAIN_HAND;
+        item.use(world,owner,hand);
+        item.usageTick(world,owner,stack,51);
+        owner.stopUsingItem();
+        c.assertTrue(original.canBeSealed()&&owner.getInventory().count(sword)==0,"Interrupted use has no reward");
+        c.assertTrue(item.use(world,owner,hand).getResult().isAccepted(),"Aimed use begins sealing");
+        item.usageTick(world,owner,stack,1);
+        c.assertTrue(original.isRemoved()&&owner.getInventory().count(sword)==1,"First sealing rewards once: "+original.isRemoved()+"/"+hunt.status()+"/"+owner.getInventory().count(sword));
+        stack=owner.getMainHandStack();
+        var duplicate=stack.copy();
+        for(int x=-1;x<=1;x++) for(int z=4;z<=6;z++) for(int y=0;y<4;y++)
+            world.setBlockState(pos.add(x,y,z),Blocks.AIR.getDefaultState());
+        owner.setYaw(0);
+        owner.setPitch(0);
+        item.use(world,owner,hand);
+        c.assertTrue(hunt.vampire!=null,"Sealed relic summons a replay: "+hunt.status()+"/"+stack);
+        var id=hunt.vampire;
+        owner.setStackInHand(net.minecraft.util.Hand.OFF_HAND,duplicate);
+        item.use(world,owner,net.minecraft.util.Hand.OFF_HAND);
+        c.assertTrue(id.equals(hunt.vampire),"Second copy cannot summon a concurrent boss");
+        var replay=(com.witchersbestiary.entity.monster.HigherVampireEntity)world.getEntity(id);
+        owner.refreshPositionAndAngles(replay.getX(),replay.getY(),replay.getZ()-3,0,0);
+        defeat(replay,world);
+        c.assertTrue(item.use(world,owner,hand).getResult().isAccepted(),"Aimed use begins sealing");
+        item.usageTick(world,owner,stack,1);
+        c.assertTrue(replay.isRemoved()&&hunt.vampire==null&&owner.getInventory().count(sword)==1,"Replay seals without rewards");
+
+        c.complete();
+    }
+
+    private void defeat(com.witchersbestiary.entity.monster.HigherVampireEntity boss,net.minecraft.server.world.ServerWorld world) {
+        var nbt=boss.writeNbt(new net.minecraft.nbt.NbtCompound());
+        nbt.putBoolean("HybridForm",true);
+        nbt.putBoolean("FinalPhase",true);
+        boss.readNbt(nbt);
+        boss.damage(world.getDamageSources().genericKill(),1000);
     }
 }

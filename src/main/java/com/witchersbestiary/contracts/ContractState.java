@@ -33,7 +33,7 @@ public final class ContractState extends PersistentState {
         writable();boolean changed=false;
         for(var list:owners.values()) {int retained=0;var iterator=list.listIterator(list.size());while(iterator.hasPrevious()){
             var c=iterator.previous();boolean terminal=c.status()==ContractInstance.Status.REWARDED||c.status()==ContractInstance.Status.CANCELLED||c.status()==ContractInstance.Status.EXPIRED;
-            boolean legendary=c.definition().id().equals(com.witchersbestiary.contracts.hunt.SwampLord.ID)||c.definition().id().equals(com.witchersbestiary.contracts.hunt.GraveDevourer.ID);
+            boolean legendary=com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(c.definition().id())||c.definition().id().equals(com.witchersbestiary.contracts.hunt.SwampLord.ID)||c.definition().id().equals(com.witchersbestiary.contracts.hunt.GraveDevourer.ID);
             if(!terminal||legendary||liveOffer.test(c.offer))continue;
             if(retained++>=128){iterator.remove();contracts.remove(c.id());changed=true;}
         }}if(changed)markDirty();

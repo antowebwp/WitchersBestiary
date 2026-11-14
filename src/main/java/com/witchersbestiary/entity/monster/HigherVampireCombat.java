@@ -32,6 +32,10 @@ final class HigherVampireCombat {
         DIVE(57, 155, null, "wing_spread"),
         BLOOD_SHOT(25, 56, null, "blood_volley"),
         FEINT(24, 75, "dodge", null),
+        SPEARS(39, 122, null, "blood_volley"),
+        CHAINS(27, 134, null, "blood_volley"),
+        RAIN(55, 240, null, "wing_spread"),
+        RUPTURE(34, 157, null, "blood_burst"),
         VOLLEY(36, 105, null, "blood_volley"),
         BURST(38, 180, null, "blood_burst"),
         SWARM(33, 230, null, "blood_swarm");
@@ -46,12 +50,13 @@ final class HigherVampireCombat {
         }
     }
 
-    private record Shot(Vec3d position, Vec3d velocity, int ticks, boolean swarm) {}
+    private record Shot(Vec3d position, Vec3d velocity, int ticks, boolean swarm, Move spell) {}
     private final HigherVampireEntity boss;
     private final CombatMotion motion = new CombatMotion();
     private final EnumMap<Move, Integer> ready = new EnumMap<>(Move.class);
     private final List<Shot> shots = new ArrayList<>();
     private Move action, last, follow;
+    private final List<Vec3d> rain = new ArrayList<>();
     private LivingEntity victim, grabbed;
     private Vec3d landingAim = Vec3d.ZERO;
     private Vec3d facing = Vec3d.ZERO, direction = Vec3d.ZERO;
@@ -194,9 +199,9 @@ final class HigherVampireCombat {
                 case GRAB -> 2;
                 case WING -> players(4).size() > 1 ? 12 : 5;
                 case LEAP, DIVE -> !close || stalled ? 9 : 4;
-                case VOLLEY, BLOOD_SHOT -> distance > 7 ? 9 : 3;
+                case VOLLEY, BLOOD_SHOT, SPEARS, CHAINS -> distance > 7 ? 9 : 3;
                 case FEINT -> 3;
-                case BURST, SWARM -> 4;
+                case BURST, SWARM, RAIN, RUPTURE -> 4;
             };
             double score = Math.pow(boss.getRandom().nextDouble(), 1 / weight);
             if (score > best) {
@@ -221,9 +226,12 @@ final class HigherVampireCombat {
             case DIVE -> boss.isOnGround() && distance <= 19 && (distance > 6 || !close)
                     && boss.getWorld().isSpaceEmpty(boss, boss.getBoundingBox().stretch(0, 2.3, 0));
             case FEINT -> close && boss.isOnGround() && distance >= 1.5 && distance <= 3.4;
-            case VOLLEY, BLOOD_SHOT -> distance >= 4.5 && distance <= 25;
+            case VOLLEY, BLOOD_SHOT, SPEARS, CHAINS -> distance >= 4.5 && distance <= 25;
             case BURST -> close && distance < 5;
             case SWARM -> boss.isFinalPhase() && distance <= 18;
+            case RUPTURE -> boss.isFinalPhase() && distance >= 4 && distance <= 16;
+            case RAIN -> boss.isFinalPhase() && boss.isOnGround() && distance <= 15
+                    && boss.getWorld().isSpaceEmpty(boss, boss.getBoundingBox().stretch(0,2.3,0));
         };
     }
 
@@ -248,7 +256,7 @@ final class HigherVampireCombat {
         ++elapsed;
         boss.getNavigation().stop();
         CombatMotion.holdFacing(boss, facing);
-        if (action != Move.LEAP && action != Move.DIVE) boss.setVelocity(0, boss.getVelocity().y, 0);
+        if (action != Move.LEAP && action != Move.DIVE && action != Move.RAIN) boss.setVelocity(0, boss.getVelocity().y, 0);
         double reach = boss.isHybrid() ? 3.45 : 2.65;
         float claw = boss.isHybrid() ? 14 : 10;
         switch (action) {
@@ -296,6 +304,14 @@ final class HigherVampireCombat {
                 if (elapsed == 11) sector(3.85, -.06, 15, 1.1);
             }
             case LEAP, DIVE -> flight();
+            case SPEARS -> {
+                if (elapsed == 10 || elapsed == 15 || elapsed == 20)
+                    world.spawnParticles(ParticleTypes.CRIMSON_SPORE, boss.getX(), boss.getBodyY(.7), boss.getZ(), 8,.22,.18,.22,.03);
+                if (elapsed == 14 || elapsed == 19 || elapsed == 24) shoot(false,0);
+            }
+            case CHAINS -> { if (elapsed == 14) shoot(false,0); }
+            case RUPTURE -> { if (elapsed == 24) shoot(false,0); }
+            case RAIN -> bloodRain(world);
             case BLOOD_SHOT -> {
                 if (elapsed == 14) shoot(false, 0);
             }
@@ -383,7 +399,7 @@ final class HigherVampireCombat {
             follow = switch (finished) {
                 case LEFT, RIGHT -> Move.WING;
                 case LEAP -> landed ? Move.BURST : null;
-                case VOLLEY, BLOOD_SHOT -> Move.DASH;
+                case VOLLEY, BLOOD_SHOT, CHAINS, SPEARS -> Move.DASH;
                 case WING -> Move.BLOOD_SHOT;
                 case COMBO -> Move.WING;
                 case DASH -> Move.COMBO;
@@ -431,8 +447,8 @@ final class HigherVampireCombat {
     private void shoot(boolean swarm, float yaw) {
         if (!valid(victim, 30) || !boss.canSee(victim) || shots.size() >= 12) return;
         Vec3d origin = boss.getPos().add(0, 1.65, 0);
-        Vec3d velocity = victim.getBoundingBox().getCenter().subtract(origin).normalize().rotateY(yaw).multiply(swarm ? .49 : .79);
-        shots.add(new Shot(origin, velocity, swarm ? 38 : 34, swarm));
+        Vec3d velocity = victim.getBoundingBox().getCenter().subtract(origin).normalize().rotateY(yaw).multiply(swarm ? .49 : action==Move.RUPTURE ? .36 : action==Move.SPEARS ? .95 : .79);
+        shots.add(new Shot(origin, velocity, swarm ? 38 : 34, swarm, action));
         boss.playSound(swarm ? SoundEvents.ENTITY_BAT_TAKEOFF : SoundEvents.ENTITY_BLAZE_SHOOT, .7f, swarm ? .8f : 1.4f);
     }
 
@@ -447,14 +463,20 @@ final class HigherVampireCombat {
             var block = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER,
                     RaycastContext.FluidHandling.NONE, boss));
             if (block.getType() != HitResult.Type.MISS) end = block.getPos();
-            double width = shot.swarm ? .48 : .21;
+            double width = shot.swarm || shot.spell==Move.RUPTURE ? .48 : .21;
             var entity = ProjectileUtil.getEntityCollision(world, boss, start, end,
                     new Box(start, end).expand(width + .3), e -> e instanceof ServerPlayerEntity p && valid(p, 56), (float)width);
             if (entity != null && world.raycast(new RaycastContext(start, entity.getEntity().getBoundingBox().getCenter(),
                     RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, boss)).getType() == HitResult.Type.MISS) {
                 var target = (LivingEntity) entity.getEntity();
-                if (hit(target, shot.swarm ? 9 : 12, 0) && boss.isFinalPhase())
-                    com.witchersbestiary.alchemy.BleedingEffect.inflict(target, shot.swarm ? 3 : 2);
+                if (hit(target, shot.swarm ? 9 : shot.spell==null ? 6 : 12, 0)) {
+                    if (shot.spell==Move.CHAINS) {
+                        target.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(StatusEffects.SLOWNESS,30,0),boss);
+                        if (action == null) follow=Move.DASH;
+                    }
+                    if (boss.isFinalPhase() || shot.spell==Move.SPEARS && boss.getRandom().nextBoolean())
+                        com.witchersbestiary.alchemy.BleedingEffect.inflict(target, shot.swarm ? 3 : 2);
+                }
             }
             if (shot.swarm) {
                 Vec3d side = new Vec3d(-shot.velocity.z, 0, shot.velocity.x).normalize().multiply(.38);
@@ -465,8 +487,46 @@ final class HigherVampireCombat {
             } else {
                 world.spawnParticles(ParticleTypes.CRIMSON_SPORE, end.x, end.y, end.z, 3, .12, .12, .12, .02);
             }
-            if (entity != null || block.getType() != HitResult.Type.MISS || shot.ticks <= 1) shots.remove(i);
-            else shots.set(i, new Shot(end, shot.velocity, shot.ticks-1, shot.swarm));
+            if (entity != null || block.getType() != HitResult.Type.MISS || shot.ticks <= 1) {
+                shots.remove(i);
+                if (shot.spell==Move.RUPTURE) {
+                    Vec3d origin = end.subtract(shot.velocity.normalize().multiply(.33));
+                    for (int ray=0;ray<6 && shots.size()<12;ray++) {
+                        Vec3d velocity=Vec3d.fromPolar(0,ray*60).multiply(.52);
+                        shots.add(new Shot(origin,velocity,13,false,null));
+                    }
+                }
+            } else shots.set(i, new Shot(end, shot.velocity, shot.ticks-1, shot.swarm,shot.spell));
+        }
+    }
+
+    private void bloodRain(ServerWorld world) {
+        if (elapsed==8) {
+            Vec3d rise=new Vec3d(0,.49,0);
+            if (!CombatMotion.safeStep(boss,rise,false)) { elapsed=action.duration; return; }
+            boss.setVelocity(rise);
+            Vec3d center=motion.lead(victim,3,1.25);
+            for (int i=0;i<3;i++) {
+                Vec3d candidate=center.add(Vec3d.fromPolar(0,i*120).multiply(2.4));
+                var hit=world.raycast(new RaycastContext(candidate.add(0,1,0),candidate.add(0,-4,0),
+                        RaycastContext.ShapeType.COLLIDER,RaycastContext.FluidHandling.NONE,boss));
+                if (hit.getType()!=HitResult.Type.MISS) rain.add(hit.getPos().add(0,.12,0));
+            }
+        }
+        if (elapsed==16) boss.combatClip("flight_idle");
+        if (elapsed>=9 && elapsed<=34 && elapsed%4==0) for (Vec3d zone:rain) {
+            for (int i=0;i<8;i++) {
+                Vec3d point=zone.add(Vec3d.fromPolar(0,i*45).multiply(1.35));
+                world.spawnParticles(ParticleTypes.CRIMSON_SPORE,point.x,point.y,point.z,1,0,0,0,0);
+            }
+        }
+        if (elapsed==35) {
+            boss.combatClip("land");
+            for (Vec3d zone:rain)
+                world.spawnParticles(ParticleTypes.DAMAGE_INDICATOR,zone.x,zone.y+1,zone.z,9,.55,.85,.55,.08);
+            for (var player:players(19)) if (boss.canSee(player)
+                    && rain.stream().anyMatch(zone -> zone.squaredDistanceTo(player.getPos())<=1.35*1.35)
+                    && hit(player,17,.15)) com.witchersbestiary.alchemy.BleedingEffect.inflict(player,2);
         }
     }
 

@@ -891,5 +891,13 @@
   "item.witchersbestiary.blood_legacy": "Blood Legacy",
   "companion.witchersbestiary.health": "Health %s / %s",
   "effect.witchersbestiary.bleeding": "Bleeding",
-  "tooltip.witchersbestiary.blood_legacy": "Inflicts Bleeding on landed sword strikes."
+  "tooltip.witchersbestiary.blood_legacy": "Inflicts Bleeding on landed sword strikes.",
+  "item.witchersbestiary.crimson_phylactery": "Crimson Phylactery",
+  "hunt.witchersbestiary.higher_vampire": "The Crimson Seal",
+  "hunt.witchersbestiary.higher_vampire.description": "Bind the defeated Higher Vampire. An operator can bind the encounter until the tomb is available.",
+  "item.witchersbestiary.crimson_phylactery.state.0": "Empty",
+  "item.witchersbestiary.crimson_phylactery.state.1": "Sealed · Use to replay",
+  "item.witchersbestiary.crimson_phylactery.state.2": "Replay active · Seal again",
+  "item.witchersbestiary.crimson_phylactery.progress": "Sealing: %s%%",
+  "item.witchersbestiary.crimson_phylactery.claim": "Claim Blood Legacy from the contract board when you have space."
 }

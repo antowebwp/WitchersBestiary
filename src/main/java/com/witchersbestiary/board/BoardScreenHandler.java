@@ -25,7 +25,7 @@ public final class BoardScreenHandler extends ScreenHandler {
     private VillageOffers.Generation generation;
     private final Map<Integer,UUID> archived=new HashMap<>();
     private final Map<Integer,String> failures=new HashMap<>();
-    private static final List<String> LEGENDS = List.of("witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer");
+    private static final List<String> LEGENDS = List.of("witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer", "witchersbestiary:higher_vampire");
     private String rotationKey() { return legendary ? village + "/legends" : village; }
     private List<String> eligible(){return legendary ? LEGENDS : Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.ProceduralHunts::isDefinition).map(Object::toString).sorted().toList();}
     private VillageOffers.Generation current(ServerPlayerEntity p){return VillageOffers.get(p.getServer()).personal(rotationKey(),p.getUuid(),p.getServer().getOverworld().getTime(),eligible());}

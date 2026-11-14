@@ -40,7 +40,10 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
     private final HigherVampireCombat combat = new HigherVampireCombat(this);
     private final ServerBossBar bossBar = new ServerBossBar(getDisplayName(), BossBar.Color.RED, BossBar.Style.PROGRESS);
     private int stageTicks, scaledPlayers;
-    private long regenAt;
+    private long regenAt, reviveAt;
+    private boolean sealable, huntBound;
+    public boolean hasHuntBinding() { return huntBound; }
+    public void markHuntBinding() { huntBound = true; }
     private static final TrackedData<Boolean> DEFEATED_HUMAN = DataTracker.registerData(
             HigherVampireEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 
@@ -76,6 +79,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
     public boolean isHybrid() { return dataTracker.get(STAGE) >= REVEAL && !dataTracker.get(DEFEATED_HUMAN); }
     public boolean hasRedEyes() { return !isHybrid() && (transforming() || !dataTracker.get(CLIP).isEmpty()); }
     public boolean isFinalPhase() { return dataTracker.get(STAGE) == FINAL; }
+    public boolean canBeSealed() { return isDefeated() && sealable; }
     public boolean isDefeated() { return dataTracker.get(STAGE) == DEFEATED; }
     public boolean isTransforming() { return transforming(); }
     public String activeCombatClip() { return dataTracker.get(CLIP); }
@@ -133,7 +137,15 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
             setVelocity(0, Math.min(getVelocity().y, 0), 0);
         }
         super.tick();
-        if (!(getWorld() instanceof ServerWorld world) || !isAlive() || isDefeated()) return;
+        if (!(getWorld() instanceof ServerWorld world) || !isAlive()) return;
+        if (isDefeated()) {
+            if (sealable && world.getTime() >= reviveAt) {
+                setHealth(getMaxHealth() * .20f);
+                suppressRegeneration(40);
+                dataTracker.set(STAGE, FINAL);
+            }
+            return;
+        }
         if (transforming()) {
             tickTransformation(world);
             updateBossBar();
@@ -235,7 +247,8 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
 
     @Override public void onDeath(DamageSource source) {
         if (getWorld().isClient || isDefeated()) return;
-        boolean award = isFinalPhase() && (source.getAttacker() instanceof net.minecraft.entity.player.PlayerEntity);
+        sealable = isFinalPhase();
+        reviveAt = getWorld().getTime() + 1800;
         dataTracker.set(DEFEATED_HUMAN, !isHybrid());
         dataTracker.set(STAGE, DEFEATED);
         // A living, inert entity keeps its UUID and its persistent defeated pose.
@@ -244,7 +257,6 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         combat.cancel();
         setTarget(null);
         updateBossBar();
-        if (award) dropStack(new net.minecraft.item.ItemStack(com.witchersbestiary.registry.ModItems.BLOOD_LEGACY));
     }
 
     @Override public void writeCustomDataToNbt(NbtCompound nbt) {
@@ -256,6 +268,9 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         }
         nbt.putBoolean("FinalPhase", isFinalPhase());
         nbt.putBoolean("Defeated", isDefeated());
+        nbt.putBoolean("Sealable", sealable);
+        nbt.putBoolean("VampireHuntBound", huntBound);
+        nbt.putLong("ReviveAt", reviveAt);
         nbt.putInt("EncounterPlayers", scaledPlayers);
         nbt.putLong("RegenerationAt", regenAt);
     }
@@ -266,6 +281,9 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         applyEncounterScale();
         regenAt = nbt.getLong("RegenerationAt");
         boolean hybrid = nbt.getBoolean("HybridForm");
+        huntBound = nbt.getBoolean("VampireHuntBound");
+        sealable = nbt.getBoolean("Sealable");
+        reviveAt = nbt.getLong("ReviveAt");
         boolean defeated = nbt.getBoolean("Defeated");
         dataTracker.set(DEFEATED_HUMAN, defeated && !hybrid);
         dataTracker.set(STAGE, defeated ? DEFEATED : hybrid ? (nbt.getBoolean("FinalPhase") ? FINAL : HYBRID) : HUMAN);
@@ -303,6 +321,11 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
     public static void registerCommands() {
         CommandRegistrationCallback.EVENT.register((dispatcher, registry, environment) ->
                 dispatcher.register(literal("wbvampire").requires(source -> source.hasPermissionLevel(2))
+                        .then(literal("bind").then(argument("target", EntityArgumentType.entity()).executes(context -> {
+                            var player = context.getSource().getPlayerOrThrow();
+                            return EntityArgumentType.getEntity(context, "target") instanceof HigherVampireEntity vampire
+                                    && com.witchersbestiary.contracts.hunt.VampireHunt.bind(player, vampire) ? 1 : 0;
+                        })))
                         .then(literal("transform").then(argument("target", EntityArgumentType.entity())
                                 .executes(context -> {
                                     if (EntityArgumentType.getEntity(context, "target") instanceof HigherVampireEntity vampire

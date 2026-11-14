@@ -1,0 +1,17 @@
+{
+  "id": "witchersbestiary:higher_vampire",
+  "name": "hunt.witchersbestiary.higher_vampire",
+  "description": "hunt.witchersbestiary.higher_vampire.description",
+  "target": "witchersbestiary:higher_vampire",
+  "required": 1,
+  "difficulty": 3,
+  "reward": {
+    "experience": 150,
+    "items": [
+      {
+        "item": "witchersbestiary:blood_legacy",
+        "count": 1
+      }
+    ]
+  }
+}
