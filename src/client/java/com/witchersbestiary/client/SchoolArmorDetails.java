@@ -4,18 +4,20 @@ import com.witchersbestiary.equipment.armory.SchoolArmor;
 import net.minecraft.client.model.*;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
+import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
+import net.minecraft.client.render.entity.model.BipedEntityModel;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.util.Identifier;
 
-public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlayerEntity,PlayerEntityModel<AbstractClientPlayerEntity>> {
+public final class SchoolArmorDetails<T extends LivingEntity, M extends BipedEntityModel<T>> extends FeatureRenderer<T,M> {
     private static final int STEEL=0, LEATHER=16, CLOTH=32, TRIM=48, LINING=64, GLASS=80;
-    private final ModelPart[][][][] models=new ModelPart[3][2][3][];
+    private final ModelPart[][][][] models=new ModelPart[SchoolArmor.School.values().length][2][3][];
 
-    public SchoolArmorDetails(PlayerEntityRenderer context){
+    public SchoolArmorDetails(FeatureRendererContext<T,M> context){
         super(context);
         for(var school:SchoolArmor.School.values())for(int slim=0;slim<2;slim++)
             for(int tier=0;tier<3;tier++)
@@ -407,26 +409,28 @@ public final class SchoolArmorDetails extends FeatureRenderer<AbstractClientPlay
         return parts(data);
     }
 
-    @Override public void render(MatrixStack matrices,VertexConsumerProvider buffers,int light,AbstractClientPlayerEntity player,
+    @Override public void render(MatrixStack matrices,VertexConsumerProvider buffers,int light,T entity,
             float limbAngle,float limbDistance,float delta,float animationProgress,float headYaw,float headPitch){
-        if(player.isInvisible())return;
+        if(entity.isInvisible() && !(entity instanceof ArmorStandEntity))return;
         var model=getContextModel();
-        int slim=player.getSkinTextures().model()==net.minecraft.client.util.SkinTextures.Model.SLIM?1:0;
-        renderSlot(player,EquipmentSlot.HEAD,slim,matrices,buffers,light,7,model.head);
-        renderSlot(player,EquipmentSlot.CHEST,slim,matrices,buffers,light,0,model.body,model.rightArm,model.leftArm);
-        renderSlot(player,EquipmentSlot.LEGS,slim,matrices,buffers,light,3,model.rightLeg,model.leftLeg);
-        renderSlot(player,EquipmentSlot.FEET,slim,matrices,buffers,light,5,model.rightLeg,model.leftLeg);
+        int slim=entity instanceof AbstractClientPlayerEntity player && player.getSkinTextures().model()==net.minecraft.client.util.SkinTextures.Model.SLIM?1:0;
+        renderSlot(entity,EquipmentSlot.HEAD,slim,matrices,buffers,light,7,model.head);
+        renderSlot(entity,EquipmentSlot.CHEST,slim,matrices,buffers,light,0,model.body,model.rightArm,model.leftArm);
+        renderSlot(entity,EquipmentSlot.LEGS,slim,matrices,buffers,light,3,model.rightLeg,model.leftLeg);
+        renderSlot(entity,EquipmentSlot.FEET,slim,matrices,buffers,light,5,model.rightLeg,model.leftLeg);
     }
 
-    private void renderSlot(AbstractClientPlayerEntity player,EquipmentSlot slot,int slim,MatrixStack matrices,
+    private void renderSlot(T entity,EquipmentSlot slot,int slim,MatrixStack matrices,
             VertexConsumerProvider buffers,int light,int first,ModelPart... parents){
-        if(!(player.getEquippedStack(slot).getItem() instanceof SchoolArmor armor))return;
+        var stack=entity.getEquippedStack(slot);
+        if(!(stack.getItem() instanceof SchoolArmor armor))return;
         var school=armor.school();
         var pieces=models[school.ordinal()][slim][armor.tier()];
         var texture=Identifier.of("witchersbestiary","textures/models/armor/"+school.name().toLowerCase(java.util.Locale.ROOT)+"_details.png");
-        var vertices=buffers.getBuffer(RenderLayer.getEntityCutout(texture));
+        var vertices=net.minecraft.client.render.item.ItemRenderer.getArmorGlintConsumer(
+                buffers, RenderLayer.getEntityCutout(texture), stack.hasGlint());
         for(int i=0;i<parents.length;i++){
-            if(!parents[i].visible)continue;
+            if(!parents[i].visible && !(entity instanceof ArmorStandEntity))continue;
             matrices.push();
             parents[i].rotate(matrices);
             pieces[first+i].render(matrices,vertices,light,OverlayTexture.DEFAULT_UV);
