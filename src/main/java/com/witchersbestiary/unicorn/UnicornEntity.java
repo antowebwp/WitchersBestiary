@@ -41,6 +41,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private Behavior behavior = Behavior.FOLLOW;
     private net.minecraft.util.math.BlockPos guardPoint;
     private int castingTicks;
+    private long combatUntil, combatHealAt, damageHealAfter;
     private net.minecraft.util.math.Vec3d lastMotionPosition;
     private double strideSpeed;
 
@@ -206,12 +207,46 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     }
 
     @Override public boolean damage(DamageSource source, float amount) {
-        return !recovering() && super.damage(source, amount);
+        if (recovering()) return false;
+        boolean hit = super.damage(source, amount);
+        if (hit && !recovering() && isAlive() && isTame() && getWorld() instanceof ServerWorld world
+                && source.getAttacker() instanceof net.minecraft.entity.LivingEntity) {
+            long now = world.getTime();
+            enterCombat(now);
+            damageHealAfter = now + 60;
+        }
+        return hit;
+    }
+
+    @Override public boolean tryAttack(net.minecraft.entity.Entity target) {
+        boolean hit = super.tryAttack(target);
+        if (hit && isTame() && isAlive() && !recovering() && getWorld() instanceof ServerWorld world)
+            enterCombat(world.getTime());
+        return hit;
+    }
+
+    private void enterCombat(long now) {
+        if (combatUntil <= now) combatHealAt = now + 100;
+        combatUntil = now + 200;
+    }
+
+    private void tickCombatHealing(ServerWorld world) {
+        long now = world.getTime();
+        float maximum = getMaxHealth();
+        float before = getHealth();
+        if (!isAlive() || !isTame() || now >= combatUntil || now < combatHealAt
+                || now < damageHealAfter || before > maximum * .9f) return;
+        combatHealAt = now + 100;
+        heal(maximum * .01f);
+        if (getHealth() <= before) return;
+        world.spawnParticles(ParticleTypes.HAPPY_VILLAGER, getX(), getBodyY(.7), getZ(), 3, .25, .18, .25, .01);
+        world.spawnParticles(ParticleTypes.WAX_ON, getX(), getBodyY(.7), getZ(), 2, .22, .18, .22, .01);
     }
 
     boolean beginRecovery() {
         if (!isTame()) return false;
         setHealth(1);
+        combatUntil = combatHealAt = damageHealAfter = 0;
         dataTracker.set(RECOVERY, 600);
         castingTicks = 0;
         dataTracker.set(HEALING, false);
@@ -235,6 +270,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             if (remaining == 0) { setHealth(getMaxHealth()); extinguish(); }
             return;
         }
+        tickCombatHealing(world);
         if (castingTicks > 0 && --castingTicks == 0) dataTracker.set(HEALING, false);
         if (age % 100 == 0) world.spawnParticles(ParticleTypes.END_ROD, getX(), getBodyY(.95), getZ(), 1, .28, .12, .28, .001);
         if (getOwner() instanceof ServerPlayerEntity owner) {
