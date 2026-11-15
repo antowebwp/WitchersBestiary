@@ -120,6 +120,22 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             }
             return ActionResult.success(getWorld().isClient);
         }
+        if (!player.isSneaking() && hand == Hand.MAIN_HAND && stack.isEmpty() && isSaddled()) {
+            if (hasPassengers() || player.hasVehicle()) return ActionResult.PASS;
+            if (!getWorld().isClient) {
+                getNavigation().stop();
+                if (!player.startRiding(this)) return ActionResult.FAIL;
+                player.sendMessage(speedStatus(), true);
+            }
+            return ActionResult.success(getWorld().isClient);
+        }
+        if (!player.isSneaking() && stack.isOf(Items.SADDLE) && !isSaddled() && canBeSaddled()) {
+            if (!getWorld().isClient) {
+                saddle(stack.copyWithCount(1), net.minecraft.sound.SoundCategory.NEUTRAL);
+                if (!player.isCreative()) stack.decrement(1);
+            }
+            return ActionResult.success(getWorld().isClient);
+        }
         ActionResult result = super.interactMob(player, hand);
         if (!getWorld().isClient && hand == Hand.MAIN_HAND) player.sendMessage(speedStatus(), true);
         return result;
@@ -163,6 +179,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         if (age % 100 == 0) world.spawnParticles(ParticleTypes.END_ROD, getX(), getBodyY(.95), getZ(), 1, .28, .12, .28, .001);
         if (getOwner() instanceof ServerPlayerEntity owner) {
             refreshMountedRegeneration(owner);
+            if (owner.getVehicle() == this && age % 20 == 0) owner.sendMessage(speedStatus(), true);
             healOwner(world, owner);
         }
     }
@@ -207,6 +224,15 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             status.append(" В· ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
                 (int) ridingDistance, distanceForLevel(speedLevel)));
         }
+        double speed = Math.round(strideSpeed * 200) / 10.0;
+        status.append(" | ").append(Text.translatable("unicorn.witchersbestiary.current_speed", speed));
+        if (speedLevel < MAX_SPEED_LEVEL) {
+            int filled = Math.clamp((int)(10 * ridingDistance / distanceForLevel(speedLevel)), 0, 10);
+            double nextBonus = 100 * (ridingBonus(speedLevel + 1) - ridingBonus(speedLevel));
+            status.append(" ").append("▰".repeat(filled)).append("▱".repeat(10 - filled));
+            status.append(" | ").append(Text.translatable("unicorn.witchersbestiary.next_bonus",
+                    String.format(java.util.Locale.ROOT, "%.2f", nextBonus)));
+        }
         return status;
     }
 
@@ -219,7 +245,8 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         int tick = world.getServer().getTicks();
         if (tick == lastRidingCredit) return;
         double distance = displacement.horizontalLength();
-        double limit = getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) * 1.5;
+        // Vanilla mounted ground motion can exceed the raw movement attribute per tick.
+        double limit = getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) * 2.1 + .025;
         if (!(distance >= .02 && distance <= limit) || Math.abs(displacement.y) > 1) return;
 
         Vec3d input = new Vec3d(rider.sidewaysSpeed * .5, 0, rider.forwardSpeed)
@@ -237,11 +264,15 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         }
     }
 
+    private double ridingBonus(int level) {
+        return Math.max(0, Math.min(.45 * (level - 1) / (MAX_SPEED_LEVEL - 1),
+                .49 / getAttributeBaseValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) - 1));
+    }
+
     private void updateRidingSpeed() {
         var speed = getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         speed.removeModifier(RIDING_SPEED);
-        double bonus = .45 * (speedLevel - 1) / (MAX_SPEED_LEVEL - 1);
-        bonus = Math.min(bonus, .49 / speed.getBaseValue() - 1);
+        double bonus = ridingBonus(speedLevel);
         if (bonus > 0) speed.addTemporaryModifier(new EntityAttributeModifier(
             RIDING_SPEED, bonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
     }
