@@ -24,6 +24,7 @@ import java.util.List;
 public final class VampireHunt extends Item {
     public static final Identifier ID = Identifier.of("witchersbestiary", "higher_vampire");
     private static final int CHANNEL = 100;
+    private static final int REPLAY_COOLDOWN = 12000;
     private static final int EMPTY = 0, SEALED = 1, REPLAY_ACTIVE = 2;
 
     public VampireHunt() { super(new Settings().maxCount(1).rarity(Rarity.EPIC)); }
@@ -148,6 +149,10 @@ public final class VampireHunt extends Item {
         return TypedActionResult.consume(stack);
     }
 
+    public static boolean needsFreshPress(ItemStack stack) {
+        return stack.isOf(ModItems.CRIMSON_PHYLACTERY) && isSealed(stack);
+    }
+
     private static boolean maySeal(ContractInstance c, ItemStack stack) {
         return first(c) && data(stack).getInt("State")==EMPTY
                 || c.status()==ContractInstance.Status.REWARDED && data(stack).getInt("State")==REPLAY_ACTIVE;
@@ -185,6 +190,7 @@ public final class VampireHunt extends Item {
         }
         c.vampire=null;
         c.replayGeneration++;
+        c.vampireReplayReady = player.getServer().getOverworld().getTime() + REPLAY_COOLDOWN;
         save(stack,c,SEALED);
         store.markDirty();
         boss.discard();
@@ -197,6 +203,11 @@ public final class VampireHunt extends Item {
     private static boolean summon(ServerPlayerEntity player, ItemStack stack) {
         var c=contract(player,stack);
         if (c==null || c.status()!=ContractInstance.Status.REWARDED || c.vampire!=null) return false;
+        long remaining = c.vampireReplayReady - player.getServer().getOverworld().getTime();
+        if (remaining > 0) {
+            player.sendMessage(Text.translatable("item.witchersbestiary.crimson_phylactery.cooldown", (remaining + 19) / 20), true);
+            return false;
+        }
         var world=player.getServerWorld();
         var at=BlockPos.ofFloored(player.getPos().add(Vec3d.fromPolar(0,player.getYaw()).multiply(5)));
         var feet=Vec3d.ofBottomCenter(at);

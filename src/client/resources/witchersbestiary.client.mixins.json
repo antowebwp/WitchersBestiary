@@ -6,7 +6,8 @@
   "client": [
     "RecipeCatalogReloadMixin",
     "PlayerFistPoseMixin",
-    "FistFirstPersonMixin"
+    "FistFirstPersonMixin",
+    "PhylacteryUseMixin"
   ],
   "injectors": {
     "defaultRequire": 1

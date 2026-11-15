@@ -39,7 +39,11 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final HigherVampireCombat combat = new HigherVampireCombat(this);
     private final ServerBossBar bossBar = new ServerBossBar(getDisplayName(), BossBar.Color.RED, BossBar.Style.PROGRESS);
-    private int stageTicks, scaledPlayers;
+    private static final TrackedData<Float> COCOON = DataTracker.registerData(
+            HigherVampireEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    private static final int COCOON_DURATION = 160;
+    private int stageTicks, scaledPlayers, cocoonTicks;
+    private boolean cocoonUsed;
     private long regenAt, reviveAt;
     private boolean sealable, huntBound;
     public boolean hasHuntBinding() { return huntBound; }
@@ -61,11 +65,11 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
 
     @Override protected void initGoals() {
         goalSelector.add(1, new SwimGoal(this) {
-            @Override public boolean canStart() { return !isDefeated() && super.canStart(); }
+            @Override public boolean canStart() { return !isDefeated() && !isCocooned() && super.canStart(); }
         });
         goalSelector.add(2, new WanderAroundFarGoal(this, 1) {
-            @Override public boolean canStart() { return !transforming() && !isDefeated() && getTarget() == null && super.canStart(); }
-            @Override public boolean shouldContinue() { return !transforming() && !isDefeated() && getTarget() == null && super.shouldContinue(); }
+            @Override public boolean canStart() { return !transforming() && !isDefeated() && !isCocooned() && getTarget() == null && super.canStart(); }
+            @Override public boolean shouldContinue() { return !transforming() && !isDefeated() && !isCocooned() && getTarget() == null && super.shouldContinue(); }
         });
     }
 
@@ -74,6 +78,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         builder.add(STAGE, HUMAN);
         builder.add(CLIP, "");
         builder.add(DEFEATED_HUMAN, false);
+        builder.add(COCOON, 0f);
     }
 
     public boolean isHybrid() { return dataTracker.get(STAGE) >= REVEAL && !dataTracker.get(DEFEATED_HUMAN); }
@@ -81,6 +86,8 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
     public boolean isFinalPhase() { return dataTracker.get(STAGE) == FINAL; }
     public boolean canBeSealed() { return isDefeated() && sealable; }
     public boolean isDefeated() { return dataTracker.get(STAGE) == DEFEATED; }
+    public float cocoonIntegrity() { return dataTracker.get(COCOON); }
+    public boolean isCocooned() { return cocoonIntegrity() > 0; }
     public boolean isTransforming() { return transforming(); }
     public String activeCombatClip() { return dataTracker.get(CLIP); }
     void combatClip(String clip) { dataTracker.set(CLIP, clip); }
@@ -132,7 +139,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
     }
 
     @Override public void tick() {
-        if (transforming() || isDefeated()) {
+        if (transforming() || isDefeated() || isCocooned()) {
             getNavigation().stop();
             setVelocity(0, Math.min(getVelocity().y, 0), 0);
         }
@@ -164,12 +171,52 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
             regenAt = Math.max(regenAt, world.getTime()+40);
             playSound(SoundEvents.ENTITY_RAVAGER_ROAR, 1, .65f);
         }
+        if (isFinalPhase() && !cocoonUsed && getHealth() <= getMaxHealth() * .15f) beginCocoon();
+        if (isCocooned()) {
+            tickCocoon(world);
+            updateBossBar();
+            return;
+        }
         combat.tick(world, needsClearance);
         if (isFinalPhase() && getTarget() != null && world.getTime() >= regenAt) {
             regenAt = world.getTime()+40;
             if (!isOnFire()) heal(Math.max(0, Math.min(3, getMaxHealth()*.35f-getHealth())));
         }
         updateBossBar();
+    }
+
+    private float cocoonMaximum() { return Math.min(180, getMaxHealth() * .15f); }
+
+    private void beginCocoon() {
+        cocoonUsed = true;
+        cocoonTicks = COCOON_DURATION;
+        dataTracker.set(COCOON, 1f);
+        combat.cancel();
+        extinguish();
+        setVelocity(Vec3d.ZERO);
+        playSound(SoundEvents.ENTITY_WARDEN_HEARTBEAT, 1.1f, .66f);
+    }
+
+    private void tickCocoon(ServerWorld world) {
+        int elapsed = COCOON_DURATION - --cocoonTicks;
+        if (elapsed % 20 == 0)
+            heal(Math.max(0, Math.min(getMaxHealth() * .02f, getMaxHealth() * .35f - getHealth())));
+        if (elapsed % 5 == 0)
+            world.spawnParticles(ParticleTypes.CRIMSON_SPORE, getX(), getBodyY(.55), getZ(), 8, .65, .75, .65, .013);
+        if (cocoonTicks <= 0) endCocoon(world, false);
+    }
+
+    private void endCocoon(ServerWorld world, boolean broken) {
+        cocoonTicks = 0;
+        dataTracker.set(COCOON, 0f);
+        suppressRegeneration(broken ? 80 : 40);
+        combat.interrupt(broken ? 36 : 20);
+        net.minecraft.particle.ParticleEffect shards = broken
+                ? new net.minecraft.particle.BlockStateParticleEffect(ParticleTypes.BLOCK,
+                        net.minecraft.block.Blocks.NETHER_WART_BLOCK.getDefaultState())
+                : ParticleTypes.CRIMSON_SPORE;
+        world.spawnParticles(shards,
+                getX(), getBodyY(.5), getZ(), 35, .62, .76, .62, .11);
     }
 
     private void tickTransformation(ServerWorld world) {
@@ -242,11 +289,20 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         int stage = dataTracker.get(STAGE);
         if (stage == HUMAN) return Math.max(health, Math.min(getHealth(), getMaxHealth() * .65f));
         if (stage == HYBRID) return Math.max(health, Math.min(getHealth(), getMaxHealth() * .25f));
+        if (stage == FINAL && !cocoonUsed) return Math.max(health, Math.min(getHealth(), getMaxHealth() * .15f));
         return health;
     }
 
     @Override public boolean damage(DamageSource source, float amount) {
         if (isDefeated() || transforming()) return false;
+        if (isCocooned()) {
+            if (!(getWorld() instanceof ServerWorld world) || !Float.isFinite(amount) || amount <= 0
+                    || !(source.getAttacker() instanceof ServerPlayerEntity)) return false;
+            float remaining = cocoonIntegrity() - amount / cocoonMaximum();
+            if (remaining <= 0) endCocoon(world, true);
+            else dataTracker.set(COCOON, remaining);
+            return true;
+        }
         float before = getHealth();
         boolean hit = super.damage(source, amount);
         if (hit && !getWorld().isClient && !isDefeated()) {
@@ -254,6 +310,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
                     && !player.isSpectator() && getTarget() == null && squaredDistanceTo(player) <= 56*56) {
                 setTarget(player);
             }
+            if (isFinalPhase() && !cocoonUsed && getHealth() <= getMaxHealth() * .15f) beginCocoon();
             if (source.isOf(SignManager.FIRE)) suppressRegeneration(105);
             else if (before-getHealth() >= 16) suppressRegeneration(65);
         }
@@ -288,6 +345,9 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         nbt.putLong("ReviveAt", reviveAt);
         nbt.putInt("EncounterPlayers", scaledPlayers);
         nbt.putLong("RegenerationAt", regenAt);
+        nbt.putBoolean("CocoonUsed", cocoonUsed);
+        nbt.putInt("CocoonTicks", cocoonTicks);
+        nbt.putFloat("CocoonIntegrity", cocoonIntegrity());
     }
 
     @Override public void readCustomDataFromNbt(NbtCompound nbt) {
@@ -308,6 +368,11 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
                     (transition == CHANGING ? CHANGE_TICKS : transition == REVEAL ? REVEAL_TICKS : FRENZY_TICKS)-1);
             dataTracker.set(STAGE, transition);
         }
+        cocoonUsed = nbt.getBoolean("CocoonUsed");
+        cocoonTicks = isFinalPhase() ? Math.clamp(nbt.getInt("CocoonTicks"), 0, COCOON_DURATION) : 0;
+        float integrity = nbt.getFloat("CocoonIntegrity");
+        dataTracker.set(COCOON, cocoonTicks > 0 && Float.isFinite(integrity) ? Math.clamp(integrity, 0f, 1f) : 0f);
+        if (isCocooned()) cocoonUsed = true;
         setNoGravity(false);
     }
 
@@ -321,7 +386,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
                 case REVEAL -> "reveal";
                 case FRENZY_TRANSITION -> "wing_spread";
                 case DEFEATED -> isHybrid() ? "defeat" : "human_defeat";
-                default -> !activeCombatClip().isEmpty() ? activeCombatClip() : hurtTime > 0 && isAlive() ? "hurt"
+                default -> isCocooned() ? "idle" : !activeCombatClip().isEmpty() ? activeCombatClip() : hurtTime > 0 && isAlive() ? "hurt"
                         : state.isMoving() ? (getVelocity().horizontalLengthSquared() > .038 ? "run" : "walk") : "idle";
             };
             var animation = RawAnimation.begin();
