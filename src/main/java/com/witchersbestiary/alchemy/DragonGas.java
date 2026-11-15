@@ -4,7 +4,6 @@ import com.witchersbestiary.signs.SignManager;
 import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.HitResult;
@@ -26,7 +25,7 @@ public final class DragonGas {
         cloud.setDuration(160);
         cloud.setWaitTime(0);
         cloud.setRadius(RADIUS);
-        cloud.setParticleType(ParticleTypes.SNEEZE);
+        cloud.setParticleType(BombVfx.GAS);
         world.spawnEntity(cloud);
     }
 
@@ -49,8 +48,7 @@ public final class DragonGas {
             if (!visible(world, player, start, center)) continue;
             cloud.discard();
             ignited++;
-            world.spawnParticles(ParticleTypes.FLAME, center.x, center.y, center.z, 54, 1.1, .45, 1.1, .05);
-            world.spawnParticles(ParticleTypes.LAVA, center.x, center.y, center.z, 8, .7, .28, .7, .04);
+            BombVfx.ignition(world, center);
             world.playSound(null, cloud.getBlockPos(), net.minecraft.sound.SoundEvents.ENTITY_GENERIC_EXPLODE.value(),
                     net.minecraft.sound.SoundCategory.PLAYERS, .7f, 1.25f);
             for (var target : world.getEntitiesByClass(LivingEntity.class, new Box(center, center).expand(RADIUS),

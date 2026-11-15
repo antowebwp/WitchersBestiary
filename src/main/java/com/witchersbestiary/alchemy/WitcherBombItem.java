@@ -7,7 +7,6 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
@@ -54,6 +53,6 @@ public final class WitcherBombItem extends Item {
                     default -> throw new IllegalStateException("Unknown bomb type");
                 }
             }
-            server.spawnParticles(switch (type) { case 0 -> ParticleTypes.CRIT; case 1 -> ParticleTypes.END_ROD; case 2 -> ParticleTypes.FLASH; default -> ParticleTypes.FLAME; }, center.x, center.y, center.z, 18, .65, .4, .65, .04);
+        BombVfx.impact(server, center, type);
     }
 }
