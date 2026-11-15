@@ -12,12 +12,20 @@ The experiment starts at Stage 22J's `a8de233`. The comparison uses that branch'
 - [Fabric renderer](https://github.com/ChocoBooyy/cascade/blob/v1.0.0%2B1.21.1/fabric/src/main/java/dev/chocoboy/cascade/fabric/client/CascadeFabricClient.java) uses Fabric render events, registers soft-particle shaders and has a separate optional offscreen bloom pass. External shader packs are not required. Sodium/Iris combinations need separate runtime tests, especially bloom, soft depth and SDF. GeckoLib is present in the Witcher's Bestiary client classpath; Cascade does not declare it or call its API.
 - [Render manager](https://github.com/ChocoBooyy/cascade/blob/v1.0.0%2B1.21.1/common/src/main/java/dev/chocoboy/cascade/client/VfxRenderManager.java) retires effects on tick, caps active effects at 256, sorts within 96 blocks by distance and uses a soft ceiling of 60,000 submitted primitives. The ceiling is not a GPU fill-rate budget. Bloom can redraw effects and raymarching costs fragments. GPU compute requires OpenGL 4.3 and is opt-in. Keep those paths off for initial RX 570 benchmarks and compare frame times in overlapping encounters before setting production caps.
 
-## Reproduce
+## Original comparison at a2a4578
 
 From the experiment worktree, run `./gradlew.bat -PcascadeExperiment runCascadeReview`. The client creates an isolated flat world, makes two actual Grapeshot throws against the same wall and takes frame sequences. The test mod switches the second impact's visual hook to a stock Cascade atlas and six bounded emitter layers. The mixin and review client are excluded from the normal mod JAR. The control is the Stage 22J effect; this is an A/B comparison of recipes as well as renderers.
 
-## Observed result
+## Original result
 
 The Fabric 1.21.1 client started with Cascade 1.0.0 and GeckoLib 4.8.4. Both real throw and impact sequences completed. The paired frame at +5 client ticks is saved as `build/cascade-review/grapeshot-comparison.png`. Cascade's flash, ring, shard silhouettes and sparks read more clearly than Stage 22J. The orange cubes still form a conspicuous arch, and the smoke needs more separation from the flash for production. This run leaves OpenGL compute, bloom and raymarching off. It does not establish frame-time impact, performance on RX 570 or compatibility with Sodium/Iris.
 
 Recommendation B as a gated direction. Keep Arcane FX responsible for effect identity, gameplay cues, anchoring, lifetime and fallback. Use Cascade optionally for short composite bursts if the next test confirms frame-time and render-stack compatibility. Keep long-lived gas and suppression anchored to real entities. No production adoption yet.
+
+## Grapeshot volume rework
+
+The first recipe sent all six emitters at once. Cascade's hemisphere sampler places particles on a dome shell, and identically timed cubes move outward from that shell. Its solid mesh path draws overlapping orange cubes with depth writes. The apparent orange arc came from their collective silhouette. The glow and smoke used camera-facing quads, the sparks used ribbon trails, and the ring was its own emitter. The renderer groups by material tier with additive glow after alpha; the smoke started small and dark in the same volume as the flash.
+
+The revised test recipe draws exposed faces of independently oriented, procedurally colored voxel lobes. Four lobes form the flash, five expand in asymmetrical directions and six rise and disperse as smoke. Cascade still supplies the timed ring, two sizes of rotating metallic shards and short spark trails. The previous recipe remains available for the first shot of the same test run. Only the client test mod contains these changes.
+
+Run `./gradlew.bat -PcascadeExperiment runCascadeReview` for the revised comparison. The test uses a small flat world and a stone platform. It throws four real Grapeshots, once with the previous recipe and once per camera angle with the revised recipe. Framebuffer captures are keyed to the first client tick observing each collision cue. The reduced server tick rate gives the client time to render each sample. The comparison grids and GIF live under build/cascade-volume-review. The scene checks the silhouette and timing; production modpack performance and Iris/Sodium compatibility are outside this run.

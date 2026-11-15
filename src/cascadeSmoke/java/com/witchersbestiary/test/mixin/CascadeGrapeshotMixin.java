@@ -22,6 +22,36 @@ abstract class CascadeGrapeshotMixin {
         if (type != 0 || !CascadeReview.useCascade()) return;
         callback.cancel();
 
+        CascadeReview.impact(position);
+        if (CascadeReview.usePreviousRecipe()) {
+            previous(world, position);
+        } else {
+            revised(world, position);
+        }
+    }
+
+    private static void revised(ServerWorld world, Vec3d position) {
+        var center = position.add(0, .24, 0);
+        var wave = Vfx.emitter().shape(ShapeSpec.ring(.46f)).count(23).lifetime(7).cube()
+                .blend(BlendMode.ALPHA).speed(.23f).size(.046f, .026f, Easings.LINEAR)
+                .gradient(Easings.LINEAR, 0xc6aa82, 0x887264).alpha(.63f, 0, Easings.EASE_OUT_QUAD);
+        var shards = Vfx.emitter().shape(ShapeSpec.hemisphere(.18f)).count(13).lifetime(20).shard()
+                .spin(3.5f).size(.095f, .051f, Easings.EASE_IN_QUAD).speed(.21f).gravity(0, -.023f, 0)
+                .drag(.03f).gradient(Easings.LINEAR, 0xd6c4b3, 0x877e80, 0x524b53)
+                .alpha(1, 0, Easings.EASE_IN_QUAD);
+        var chips = Vfx.emitter().shape(ShapeSpec.hemisphere(.22f)).count(9).lifetime(17).shard()
+                .spin(5).size(.059f, .019f, Easings.LINEAR).speed(.30f).gravity(0, -.026f, 0)
+                .gradient(Easings.LINEAR, 0xb5acac, 0x514c58).alpha(1, 0, Easings.EASE_IN_QUAD);
+        var sparks = Vfx.emitter().shape(ShapeSpec.hemisphere(.13f)).count(19).lifetime(13)
+                .sprite(SpriteId.SPARK).trail(2).stretch(2.2f).speed(.29f).gravity(0, -.019f, 0)
+                .size(.043f, .010f, Easings.LINEAR).gradient(Easings.LINEAR, 0xffe899, 0xd46d22)
+                .alpha(1, 0, Easings.EASE_OUT_QUAD);
+        Vfx.at(world).delay(2).emit(position.add(0, .04, 0), wave)
+                .delay(1).emit(center, shards).emit(center, sparks)
+                .delay(2).emit(center, chips).play();
+    }
+
+    private static void previous(ServerWorld world, Vec3d position) {
         var center = position.add(0, .14, -.28);
         Vfx.emitter().shape(ShapeSpec.point()).count(1).lifetime(7)
                 .size(.28f, 1.45f, Easings.EASE_OUT_CUBIC).alpha(.95f, 0, Easings.EASE_OUT_QUAD)

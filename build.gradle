@@ -954,7 +954,7 @@ if (providers.gradleProperty('cascadeExperiment').isPresent()) {
    source sourceSets.clientSmoke
    vmArg '-Dwitchersbestiary.cascadeReview=true'
    programArgs '--width', '960', '--height', '540'
-   runDir 'build/cascade-review/client'
+   runDir 'build/cascade-volume-review/client'
   }
  }
 }
