@@ -1,0 +1,6 @@
+{
+  "required": true,
+  "package": "com.witchersbestiary.test.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": ["CascadeGrapeshotMixin"]
+}

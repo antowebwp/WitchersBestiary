@@ -38,6 +38,7 @@
     ],
     "main": ["com.witchersbestiary.test.TombProbe",
       "com.witchersbestiary.test.Stage20ENetworkServer",
+      "com.witchersbestiary.test.ArcaneRc1NetworkServer",
       "com.witchersbestiary.test.Stage21ANetworkServer",
       "com.witchersbestiary.test.Stage21BNetworkServer",
       "com.witchersbestiary.test.ContractReliabilityNetworkServer",

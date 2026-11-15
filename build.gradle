@@ -13,6 +13,7 @@ loom {
 repositories { maven { url = 'https://maven.terraformersmc.com/releases/' } }
 dependencies {
  modCompileOnly 'com.terraformersmc:modmenu:11.0.3'
+ modImplementation 'maven.modrinth:cascademc:oSSE53mh'
  if(project.hasProperty('stage18WithMenu')) modRuntimeOnly 'com.terraformersmc:modmenu:11.0.3'
  if(project.hasProperty('stage19fProfile')) modCompileOnly 'maven.modrinth:5aaWibi9:JagCscwi'
  else modImplementation 'maven.modrinth:5aaWibi9:JagCscwi'
@@ -51,6 +52,14 @@ loom {
   'witchersbestiary-client-tests' { sourceSet sourceSets.clientSmoke }
  }
  runs {
+  arcaneV2Review {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.arcaneV2Review=true'
+   if (project.hasProperty('rc1SmokeTail')) vmArg '-Dwitchersbestiary.rc1SmokeTail=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir project.hasProperty('rc1ClientDir') ? project.property('rc1ClientDir') : 'build/arcane-fx-v2-final/client'
+  }
   stage22jReview {
    client()
    source sourceSets.clientSmoke
@@ -939,4 +948,44 @@ if (project.hasProperty('stage22bBop')) {
    runtimeOnly fileTree(dir:'build/stage22b-bop/compat-libraries',include:'*.jar')
   }
  }
+}
+if (providers.gradleProperty('cascadeExperiment').isPresent()) {
+
+ sourceSets.clientSmoke {
+  java.srcDir 'src/cascadeSmoke/java'
+  resources.srcDir 'src/cascadeSmoke/resources'
+ }
+ loom.runs {
+  cascadeReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.cascadeReview=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/cascade-volume-review/client'
+  }
+ }
+}
+tasks.named('processClientSmokeResources') {
+ def cascadeEnabled = providers.gradleProperty('cascadeExperiment').isPresent()
+ inputs.property 'cascadeReview', cascadeEnabled
+ filesMatching('fabric.mod.json') {
+  expand cascadeMixin: cascadeEnabled ? ',"mixins":["witchersbestiary-cascade-review.mixins.json"]' : ''
+ }
+}
+
+tasks.register('arcaneRc1HarnessJar', Jar) {
+ dependsOn tasks.named('clientSmokeClasses')
+ destinationDirectory.set(layout.buildDirectory.dir('arcane-rc1-harness'))
+ archiveClassifier.set('arcane-rc1-review-dev')
+ from(sourceSets.clientSmoke.output) {
+  include 'com/witchersbestiary/test/ArcaneV2Review*.class', 'com/witchersbestiary/test/Rc1*.class'
+ }
+ from('src/clientSmoke/resources/arcane-rc1-production.fabric.json') { rename { 'fabric.mod.json' } }
+}
+tasks.register('remapArcaneRc1Harness', net.fabricmc.loom.task.RemapJarTask) {
+ dependsOn tasks.named('arcaneRc1HarnessJar')
+ inputFile = tasks.named('arcaneRc1HarnessJar').flatMap { it.archiveFile }
+ destinationDirectory.set(layout.buildDirectory.dir('arcane-rc1-harness'))
+ archiveClassifier.set('arcane-rc1-review')
+ classpath.from(sourceSets.clientSmoke.compileClasspath)
 }
