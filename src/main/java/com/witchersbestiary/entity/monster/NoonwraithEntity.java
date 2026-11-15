@@ -210,7 +210,7 @@ public class NoonwraithEntity extends HostileEntity implements GeoEntity, Catego
     public boolean tryGhostDodge(){return beginPhase(false);}
     /** One bounded destination search at start; movement itself never loads chunks. */
     protected boolean beginPhase(boolean healing){
-        if(!(getWorld() instanceof ServerWorld)||illusion||!isAlive()||Stun.active(this)||isRetreating()||phaseCooldown>0||getTarget()==null||!getTarget().isAlive()||squaredDistanceTo(getTarget())>256)return false;
+        if(!(getWorld() instanceof ServerWorld)||illusion||!isAlive()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||isRetreating()||phaseCooldown>0||getTarget()==null||!getTarget().isAlive()||squaredDistanceTo(getTarget())>256)return false;
         if(!safeDestination(getPos()))return false;
         Vec3d destination=behindTarget();
         if(destination==null)return false;
@@ -278,7 +278,7 @@ public class NoonwraithEntity extends HostileEntity implements GeoEntity, Catego
     @Override public void remove(Entity.RemovalReason reason){if(isRetreating())endPhase(false);super.remove(reason);}
 
     public int summonIllusions() {
-        if (!(getWorld() instanceof ServerWorld world) || com.witchersbestiary.combat.Stun.active(this) || isRetreating() || illusion || illusionCooldown > 0) return 0;
+        if (!(getWorld() instanceof ServerWorld world) || com.witchersbestiary.combat.Stun.active(this) || com.witchersbestiary.alchemy.MoonDust.active(this) || isRetreating() || illusion || illusionCooldown > 0) return 0;
         illusionCooldown = com.witchersbestiary.config.ModConfig.abilityTicks(180);
         int count = 0;
         int slots=Math.min(copies.available(world),illusionLimit());

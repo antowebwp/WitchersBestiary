@@ -33,12 +33,12 @@ public final class WraithEntity extends NoonwraithEntity {
     public int getStepCooldown(){return stepCooldown;}
     public boolean isStepping(){return isRetreating();}
     public boolean beginSpectralStep(){
-        if(getWorld().isClient||isIllusion()||Stun.active(this)||!isAlive()||stepCooldown>0||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
+        if(getWorld().isClient||isIllusion()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||!isAlive()||stepCooldown>0||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
         if(!beginPhase(false))return false;
         stepCooldown=280+random.nextInt(121);return true;
     }
     @Override public boolean scream(){
-        if(getWorld().isClient||isIllusion()||Stun.active(this)||whisperCooldown>0||isRetreating()||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
+        if(getWorld().isClient||isIllusion()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||whisperCooldown>0||isRetreating()||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
         whisperCooldown=400+random.nextInt(101);whisperWindup=12;suspendAttack(18);
         playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE,.45f,.7f);triggerAnim("action","scream");cue(8);return true;
     }

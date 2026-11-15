@@ -76,6 +76,47 @@ final class AlchemyReview implements ClientModInitializer {
                 if (!(output.getItem() instanceof com.witchersbestiary.alchemy.MutagenItem))
                     throw new IllegalStateException("Mutagen crafting packet produced no result");
                 capture(client, "mutagen");
+                client.player.closeHandledScreen();
+                ready = false;
+                phase = 4;
+                ticks = 0;
+                client.getServer().execute(() -> {
+                    try {
+                        var player = client.getServer().getPlayerManager().getPlayerList().getFirst();
+                        var world = player.getServerWorld();
+                        var at = player.getBlockPos().south(2);
+                        world.setBlockState(at, net.minecraft.block.Blocks.SMITHING_TABLE.getDefaultState());
+                        player.openHandledScreen(new net.minecraft.screen.SimpleNamedScreenHandlerFactory((id, inv, owner) ->
+                                new net.minecraft.screen.SmithingScreenHandler(id, inv,
+                                        net.minecraft.screen.ScreenHandlerContext.create(world, at)),
+                                net.minecraft.text.Text.translatable("container.upgrade")));
+                        var handler = player.currentScreenHandler;
+                        String[] inputs = {"cat_enhanced_template", "cat_chestplate", "venom_gland"};
+                        for (int i = 0; i < inputs.length; i++) {
+                            var item = net.minecraft.registry.Registries.ITEM.get(
+                                    net.minecraft.util.Identifier.of("witchersbestiary", inputs[i]));
+                            handler.getSlot(i).setStack(new net.minecraft.item.ItemStack(item));
+                        }
+                        handler.sendContentUpdates();
+                        ready = true;
+                    } catch (Throwable error) { failure = error; }
+                });
+            }
+            if (phase == 4 && ready && ticks >= 20 &&
+                    client.player.currentScreenHandler instanceof net.minecraft.screen.SmithingScreenHandler smithing) {
+                if (smithing.getSlot(3).getStack().isEmpty()) throw new IllegalStateException("Smithing result missing");
+                capture(client, "smithing-template");
+                client.interactionManager.clickSlot(smithing.syncId, 3, 0,
+                        net.minecraft.screen.slot.SlotActionType.PICKUP, client.player);
+                phase = 5;
+                ticks = 0;
+            }
+            if (phase == 5 && ticks >= 15) {
+                var handler = client.player.currentScreenHandler;
+                var result = net.minecraft.registry.Registries.ITEM.getId(handler.getCursorStack().getItem());
+                if (!handler.getSlot(0).getStack().isEmpty() || !result.getPath().equals("cat_enhanced_chestplate"))
+                    throw new IllegalStateException("Smithing pickup or template consumption failed: " + result);
+                capture(client, "smithing-result");
                 client.scheduleStop();
                 phase++;
             }

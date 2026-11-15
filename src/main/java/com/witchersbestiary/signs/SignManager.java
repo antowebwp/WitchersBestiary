@@ -106,6 +106,10 @@ public final class SignManager {
   switch(sign){
    case IGNI,AARD->{
     float damage=(sign==SignType.IGNI?6.24f:1.44f)*(1+.1f*power)*SchoolArmor.signDamage(p)*combo;
+    if(sign==SignType.IGNI){
+     var eye=p.getEyePos();
+     com.witchersbestiary.alchemy.DragonGas.ignite(p,eye,eye.add(p.getRotationVec(1).multiply(range(p,sign))),angle);
+    }
     for(var target:targets.stream().limit(12).toList())hit(p,target,sign,form,damage,duration,effect);
     var origin=sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos();
     visual(w,p.getId(),sign,form,9,origin,origin.add(p.getRotationVec(1).multiply(range(p,sign))),
@@ -349,6 +353,7 @@ public final class SignManager {
   double length=start.distanceTo(end);
   visual(world,p.getId(),SignType.IGNI,2,4,start,end,.45f);
   if(elapsed%20==1)world.playSound(null,p.getBlockPos(),SoundEvents.ITEM_FIRECHARGE_USE,SoundCategory.PLAYERS,.35f,.68f);
+  com.witchersbestiary.alchemy.DragonGas.ignite(p,start,end,0);
   if(elapsed%10!=1||length<.01)return;
   int power=level(p,SignType.IGNI,SignPlayerState.Upgrade.POWER);
   for(var target:world.getEntitiesByClass(LivingEntity.class,new Box(start,end).expand(.45),

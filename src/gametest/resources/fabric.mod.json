@@ -21,7 +21,7 @@
       "com.witchersbestiary.test.ContractHotfixTests",
       "com.witchersbestiary.test.ProgressiveContractTests",
       "com.witchersbestiary.test.DuelTests",
-      "com.witchersbestiary.test.AlchemyTableTests",
+      "com.witchersbestiary.test.BombInteractionTests", "com.witchersbestiary.test.AlchemyTableTests",
       "com.witchersbestiary.test.MerchantTests",
       "com.witchersbestiary.test.MerchantAssortmentTests",
       "com.witchersbestiary.test.TournamentTests",

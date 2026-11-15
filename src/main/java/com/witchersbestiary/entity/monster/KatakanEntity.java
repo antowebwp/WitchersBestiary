@@ -73,7 +73,7 @@ public final class KatakanEntity extends HostileEntity implements GeoEntity,Cate
         if(action.equals("charge"))chargeCooldown=com.witchersbestiary.config.ModConfig.abilityTicks(90);triggerAnim("action",action);return true;
     }
     public boolean beginBatForm(){
-        if(!(getWorld() instanceof ServerWorld world)||!isAlive()||batUsed||isBatForm()||Stun.active(this)||getHealth()>=32)return false;
+        if(!(getWorld() instanceof ServerWorld world)||!isAlive()||batUsed||isBatForm()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||getHealth()>=32)return false;
         batUsed=true;beastHealth=getHealth();batOrigin=getPos();batUntil=world.getTime()+160;nextHeal=world.getTime()+20;
         attack="";getNavigation().stop();dataTracker.set(BAT,true);getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(8);com.witchersbestiary.combat.ProgressiveDifficulty.refresh(this);setHealth(8);setNoGravity(true);calculateDimensions();
         triggerAnim("action","transform");world.spawnParticles(ParticleTypes.POOF,getX(),getY()+1,getZ(),16,.4,.5,.4,.02);playSound(SoundEvents.ENTITY_BAT_TAKEOFF,1,.8f);return true;

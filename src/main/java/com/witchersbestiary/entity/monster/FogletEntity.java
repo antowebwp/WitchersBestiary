@@ -115,7 +115,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
 
     /** Applies a short sight-obscuring veil and cloud burst around the target. */
     public void createFogVeil(LivingEntity target) {
-        if (!(getWorld() instanceof ServerWorld world) || illusion || target.isRemoved()) return;
+        if (!(getWorld() instanceof ServerWorld world) || com.witchersbestiary.alchemy.MoonDust.active(this) || illusion || target.isRemoved()) return;
         target.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 70, 0, false, true, true));
         target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 35, 0, false, true, true));
         world.spawnParticles(ParticleTypes.CLOUD, target.getX(), target.getBodyY(.55), target.getZ(),
@@ -126,7 +126,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
 
     /** Teleports only to a dry, supported, collision-free block near the target. */
     public boolean tryVanishNear(LivingEntity target) {
-        if (!(getWorld() instanceof ServerWorld world) || illusion || target.isRemoved()) return false;
+        if (!(getWorld() instanceof ServerWorld world) || com.witchersbestiary.alchemy.MoonDust.active(this) || illusion || target.isRemoved()) return false;
         emitFog(.9);
         for (int attempt = 0; attempt < 18; attempt++) {
             double angle = random.nextDouble() * Math.PI * 2;
@@ -161,7 +161,7 @@ public final class FogletEntity extends HostileEntity implements GeoEntity, Cate
 
     /** Creates up to two combat copies; persisted slots prevent accumulation and recursion. */
     public int summonIllusions(LivingEntity target) {
-        if (!(getWorld() instanceof ServerWorld world) || illusion || target.isRemoved()) return 0;
+        if (!(getWorld() instanceof ServerWorld world) || com.witchersbestiary.alchemy.MoonDust.active(this) || illusion || target.isRemoved()) return 0;
         int count = Math.min(1 + random.nextInt(2),copies.available(world,procedural!=null&&procedural.profile.has(com.witchersbestiary.contracts.procedural.ContractAbility.ILLUSIONIST)?3:2));
         int created = 0;
         for (int i = 0; i < count; i++) {

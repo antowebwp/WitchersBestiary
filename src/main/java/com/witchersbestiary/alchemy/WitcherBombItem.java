@@ -40,17 +40,17 @@ public final class WitcherBombItem extends Item {
         return TypedActionResult.success(stack, world.isClient);
     }
     public void detonate(ServerWorld server, ServerPlayerEntity owner, net.minecraft.util.math.Vec3d center) {
+        if (type == 3) {
+            DragonGas.release(server, owner, center);
+            return;
+        }
             for (var target : server.getEntitiesByClass(LivingEntity.class, new Box(center, center).expand(2.5),
                     entity -> entity.squaredDistanceTo(center) <= 6.25
                             && com.witchersbestiary.signs.SignManager.enemy(owner, entity) && server.raycast(new net.minecraft.world.RaycastContext(center, entity.getEyePos(), net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, owner)).getType() == net.minecraft.util.hit.HitResult.Type.MISS)) {
                 switch (type) {
                     case 0 -> target.damage(server.getDamageSources().playerAttack(owner), 6);
-                    case 1 -> {
-                        target.removeStatusEffect(StatusEffects.INVISIBILITY);
-                        target.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 120));
-                    }
+                    case 1 -> MoonDust.apply(target);
                     case 2 -> { target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 80, 2)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 60)); }
-                    case 3 -> target.setOnFireFor(4);
                     default -> throw new IllegalStateException("Unknown bomb type");
                 }
             }
