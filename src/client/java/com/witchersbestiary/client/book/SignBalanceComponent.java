@@ -16,6 +16,8 @@ import vazkii.patchouli.api.ICustomComponent;
 import vazkii.patchouli.api.IVariable;
 
 public final class SignBalanceComponent implements ICustomComponent {
+    private static final net.minecraft.util.Identifier ART = net.minecraft.util.Identifier.of(
+            "witchersbestiary", "textures/gui/bestiary/sign_abilities.png");
     public String sign = "igni";
     public int form;
     private int x, y;
@@ -38,11 +40,12 @@ public final class SignBalanceComponent implements ICustomComponent {
         var cost = type == SignType.IGNI && form == 2
                 ? Text.translatable("book.combat.concentration_rate", (int)(20 * SignPlayerState.BREATH_COST_PER_TICK))
                 : Text.translatable("book.combat.concentration", type.cost + (form == 0 ? 0 : 4) - discount);
-        SignsClient.symbol(draw, type, x + 54, y + 3, 18);
+        draw.drawTexture(ART, x + 38, y - 3, form * 32, type.ordinal() * 32, 32, 32, 128, 160);
         var lines = Text.empty().append(SignMasteryScreen.formName(type, form)).append("\n\n")
                 .append(Text.translatable("sign.mastery.form." + sign + "." + form + ".tip")).append("\n\n")
                 .append(cost).append("\n")
-                .append(SignMasteryScreen.damageSummary(type, form));
+                .append(SignMasteryScreen.damageSummary(type, form))
+                .append("\n\n").append(Text.translatable("book.combat.visual." + sign + "." + form));
         int row = y + 30;
         for (var line : font.wrapLines(lines.setStyle(context.getFont()), 110)) {
             draw.drawText(font, line, x, row, context.getTextColor(), false);

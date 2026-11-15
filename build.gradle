@@ -75,6 +75,14 @@ loom {
    programArgs '--width', '960', '--height', '540'
    runDir 'build/stage22r/client'
   }
+  signAbilitiesReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.signAbilitiesReview=true'
+   if (project.hasProperty('signAbilitiesStart')) vmArg "-Dwitchersbestiary.signAbilitiesStart=${project.property('signAbilitiesStart')}"
+   programArgs '--width', '832', '--height', '468'
+   runDir 'build/arcane-fx-v2-abilities/client'
+  }
   arcaneV2Review {
    client()
    source sourceSets.clientSmoke
