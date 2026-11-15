@@ -15,3 +15,11 @@ The four bombs now launch vanilla ballistic projectiles with server impacts, dis
 Moon Dust prevents selected supernatural actions for 120 ticks and reveals targets. Dragon Gas lasts 160 ticks, is capped at 32 loaded clouds per world, and is removed when ignited by Igni cone or breath. Targeted tests passed. The client review verified an actual Cat chestplate upgrade and one template consumed. The two partial sheets are alchemy-rc2.png and smithing-rc2.png under build/stage22km-review.
 
 Still pending: four live bomb scenarios and dedicated FX frames, end-to-end mutagen reconnect and damage matrix, chest and merchant acquisition, mastercrafted smithing and enchantment retention, and the two full PNG sheets. The existing build and review logs are build/stage22km-rc2-final.log and build/stage22km-rc2-client.log.
+
+## RC3 checkpoint — PARTIAL
+
+The isolated Minecraft client ran both Cat chestplate upgrades through the smithing screen. Both templates were consumed and the result retained enchantments. Three equipped mutagens synced before and after fully disconnecting and reopening the world. Removing one returned it to inventory and re-equipping it restored the same measured damage.
+
+Actual server health deltas from identical four-point player-attack damage sources are recorded in build/stage22km-review/rc3-result.txt. Ghoul baseline 4, small 4.16, superior 4.52, hybrid 4.32. Wraith baseline 2.20, off-family superior 2.266, hybrid 2.376. The run used a controlled damage source rather than manual attacks.
+
+The runStage22kmReview task passed. Only clientSmoke and recovery changed, so the prior remapped DEV JAR remains current for gameplay. Partial framebuffer sheets are alchemy-rc3-partial.png and smithing-rc3-partial.png. Full bomb flight and impact effects, Cat armor interaction, chest loot and buying a template, GUI alternative selection in the client, and complete PNG sheets remain pending.
