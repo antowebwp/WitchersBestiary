@@ -757,6 +757,7 @@
   "entity.witchersbestiary.unicorn": "Unicorn",
   "entity.witchersbestiary.unicorn.tamed": "Tamed Unicorn",
   "item.witchersbestiary.unicorn_spawn_egg": "Unicorn Spawn Egg",
+  "unicorn.witchersbestiary.guard": "Guard",
   "unicorn.witchersbestiary.follow": "Follow",
   "unicorn.witchersbestiary.current_speed": "%s blocks/s",
   "unicorn.witchersbestiary.next_bonus": "Next level: +%s%% base speed",

@@ -37,7 +37,9 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private int speedLevel = 1;
     private double ridingDistance;
     private int lastRidingCredit = Integer.MIN_VALUE;
-    private boolean waiting;
+    private enum Behavior { FOLLOW, WAIT, GUARD }
+    private Behavior behavior = Behavior.FOLLOW;
+    private net.minecraft.util.math.BlockPos guardPoint;
     private int castingTicks;
     private net.minecraft.util.math.Vec3d lastMotionPosition;
     private double strideSpeed;
@@ -59,17 +61,70 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             @Override public boolean canStart() { return !isTame() && super.canStart(); }
         });
         goalSelector.add(3, new Goal() {
+            private int repath;
+            private int failedRoutes;
             { setControls(java.util.EnumSet.of(Control.MOVE)); }
+
+            private boolean available() {
+                return isTame() && !recovering() && castingTicks == 0 && !hasPassengers()
+                        && behavior != Behavior.WAIT;
+            }
+
             @Override public boolean canStart() {
+                if (!available()) return false;
+                if (behavior == Behavior.GUARD) return guardPoint != null
+                        && squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) > 9;
                 var owner = getOwner();
-                return owner != null && owner.isAlive() && owner.getWorld() == getWorld()
-                    && !waiting && !recovering() && castingTicks == 0 && !hasPassengers()
-                    && squaredDistanceTo(owner) > 16 && squaredDistanceTo(owner) < 4096;
+                return owner != null && owner.isAlive() && !owner.isSpectator()
+                        && owner.getWorld() == getWorld() && squaredDistanceTo(owner) >= 64;
             }
-            @Override public boolean shouldContinue() { return canStart(); }
+
+            @Override public boolean shouldContinue() {
+                if (!available()) return false;
+                if (behavior == Behavior.GUARD) return guardPoint != null
+                        && squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) > 4;
+                var owner = getOwner();
+                return owner != null && owner.isAlive() && !owner.isSpectator()
+                        && owner.getWorld() == getWorld() && squaredDistanceTo(owner) > 16;
+            }
+
+            @Override public void start() {
+                repath = 0;
+                failedRoutes = 0;
+                tick();
+            }
+
+            @Override public boolean shouldRunEveryTick() { return true; }
+
             @Override public void tick() {
-                if (age % 10 == 0 && getOwner() != null) getNavigation().startMovingTo(getOwner(), 1.15);
+                if (repath-- > 0) return;
+                repath = 9;
+                if (behavior == Behavior.GUARD) {
+                    if (guardPoint != null) getNavigation().startMovingTo(
+                            guardPoint.getX() + .5, guardPoint.getY(), guardPoint.getZ() + .5, 1.12);
+                    return;
+                }
+                var owner = getOwner();
+                if (owner == null) return;
+                double distance = squaredDistanceTo(owner);
+                var path = getNavigation().findPathTo(owner, 3);
+                boolean reachable = path != null && path.reachesTarget();
+                if (reachable) {
+                    failedRoutes = 0;
+                    getNavigation().startMovingAlong(path, distance > 256 ? 1.42 : 1.18);
+                } else {
+                    failedRoutes++;
+                    if (path != null) getNavigation().startMovingAlong(path, 1.28);
+                    if (distance > 1024 && failedRoutes >= 2 && getWorld() instanceof ServerWorld world) {
+                        var safe = UnicornLanding.find(world, UnicornEntity.this, owner.getBlockPos()).orElse(null);
+                        if (safe == null) return;
+                        getNavigation().stop();
+                        teleport(safe.x, safe.y, safe.z, false);
+                        failedRoutes = 0;
+                    }
+                }
             }
+
             @Override public void stop() { getNavigation().stop(); }
         });
         goalSelector.add(5, new WanderAroundFarGoal(this, .75) {
@@ -84,7 +139,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     public boolean recovering() { return dataTracker.get(RECOVERY) > 0; }
     public boolean healing() { return dataTracker.get(HEALING); }
     public byte gait() { return dataTracker.get(GAIT); }
-    public boolean waiting() { return waiting; }
+    public boolean waiting() { return behavior == Behavior.WAIT; }
 
     private final com.witchersbestiary.entity.PetFeeding feedingCooldown = new com.witchersbestiary.entity.PetFeeding();
     @Override public ActionResult interactMob(PlayerEntity player, Hand hand) {
@@ -113,9 +168,14 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         }
         if (player.isSneaking() && stack.isEmpty()) {
             if (!getWorld().isClient) {
-                waiting = !waiting;
+                behavior = switch (behavior) {
+                    case FOLLOW -> Behavior.WAIT;
+                    case WAIT -> Behavior.GUARD;
+                    case GUARD -> Behavior.FOLLOW;
+                };
+                guardPoint = behavior == Behavior.GUARD ? getBlockPos() : null;
                 getNavigation().stop();
-                player.sendMessage(Text.translatable("unicorn.witchersbestiary." + (waiting ? "wait" : "follow"))
+                player.sendMessage(Text.translatable("unicorn.witchersbestiary." + behavior.name().toLowerCase(java.util.Locale.ROOT))
                     .append(" В· ").append(speedStatus()), true);
             }
             return ActionResult.success(getWorld().isClient);
@@ -281,7 +341,9 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         super.writeCustomDataToNbt(nbt);
         nbt.putInt("UnicornSpeedLevel", speedLevel);
         nbt.putDouble("UnicornRidingDistance", ridingDistance);
-        nbt.putBoolean("UnicornWaiting", waiting);
+        nbt.putBoolean("UnicornWaiting", waiting());
+        nbt.putString("UnicornBehavior", behavior.name());
+        if (guardPoint != null) nbt.putLong("UnicornGuardPoint", guardPoint.asLong());
         nbt.putInt("UnicornRecovery", dataTracker.get(RECOVERY));
     }
 
@@ -292,7 +354,15 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         ridingDistance = speedLevel < MAX_SPEED_LEVEL && Double.isFinite(savedDistance)
             && savedDistance >= 0 && savedDistance < distanceForLevel(speedLevel) ? savedDistance : 0;
         updateRidingSpeed();
-        waiting = nbt.getBoolean("UnicornWaiting");
+        behavior = switch (nbt.getString("UnicornBehavior")) {
+            case "GUARD" -> Behavior.GUARD;
+            case "WAIT" -> Behavior.WAIT;
+            case "FOLLOW" -> Behavior.FOLLOW;
+            default -> nbt.getBoolean("UnicornWaiting") ? Behavior.WAIT : Behavior.FOLLOW;
+        };
+        guardPoint = behavior == Behavior.GUARD
+                ? (nbt.contains("UnicornGuardPoint") ? net.minecraft.util.math.BlockPos.fromLong(nbt.getLong("UnicornGuardPoint")) : getBlockPos())
+                : null;
         dataTracker.set(RECOVERY, Math.clamp(nbt.getInt("UnicornRecovery"), 0, 600));
     }
 

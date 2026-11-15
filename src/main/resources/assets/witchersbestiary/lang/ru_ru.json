@@ -757,6 +757,7 @@
   "entity.witchersbestiary.unicorn": "Единорог",
   "entity.witchersbestiary.unicorn.tamed": "Приручённый единорог",
   "item.witchersbestiary.unicorn_spawn_egg": "Яйцо призыва единорога",
+  "unicorn.witchersbestiary.guard": "Охранять",
   "unicorn.witchersbestiary.follow": "Следовать",
   "unicorn.witchersbestiary.current_speed": "%s бл./с",
   "unicorn.witchersbestiary.next_bonus": "Следующий уровень: +%s%% базовой скорости",
