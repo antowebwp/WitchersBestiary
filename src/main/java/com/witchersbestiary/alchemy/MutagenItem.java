@@ -22,7 +22,9 @@ public final class MutagenItem extends Item {
     private static final int[] FAMILY_PERCENT = {3, 6, 10};
     private static final net.fabricmc.fabric.api.attachment.v1.AttachmentType<List<Identifier>> EQUIPPED =
             AttachmentRegistry.create(Identifier.of("witchersbestiary", "equipped_mutagens"),
-                    builder -> builder.persistent(Identifier.CODEC.sizeLimitedListOf(SLOT_COUNT)).copyOnDeath());
+                    builder -> builder.persistent(Identifier.CODEC.sizeLimitedListOf(SLOT_COUNT)).copyOnDeath()
+                            .syncWith(Identifier.PACKET_CODEC.collect(net.minecraft.network.codec.PacketCodecs.toList(SLOT_COUNT)),
+                                    net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate.targetOnly()));
     private final MonsterCategory first;
     private final MonsterCategory second;
     private final int tier;
@@ -66,6 +68,21 @@ public final class MutagenItem extends Item {
         return 1 + bonus / 100;
     }
 
+    public static ItemStack equipped(PlayerEntity player, int slot) {
+        var current = player.getAttachedOrElse(EQUIPPED, List.of());
+        return slot < current.size() ? new ItemStack(Registries.ITEM.get(current.get(slot))) : ItemStack.EMPTY;
+    }
+
+    public static boolean equip(PlayerEntity player, ItemStack stack) {
+        if (!(stack.getItem() instanceof MutagenItem) || stack.isEmpty()) return false;
+        var slots = new ArrayList<>(player.getAttachedOrElse(EQUIPPED, List.of()));
+        if (slots.size() >= SLOT_COUNT) return false;
+        slots.add(Registries.ITEM.getId(stack.getItem()));
+        stack.decrementUnlessCreative(1, player);
+        player.setAttached(EQUIPPED, List.copyOf(slots));
+        return true;
+    }
+
     public static boolean remove(PlayerEntity player, int slot) {
         var equipped = new ArrayList<>(player.getAttachedOrElse(EQUIPPED, List.of()));
         if (slot < 0 || slot >= equipped.size()) return false;
@@ -82,19 +99,9 @@ public final class MutagenItem extends Item {
         var held = player.getStackInHand(hand);
         if (player.isSpectator()) return TypedActionResult.fail(held);
         if (world.isClient) return TypedActionResult.success(held);
-        var slots = new ArrayList<>(player.getAttachedOrElse(EQUIPPED, List.of()));
-        if (player.isSneaking()) {
-            if (slots.isEmpty()) return TypedActionResult.fail(held);
-            var returned = new ItemStack(Registries.ITEM.get(slots.getLast()));
-            if (!player.getInventory().insertStack(returned)) return TypedActionResult.fail(held);
-            slots.removeLast();
-        } else {
-            if (slots.size() >= SLOT_COUNT) return TypedActionResult.fail(held);
-            slots.add(Registries.ITEM.getId(this));
-            held.decrementUnlessCreative(1, player);
-        }
-        player.setAttached(EQUIPPED, List.copyOf(slots));
-        player.sendMessage(Text.translatable("item.witchersbestiary.mutagen.equipped", slots.size()), true);
+        var slots = player.getAttachedOrElse(EQUIPPED, List.of());
+        boolean changed = player.isSneaking() ? remove(player, slots.size() - 1) : equip(player, held);
+        if (!changed) return TypedActionResult.fail(held);
         return TypedActionResult.consume(held);
     }
 }

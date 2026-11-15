@@ -20,23 +20,50 @@ public final class AlchemyRecipes {
  }
  public record Plan(List<ItemStack> table,List<ItemStack> player,ItemStack output){}
  public static Plan plan(World world,net.minecraft.inventory.Inventory table,PlayerEntity player,RecipeEntry<CraftingRecipe> entry){
+  return plan(world, table, player, entry, null);
+ }
+ public static Plan plan(World world, net.minecraft.inventory.Inventory table, PlayerEntity player,
+                         RecipeEntry<CraftingRecipe> entry, Item preferred) {
   if(!catalog(world).contains(entry))return null;
   var sources=new ArrayList<ItemStack>();for(int i=0;i<3;i++)sources.add(table.getStack(i).copy());for(var s:player.getInventory().main)sources.add(s.copy());
+  return plan(world, entry, sources, table.getStack(3), preferred);
+ }
+ private static Plan plan(World world, RecipeEntry<CraftingRecipe> entry, List<ItemStack> sources,
+                          ItemStack currentOutput, Item preferred) {
+  var originals = sources.stream().map(ItemStack::copy).toList();
   var ingredients=entry.value().getIngredients();int[] chosen=new int[ingredients.size()];Arrays.fill(chosen,-1);
-  if(!assign(ingredients,0,sources,chosen))return null;
+  if(!assign(ingredients,sources,chosen,preferred))return null;
   int width=entry.value() instanceof ShapedRecipe shaped?shaped.getWidth():Math.min(3,ingredients.size());int height=entry.value() instanceof ShapedRecipe shaped?shaped.getHeight():(ingredients.size()+width-1)/width;
   var grid=new ArrayList<ItemStack>(Collections.nCopies(width*height,ItemStack.EMPTY));
-  for(int i=0;i<chosen.length;i++)if(chosen[i]>=0){var original=chosen[i]<3?table.getStack(chosen[i]):player.getInventory().main.get(chosen[i]-3);grid.set(i,original.copyWithCount(1));}
+  for(int i=0;i<chosen.length;i++)if(chosen[i]>=0){var original=originals.get(chosen[i]);grid.set(i,original.copyWithCount(1));}
   var input=CraftingRecipeInput.create(width,height,grid);if(!entry.value().matches(input,world))return null;
-  var result=entry.value().craft(input,world.getRegistryManager());var output=table.getStack(3).copy();
+  var result=entry.value().craft(input,world.getRegistryManager());var output=currentOutput.copy();
   if(result.isEmpty()||result.getCount()>result.getMaxCount()||!output.isEmpty()&&(!ItemStack.areItemsAndComponentsEqual(output,result)||output.getCount()+result.getCount()>output.getMaxCount()))return null;
   if(output.isEmpty())output=result.copy();else output.increment(result.getCount());
   var bag=new ArrayList<ItemStack>(sources.subList(3,sources.size()));
   for(var remainder:entry.value().getRemainder(input))if(!put(bag,remainder.copy()))return null;
   return new Plan(new ArrayList<>(sources.subList(0,3)),bag,output);
  }
- private static boolean assign(List<Ingredient> ingredients,int ignored,List<ItemStack> sources,int[] chosen){
+ public static int craftable(World world, net.minecraft.inventory.Inventory table, PlayerEntity player,
+                             RecipeEntry<CraftingRecipe> entry, Item preferred) {
+  var sources = new ArrayList<ItemStack>();
+  for (int i = 0; i < 3; i++) sources.add(table.getStack(i).copy());
+  for (var stack : player.getInventory().main) sources.add(stack.copy());
+  var output = table.getStack(3);
+  int count = 0;
+  while (count < output.getMaxCount()) {
+   var next = plan(world, entry, sources, output, preferred);
+   if (next == null) break;
+   count++;
+   sources = new ArrayList<>(next.table());
+   sources.addAll(next.player());
+   output = next.output();
+  }
+  return count;
+ }
+ private static boolean assign(List<Ingredient> ingredients,List<ItemStack> sources,int[] chosen,Item preferred){
   var units=new ArrayList<Integer>();for(int i=0;i<sources.size();i++)for(int n=0;n<Math.min(ingredients.size(),sources.get(i).getCount());n++)units.add(i);
+  if (preferred != null) units.sort(Comparator.comparing(i -> !sources.get(i).isOf(preferred)));
   int[] owners=new int[units.size()];Arrays.fill(owners,-1);
   for(int i=0;i<ingredients.size();i++)if(!ingredients.get(i).isEmpty()&&!match(i,ingredients,sources,units,owners,new boolean[owners.length]))return false;
   for(int i=0;i<owners.length;i++)if(owners[i]>=0){chosen[owners[i]]=units.get(i);sources.get(units.get(i)).decrement(1);}return true;
@@ -46,8 +73,11 @@ public final class AlchemyRecipes {
  }
  private static boolean put(List<ItemStack> bag,ItemStack stack){if(stack.isEmpty())return true;for(var slot:bag)if(!slot.isEmpty()&&ItemStack.areItemsAndComponentsEqual(slot,stack)){int n=Math.min(stack.getCount(),slot.getMaxCount()-slot.getCount());slot.increment(n);stack.decrement(n);if(stack.isEmpty())return true;}for(int i=0;i<bag.size();i++)if(bag.get(i).isEmpty()){int n=Math.min(stack.getCount(),stack.getMaxCount());bag.set(i,stack.copyWithCount(n));stack.decrement(n);if(stack.isEmpty())return true;}return false;}
  public static boolean craft(WorkshopInventory table,PlayerEntity player,int index){
+  return craft(table, player, index, null);
+ }
+ public static boolean craft(WorkshopInventory table, PlayerEntity player, int index, Item preferred){
   var world=table.getWorld();if(world==null||world.isClient||!player.isAlive()||player.isSpectator()||!table.canPlayerUse(player)||table.kind()!=WorkshopKind.ALCHEMY_WORKBENCH||com.witchersbestiary.fist.FistFights.busy(player))return false;
-  var list=catalog(world);if(index<0||index>=list.size())return false;var plan=plan(world,table,player,list.get(index));if(plan==null)return false;
+  var list=catalog(world);if(index<0||index>=list.size())return false;var plan=plan(world,table,player,list.get(index),preferred);if(plan==null)return false;
   for(int i=0;i<3;i++)table.setStack(i,plan.table.get(i));for(int i=0;i<plan.player.size();i++)player.getInventory().main.set(i,plan.player.get(i));table.setStack(3,plan.output);player.getInventory().markDirty();return true;
  }
 }

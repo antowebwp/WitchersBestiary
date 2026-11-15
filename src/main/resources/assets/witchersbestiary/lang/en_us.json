@@ -1024,5 +1024,6 @@
   "item.witchersbestiary.moon_dust": "Moon Dust",
   "item.witchersbestiary.samum": "Samum",
   "item.witchersbestiary.dragons_dream": "Dragon's Dream",
-  "alchemy.witchersbestiary.bombs": "Bombs"
+  "alchemy.witchersbestiary.bombs": "Bombs",
+  "alchemy.witchersbestiary.craftable": "Craftable: %s"
 }

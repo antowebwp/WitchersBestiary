@@ -33,6 +33,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
         net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap.INSTANCE.putBlock(com.witchersbestiary.decor.ModRemains.MONSTER_ORGAN_JAR,net.minecraft.client.render.RenderLayer.getTranslucent());
         EntityRendererRegistry.register(ModEntities.GRAVE_HAG,GraveHagRenderer::new);
         EntityRendererRegistry.register(ModEntities.WATER_HAG,WaterHagRenderer::new);
+        EntityRendererRegistry.register(ModEntities.WITCHER_BOMB, context -> new net.minecraft.client.render.entity.FlyingItemEntityRenderer<>(context,.8f,false));
         EntityRendererRegistry.register(ModEntities.MUD_CLOD,context->new net.minecraft.client.render.entity.FlyingItemEntityRenderer<>(context,.8f,false));
         EntityRendererRegistry.register(ModEntities.INFERNAL_BASILISK,InfernalBasiliskRenderer::new);
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((c,w)->{if(w!=null)com.witchersbestiary.alchemy.AlchemyTooltips.rebuild(w);});

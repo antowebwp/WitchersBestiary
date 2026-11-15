@@ -1024,5 +1024,6 @@
   "item.witchersbestiary.moon_dust": "Лунная пыль",
   "item.witchersbestiary.samum": "Самум",
   "item.witchersbestiary.dragons_dream": "Сон дракона",
-  "alchemy.witchersbestiary.bombs": "Бомбы"
+  "alchemy.witchersbestiary.bombs": "Бомбы",
+  "alchemy.witchersbestiary.craftable": "Можно изготовить: %s"
 }

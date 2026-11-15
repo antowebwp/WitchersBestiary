@@ -34,6 +34,19 @@ public final class AlchemyTableTests implements FabricGameTest {
     player.getInventory().insertStack(oil.value().getIngredients().get(i).getMatchingStacks()[0].copy());
    context.assertTrue(AlchemyRecipes.craft(table, player, recipes.indexOf(oil)), "Claw or essence crafts the same oil");
   }
+  table.clear();
+  player.getInventory().clear();
+  var preferred = com.witchersbestiary.registry.ModItems.DROWNER_ESSENCE;
+  var fallback = com.witchersbestiary.registry.ModItems.GHOUL_CLAW;
+  player.getInventory().insertStack(new ItemStack(fallback));
+  player.getInventory().insertStack(new ItemStack(preferred));
+  for (int i=1;i<oil.value().getIngredients().size();i++)
+   player.getInventory().insertStack(oil.value().getIngredients().get(i).getMatchingStacks()[0].copyWithCount(2));
+  context.assertTrue(AlchemyRecipes.craftable(world,table,player,oil,preferred)==2,"Count includes both alternatives");
+  context.assertTrue(AlchemyRecipes.craft(table,player,recipes.indexOf(oil),preferred)
+      &&player.getInventory().count(preferred)==0&&player.getInventory().count(fallback)==1,
+      "Craft consumes preferred available ingredient");
+
   var mutagen = net.minecraft.registry.Registries.ITEM.get(net.minecraft.util.Identifier.of("witchersbestiary:mutagen_necrophage_3"));
   player.setStackInHand(net.minecraft.util.Hand.MAIN_HAND,new ItemStack(mutagen));
   mutagen.use(world,player,net.minecraft.util.Hand.MAIN_HAND);

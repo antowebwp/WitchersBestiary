@@ -30,26 +30,30 @@ public final class WitcherBombItem extends Item {
         if (player.isSpectator() || com.witchersbestiary.fist.FistFights.busy(player)
                 || player.getItemCooldownManager().isCoolingDown(this)) return TypedActionResult.fail(stack);
         if (world instanceof ServerWorld server && player instanceof ServerPlayerEntity owner) {
-            var hit = player.raycast(8, 1, false);
-            var center = hit.getPos().subtract(player.getRotationVec(1).multiply(.4));
+            var bomb = new com.witchersbestiary.entity.projectile.WitcherBombEntity(server, owner);
+            bomb.setItem(stack.copyWithCount(1));
+            bomb.setVelocity(owner, owner.getPitch(), owner.getYaw(), 0, .95f, .5f);
+            if (!server.spawnEntity(bomb)) return TypedActionResult.fail(stack);
+            player.getItemCooldownManager().set(this, 40);
+            stack.decrementUnlessCreative(1, player);
+        }
+        return TypedActionResult.success(stack, world.isClient);
+    }
+    public void detonate(ServerWorld server, ServerPlayerEntity owner, net.minecraft.util.math.Vec3d center) {
             for (var target : server.getEntitiesByClass(LivingEntity.class, new Box(center, center).expand(2.5),
                     entity -> entity.squaredDistanceTo(center) <= 6.25
-                            && com.witchersbestiary.signs.SignManager.enemy(owner, entity) && owner.canSee(entity))) {
+                            && com.witchersbestiary.signs.SignManager.enemy(owner, entity) && server.raycast(new net.minecraft.world.RaycastContext(center, entity.getEyePos(), net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, owner)).getType() == net.minecraft.util.hit.HitResult.Type.MISS)) {
                 switch (type) {
                     case 0 -> target.damage(server.getDamageSources().playerAttack(owner), 6);
                     case 1 -> {
                         target.removeStatusEffect(StatusEffects.INVISIBILITY);
                         target.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 120));
                     }
-                    case 2 -> target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 80, 2));
+                    case 2 -> { target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 80, 2)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 60)); }
                     case 3 -> target.setOnFireFor(4);
                     default -> throw new IllegalStateException("Unknown bomb type");
                 }
             }
-            server.spawnParticles(ParticleTypes.POOF, center.x, center.y, center.z, 18, .65, .4, .65, .04);
-            player.getItemCooldownManager().set(this, 40);
-            stack.decrementUnlessCreative(1, player);
-        }
-        return TypedActionResult.success(stack, world.isClient);
+            server.spawnParticles(switch (type) { case 0 -> ParticleTypes.CRIT; case 1 -> ParticleTypes.END_ROD; case 2 -> ParticleTypes.FLASH; default -> ParticleTypes.FLAME; }, center.x, center.y, center.z, 18, .65, .4, .65, .04);
     }
 }
