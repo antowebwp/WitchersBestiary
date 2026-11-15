@@ -43,6 +43,14 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
     private void progressiveArmor(org.spongepowered.asm.mixin.injection.invoke.arg.Args args){
         args.set(3,com.witchersbestiary.combat.ProgressiveDifficulty.armor(args.get(2),args.get(3)));
     }
+    @org.spongepowered.asm.mixin.injection.ModifyArg(method = "applyDamage",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;setHealth(F)V"))
+    private float wb$limitVampirePhaseDamage(float health) {
+        var victim = (LivingEntity)(Object)this;
+        return victim instanceof com.witchersbestiary.entity.monster.HigherVampireEntity vampire
+                ? vampire.limitHealthAfterHit(health) : health;
+    }
+
     @com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod(method="damage")
     private boolean witchersbestiary$damage(DamageSource source,float amount,com.llamalad7.mixinextras.injector.wrapoperation.Operation<Boolean> original){
         var victim=(LivingEntity)(Object)this;

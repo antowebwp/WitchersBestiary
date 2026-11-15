@@ -29,8 +29,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 import static net.minecraft.server.command.CommandManager.*;
 
 public final class HigherVampireEntity extends HostileEntity implements GeoEntity, CategorizedMonster {
-    private static final int HUMAN = 0, CHANGING = 1, REVEAL = 2, HYBRID = 3, FINAL = 4, DEFEATED = 5;
-    private static final int CHANGE_TICKS = 40, REVEAL_TICKS = 36;
+    private static final int HUMAN = 0, CHANGING = 1, REVEAL = 2, HYBRID = 3, FINAL = 4, DEFEATED = 5, FRENZY_TRANSITION = 6;
+    private static final int CHANGE_TICKS = 40, REVEAL_TICKS = 36, FRENZY_TICKS = 17;
     private static final TrackedData<Integer> STAGE = DataTracker.registerData(
             HigherVampireEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<String> CLIP = DataTracker.registerData(
@@ -87,7 +87,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
 
     private boolean transforming() {
         int stage = dataTracker.get(STAGE);
-        return stage == CHANGING || stage == REVEAL;
+        return stage == CHANGING || stage == REVEAL || stage == FRENZY_TRANSITION;
     }
 
     @Override public MonsterCategory getMonsterCategory() { return MonsterCategory.VAMPIRE; }
@@ -158,7 +158,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
             updateBossBar();
             return;
         }
-        if (dataTracker.get(STAGE) == HYBRID && getHealth() < getMaxHealth() * .25f) {
+        if (dataTracker.get(STAGE) == HYBRID && getHealth() <= getMaxHealth() * .25f) {
             combat.cancel();
             dataTracker.set(STAGE, FINAL);
             regenAt = Math.max(regenAt, world.getTime()+40);
@@ -174,6 +174,13 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
 
     private void tickTransformation(ServerWorld world) {
         ++stageTicks;
+        if (dataTracker.get(STAGE) == FRENZY_TRANSITION) {
+            if (stageTicks >= FRENZY_TICKS) {
+                dataTracker.set(STAGE, FINAL);
+                regenAt = Math.max(regenAt, world.getTime() + 40);
+            }
+            return;
+        }
         if (dataTracker.get(STAGE) == CHANGING && stageTicks >= CHANGE_TICKS) {
             stageTicks = 0;
             if (!hasHybridClearance()) {
@@ -230,10 +237,18 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         regenAt = Math.max(regenAt, getWorld().getTime()+ticks);
     }
 
+    /** Applied at the final health write, after armor, resistance and all combat modifiers. */
+    public float limitHealthAfterHit(float health) {
+        int stage = dataTracker.get(STAGE);
+        if (stage == HUMAN) return Math.max(health, Math.min(getHealth(), getMaxHealth() * .65f));
+        if (stage == HYBRID) return Math.max(health, Math.min(getHealth(), getMaxHealth() * .25f));
+        return health;
+    }
+
     @Override public boolean damage(DamageSource source, float amount) {
-        if (isDefeated()) return false;
+        if (isDefeated() || transforming()) return false;
         float before = getHealth();
-        boolean hit = super.damage(source, transforming() ? amount*.3f : amount);
+        boolean hit = super.damage(source, amount);
         if (hit && !getWorld().isClient && !isDefeated()) {
             if (source.getAttacker() instanceof ServerPlayerEntity player && !player.isCreative()
                     && !player.isSpectator() && getTarget() == null && squaredDistanceTo(player) <= 56*56) {
@@ -288,9 +303,9 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         dataTracker.set(DEFEATED_HUMAN, defeated && !hybrid);
         dataTracker.set(STAGE, defeated ? DEFEATED : hybrid ? (nbt.getBoolean("FinalPhase") ? FINAL : HYBRID) : HUMAN);
         int transition = nbt.getInt("TransitionStage");
-        if (!defeated && ((!hybrid && transition == CHANGING) || (hybrid && transition == REVEAL))) {
+        if (!defeated && ((!hybrid && transition == CHANGING) || (hybrid && (transition == REVEAL || transition == FRENZY_TRANSITION)))) {
             stageTicks = Math.clamp(nbt.getInt("TransitionTicks"), 0,
-                    (transition == CHANGING ? CHANGE_TICKS : REVEAL_TICKS)-1);
+                    (transition == CHANGING ? CHANGE_TICKS : transition == REVEAL ? REVEAL_TICKS : FRENZY_TICKS)-1);
             dataTracker.set(STAGE, transition);
         }
         setNoGravity(false);
@@ -304,6 +319,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
             String clip = switch (dataTracker.get(STAGE)) {
                 case CHANGING -> "transformation";
                 case REVEAL -> "reveal";
+                case FRENZY_TRANSITION -> "wing_spread";
                 case DEFEATED -> isHybrid() ? "defeat" : "human_defeat";
                 default -> !activeCombatClip().isEmpty() ? activeCombatClip() : hurtTime > 0 && isAlive() ? "hurt"
                         : state.isMoving() ? (getVelocity().horizontalLengthSquared() > .038 ? "run" : "walk") : "idle";
