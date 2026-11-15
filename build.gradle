@@ -52,6 +52,15 @@ loom {
   'witchersbestiary-client-tests' { sourceSet sourceSets.clientSmoke }
  }
  runs {
+  stage22rReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.stage22rReview=true'
+   if (project.hasProperty('stage22rVampireOnly')) vmArg '-Dwitchersbestiary.stage22rVampireOnly=true'
+   if (project.hasProperty('stage22rArmorOnly')) vmArg '-Dwitchersbestiary.stage22rArmorOnly=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/stage22r/client'
+  }
   arcaneV2Review {
    client()
    source sourceSets.clientSmoke
@@ -623,7 +632,7 @@ tasks.register('verifyReleaseMixins') {
      covered.add(shortName)
     }
    }
-   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin', 'VillageNoticeBoardMixin', 'CrownPickupMixin', 'ItemPickupOwner', 'SwordAttackMixin', 'SchoolArmorAnvilMixin', 'PlayerFistPoseMixin', 'FistFirstPersonMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
+   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin', 'VillageNoticeBoardMixin', 'CrownPickupMixin', 'ItemPickupOwner', 'SwordAttackMixin', 'SchoolArmorAnvilMixin', 'PlayerFistPoseMixin', 'FistFirstPersonMixin', 'PhylacteryUseMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
    def client = readJson('witchersbestiary.client.mixins.json')
    def mappings = readJson(client.refmap).mappings['com/witchersbestiary/combat/mixin/RecipeCatalogReloadMixin']
    def selector = 'onSynchronizeRecipes(Lnet/minecraft/network/packet/s2c/play/SynchronizeRecipesS2CPacket;)V'

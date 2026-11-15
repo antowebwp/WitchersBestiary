@@ -28,6 +28,7 @@ for role in ['Server', 'One', 'Two']:
     if os.environ.get("STAGE22B_HOTFIX")=="1": jvm += ["-Dwitchersbestiary.stage22bHotfix=true"]
     if os.environ.get("STAGE22A_MOTION")=="1": jvm += ["-Dwitchersbestiary.stage22aMotion=true"]
     if os.environ.get("STAGE22A_VISUAL")=="1": jvm += ["-Dwitchersbestiary.stage22aVisual=true"]
+    if os.environ.get("STAGE22R_NETWORK")=="1": jvm += ["-Dwitchersbestiary.stage22rNetwork=true"]
     if os.environ.get("STAGE22A_NETWORK")=="1": jvm += ["-Dwitchersbestiary.stage22aNetwork=true"]
     if os.environ.get("STAGE21J_NETWORK")=="1": jvm += ["-Dwitchersbestiary.stage21jNetwork=true"]
     if os.environ.get("STAGE21J_RESTART_ONLY")=="1": jvm += ["-Dwitchersbestiary.stage21jRestart=true"]
@@ -68,6 +69,10 @@ for role in ['Server', 'One', 'Two']:
         args = ['--nogui']
         (cwd / 'eula.txt').write_text('eula=true\n')
         (cwd / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=25583\nonline-mode=false\nenforce-secure-profile=false\nview-distance=4\nsimulation-distance=4\nmax-players=2\nlevel-name=world\nlevel-seed=202001\nlevel-type=minecraft\\:normal\ngenerate-structures=true\nspawn-protection=0\ndifficulty=normal\nenable-rcon=false\n')
+        if os.environ.get("STAGE22R_NETWORK") == "1":
+            properties = cwd / "server.properties"
+            properties.write_text(properties.read_text().replace("level-type=minecraft\\:normal","level-type=minecraft\\:flat")
+                                  .replace("generate-structures=true","generate-structures=false"))
     else:
         jvm += [f'-Dwitchersbestiary.stage20eClient=WB{role}']
         args = ['--username', f'WB{role}', '--width','1280' if (os.environ.get('DUEL_NETWORK')=='1' or os.environ.get('STAGE21E_NETWORK')=='1' or os.environ.get('STAGE21G_VISUAL')=='1') and role=='Two' else '960','--height','900' if (os.environ.get('DUEL_NETWORK')=='1' or os.environ.get('STAGE21E_NETWORK')=='1' or os.environ.get('STAGE21G_VISUAL')=='1') and role=='Two' else '640']

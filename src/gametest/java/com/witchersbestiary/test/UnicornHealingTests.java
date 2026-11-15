@@ -16,8 +16,8 @@ public final class UnicornHealingTests implements FabricGameTest {
     public void exactSharedCooldownInAndOutOfCombat(TestContext c) {
         var world = c.getWorld();
         var at = c.getAbsolutePos(new BlockPos(1, 2, 1));
-        var owner = c.createMockCreativeServerPlayerInWorld();
-        var stranger = c.createMockCreativeServerPlayerInWorld();
+        var owner = UnicornTests.player(c);
+        var stranger = UnicornTests.player(c);
         owner.setNoGravity(true);
         stranger.setNoGravity(true);
         owner.refreshPositionAndAngles(at.getX() + .5, at.getY(), at.getZ() + .5, 0, 0);
@@ -55,7 +55,7 @@ public final class UnicornHealingTests implements FabricGameTest {
     @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE, tickLimit = 160)
     public void mountedRegenAndReload(TestContext c) {
         var world = c.getWorld();
-        var owner = c.createMockCreativeServerPlayerInWorld();
+        var owner = UnicornTests.player(c);
         var original = Unicorns.TYPE.create(world);
         original.bondWithPlayer(owner);
         original.saddle(new ItemStack(Items.SADDLE), null);

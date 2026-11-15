@@ -53,7 +53,7 @@ public final class HigherVampireTests implements FabricGameTest {
             context.assertTrue(vampire.getHealth() == 390, "No phase heal");
             vampire.setHealth(149);
         });
-        context.runAtTick(90, () -> {
+        context.runAtTick(115, () -> {
             context.assertTrue(vampire.isFinalPhase(), "Final phase below 25%");
             vampire.setHealth(170);
             var target = net.minecraft.entity.EntityType.IRON_GOLEM.create(world);
@@ -62,11 +62,22 @@ public final class HigherVampireTests implements FabricGameTest {
             vampire.setTarget(target);
             vampire.suppressRegeneration(75);
         });
-        context.runAtTick(145, () -> context.assertTrue(vampire.getHealth() == 170, "Suppression postpones healing"));
-        context.runAtTick(170, () -> {
+        context.runAtTick(180, () -> context.assertTrue(vampire.getHealth() == 170, "Suppression postpones healing"));
+        context.runAtTick(199, () -> {
             context.assertTrue(vampire.getHealth() == 173, "Regeneration restores three health per pulse");
             vampire.setTarget(null);
             context.assertTrue(vampire.isFinalPhase(), "Healing does not revert the phase");
+            vampire.damage(world.getDamageSources().genericKill(), 1000);
+            context.assertTrue(vampire.isCocooned() && vampire.getHealth() == 90, "Final threshold starts cocoon");
+            var player = UnicornTests.player(context);
+            float health = vampire.getHealth();
+            vampire.damage(world.getDamageSources().playerAttack(player), 10);
+            context.assertTrue(vampire.isCocooned() && vampire.cocoonIntegrity() < 1 && vampire.getHealth() == health,
+                    "Hits damage only the cocoon");
+            vampire.damage(world.getDamageSources().playerAttack(player), 1000);
+            context.assertTrue(!vampire.isCocooned() && vampire.getHealth() == health, "Break shell without harming boss");
+            player.discard();
+            vampire.timeUntilRegen = 0;
             vampire.damage(world.getDamageSources().genericKill(), 1000);
             context.assertTrue(vampire.isDefeated() && vampire.getHealth() == 1, "Defeat retains the entity");
             context.assertTrue(!vampire.damage(world.getDamageSources().mobAttack(vampire), 5), "Defeated entity is inert");
@@ -131,6 +142,7 @@ public final class HigherVampireTests implements FabricGameTest {
             var nbt = new net.minecraft.nbt.NbtCompound();
             nbt.putBoolean("HybridForm",true);
             nbt.putBoolean("FinalPhase",true);
+            nbt.putBoolean("CocoonUsed",true);
             boss.readCustomDataFromNbt(nbt);
             world.spawnEntity(boss);
             var player = context.createMockPlayer(net.minecraft.world.GameMode.SURVIVAL);
@@ -182,6 +194,9 @@ public final class HigherVampireTests implements FabricGameTest {
         owner.setYaw(0);
         owner.setPitch(0);
         item.use(world,owner,hand);
+        c.assertTrue(hunt.vampire==null && hunt.vampireReplayReady > world.getTime(), "Cooldown prevents immediate replay");
+        hunt.vampireReplayReady = world.getServer().getOverworld().getTime();
+        item.use(world,owner,hand);
         c.assertTrue(hunt.vampire!=null,"Sealed relic summons a replay: "+hunt.status()+"/"+stack);
         var id=hunt.vampire;
         owner.setStackInHand(net.minecraft.util.Hand.OFF_HAND,duplicate);
@@ -201,6 +216,7 @@ public final class HigherVampireTests implements FabricGameTest {
         var nbt=boss.writeNbt(new net.minecraft.nbt.NbtCompound());
         nbt.putBoolean("HybridForm",true);
         nbt.putBoolean("FinalPhase",true);
+        nbt.putBoolean("CocoonUsed",true);
         boss.readNbt(nbt);
         boss.damage(world.getDamageSources().genericKill(),1000);
     }

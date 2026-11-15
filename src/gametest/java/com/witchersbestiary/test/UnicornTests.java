@@ -13,12 +13,24 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 
 public final class UnicornTests implements FabricGameTest {
+    static net.minecraft.server.network.ServerPlayerEntity player(TestContext context) {
+        var world = context.getWorld();
+        var id = java.util.UUID.randomUUID();
+        var profile = new com.mojang.authlib.GameProfile(id, "Uni" + id.toString().substring(0, 8));
+        var data = net.minecraft.server.network.ConnectedClientData.createDefault(profile, false);
+        var player = new net.minecraft.server.network.ServerPlayerEntity(world.getServer(), world, profile, data.syncedOptions());
+        player.networkHandler = new net.minecraft.server.network.ServerPlayNetworkHandler(world.getServer(),
+                new net.minecraft.network.ClientConnection(net.minecraft.network.NetworkSide.SERVERBOUND), player, data);
+        world.onPlayerConnected(player);
+        player.changeGameMode(GameMode.CREATIVE);
+        return player;
+    }
     @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
     public void ownerFeedingSpendsOneAndPreservesMount(TestContext c) {
         var world=c.getWorld();
         var at=c.getAbsolutePos(new BlockPos(1,2,1));
-        var owner=c.createMockCreativeServerPlayerInWorld();
-        var stranger=c.createMockCreativeServerPlayerInWorld();
+        var owner=player(c);
+        var stranger=player(c);
         owner.changeGameMode(GameMode.SURVIVAL);
         var horse=Unicorns.TYPE.create(world);
         for(var entity:java.util.List.of(horse,owner,stranger))
@@ -49,8 +61,8 @@ public final class UnicornTests implements FabricGameTest {
     public void ownershipRidingRecoveryAndSave(TestContext c) {
         var world=c.getWorld();
         var at=c.getAbsolutePos(new BlockPos(1,2,1));
-        var owner=c.createMockCreativeServerPlayerInWorld();
-        var other=c.createMockCreativeServerPlayerInWorld();
+        var owner=player(c);
+        var other=player(c);
         owner.changeGameMode(GameMode.SURVIVAL);
         owner.setStackInHand(Hand.MAIN_HAND,new ItemStack(Items.GOLDEN_APPLE));
         var horse=Unicorns.TYPE.create(world);
@@ -79,11 +91,11 @@ public final class UnicornTests implements FabricGameTest {
     @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
     public void healingIsVisibleAndShared(TestContext c) {
         var world=c.getWorld();var at=c.getAbsolutePos(new BlockPos(1,2,1));
-        var owner=c.createMockCreativeServerPlayerInWorld();owner.changeGameMode(GameMode.SURVIVAL);
+        var owner=player(c);owner.changeGameMode(GameMode.SURVIVAL);
         owner.refreshPositionAndAngles(at.getX()+4.5,at.getY(),at.getZ()+.5,0,0);owner.setHealth(owner.getMaxHealth());
         var horse=Unicorns.TYPE.create(world);var second=Unicorns.TYPE.create(world);
         for(var pet:java.util.List.of(horse,second)){pet.bondWithPlayer(owner);pet.refreshPositionAndAngles(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);world.spawnEntity(pet);}
-        var other=c.createMockCreativeServerPlayerInWorld();
+        var other=player(c);
         other.refreshPositionAndAngles(owner.getX(), owner.getY(), owner.getZ(), 0, 0);
         other.setHealth(10);
         c.assertTrue(!horse.healOwner(world)&&other.getHealth()==10,"Full owner and injured stranger are not healed");
@@ -98,7 +110,7 @@ public final class UnicornTests implements FabricGameTest {
 
     @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
     public void mountedHealing(TestContext c) {
-        var owner = c.createMockCreativeServerPlayerInWorld();
+        var owner = player(c);
         var horse = Unicorns.TYPE.create(c.getWorld());
         horse.bondWithPlayer(owner);
         horse.saddle(new ItemStack(Items.SADDLE), null);
@@ -112,7 +124,7 @@ public final class UnicornTests implements FabricGameTest {
     @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE, tickLimit=40)
     public void ridingSpeedProgressAndSave(TestContext c) {
         var world = c.getWorld();
-        var owner = c.createMockCreativeServerPlayerInWorld();
+        var owner = player(c);
         var horse = Unicorns.TYPE.create(world);
         var second = Unicorns.TYPE.create(world);
         horse.bondWithPlayer(owner);
@@ -127,7 +139,7 @@ public final class UnicornTests implements FabricGameTest {
         owner.startRiding(horse, true);
         owner.setYaw(0);
         horse.setOnGround(true);
-        var step = new Vec3d(0, 0, .15);
+        var step = new Vec3d(0, 0, .402);
         horse.recordRiddenMove(owner, step);
         owner.updateInput(0, 1, false, false);
         horse.recordRiddenMove(owner, Vec3d.ZERO);
@@ -140,11 +152,11 @@ public final class UnicornTests implements FabricGameTest {
         horse.recordRiddenMove(owner, step);
         horse.recordRiddenMove(owner, step);
         horse.writeCustomDataToNbt(save);
-        c.assertTrue(save.getDouble("UnicornRidingDistance") == .15, "One credit per tick");
+        c.assertTrue(save.getDouble("UnicornRidingDistance") == .402, "One credit per tick");
         var restored = Unicorns.TYPE.create(world);
         restored.readCustomDataFromNbt(save);
         restored.writeCustomDataToNbt(save);
-        c.assertTrue(save.getDouble("UnicornRidingDistance") == .15, "Fractional riding XP persists");
+        c.assertTrue(save.getDouble("UnicornRidingDistance") == .402, "Fractional riding XP persists");
         restored.discard();
         second.writeCustomDataToNbt(save);
         c.assertTrue(save.getDouble("UnicornRidingDistance") == 0, "Other unicorn receives no riding XP");

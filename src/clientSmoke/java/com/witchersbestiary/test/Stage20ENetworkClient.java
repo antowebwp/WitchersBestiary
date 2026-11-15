@@ -121,6 +121,16 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
    if(step==95)reply(c,"hud-scale-bounds-reset-and-disk-passed");
    return;
   }
+  if(action.equals("armorInspect")&&c.player!=null&&c.world!=null){
+   var id=java.util.UUID.fromString(command.get("target").getAsString());
+   for(var entity:c.world.getEntities())if(entity instanceof net.minecraft.entity.decoration.ArmorStandEntity stand&&stand.getUuid().equals(id)){
+    if(step>=18&&stand.getEquippedStack(net.minecraft.entity.EquipmentSlot.CHEST).getItem() instanceof com.witchersbestiary.equipment.armory.SchoolArmor){
+     capture(c,command.get("shot").getAsString());reply(c,"armor-stand-render");
+    }
+    return;
+   }
+   return;
+  }
   if(action.startsWith("unicorn")){
    c.getToastManager().clear();
    if(screenReady<6){step=0;return;}
@@ -146,10 +156,10 @@ public final class Stage20ENetworkClient implements ClientModInitializer {
    }
    if(action.equals("unicornGlow")){if(unicorn.healing()&&step>=5){capture(c,shot);reply(c,"healing-horn");}return;}
    if(action.equals("unicornInteract")&&step==16)c.interactionManager.interactEntity(c.player,unicorn,Hand.MAIN_HAND);
-   if(action.equals("unicornRide")){
+   if(action.equals("unicornRide")||action.equals("unicornMeasure")){
     if(step==4)c.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_BACK);
     c.options.forwardKey.setPressed(step>=5&&step<55);
-    c.options.jumpKey.setPressed(!shot.equals("unicorn-walking-rider")&&step>=16&&step<24);
+    c.options.jumpKey.setPressed(action.equals("unicornRide")&&!shot.equals("unicorn-walking-rider")&&step>=16&&step<24);
     if(step==24)capture(c,shot);
     if(step>=63){c.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON);reply(c,"ride-input");}
    }else if(step>=28){capture(c,shot);reply(c,"unicorn-review");}
