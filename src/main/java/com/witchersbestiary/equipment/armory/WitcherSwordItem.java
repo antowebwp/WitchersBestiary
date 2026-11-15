@@ -29,6 +29,12 @@ public final class WitcherSwordItem extends SwordItem {
   if(!(target instanceof LivingEntity living)||!(source.getAttacker() instanceof net.minecraft.entity.player.PlayerEntity player)||source.getSource()!=player||!source.isOf(net.minecraft.entity.damage.DamageTypes.PLAYER_ATTACK))return 0;
   double full=player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
   float bonus=ArmoryCombat.bonus(new ItemStack(this),living)*(float)Math.clamp(full>0?baseDamage/full:0,0,1);
+  double fraction = this == com.witchersbestiary.registry.ModItems.BLOOD_LEGACY ? .0065 : switch (kind) {
+   case STEEL -> .0035;
+   case SILVER -> .005;
+   case GRAVE -> 0;
+  };
+  bonus += com.witchersbestiary.combat.MonsterHealthScaling.bonus(living,fraction,8);
   ArmoryCombat.prepare(living,source,bonus);return 0;
  }
  @Override public boolean postHit(ItemStack stack,LivingEntity target,LivingEntity attacker){boolean result=super.postHit(stack,target,attacker);ArmoryCombat.afterHit(this,target,attacker);
