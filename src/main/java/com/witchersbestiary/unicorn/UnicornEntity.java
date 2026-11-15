@@ -61,9 +61,51 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         goalSelector.add(1, new EscapeDangerGoal(this, 1.25) {
             @Override public boolean canStart() { return !isTame() && super.canStart(); }
         });
+        goalSelector.add(2, new Goal() {
+            private net.minecraft.entity.mob.HostileEntity attacker;
+            private int cooldown;
+            { setControls(java.util.EnumSet.of(Control.MOVE, Control.LOOK)); }
+
+            @Override public boolean canStart() {
+                var owner = getOwner();
+                if (behavior != Behavior.GUARD || guardPoint == null || recovering() || castingTicks > 0
+                        || hasPassengers() || owner == null || owner.age - owner.getLastAttackedTime() > 100
+                        || !(owner.getAttacker() instanceof net.minecraft.entity.mob.HostileEntity hostile)
+                        || !eligible(hostile)) return false;
+                attacker = hostile;
+                return true;
+            }
+
+            private boolean eligible(net.minecraft.entity.mob.HostileEntity target) {
+                return target.isAlive() && target.getWorld() == getWorld()
+                        && target.squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) <= 100
+                        && squaredDistanceTo(target) <= 144;
+            }
+
+            @Override public boolean shouldContinue() {
+                return behavior == Behavior.GUARD && guardPoint != null && !hasPassengers()
+                        && !recovering() && castingTicks == 0 && attacker != null && eligible(attacker);
+            }
+
+            @Override public boolean shouldRunEveryTick() { return true; }
+            @Override public void tick() {
+                if (attacker == null) return;
+                getLookControl().lookAt(attacker, 25, 25);
+                if (cooldown > 0) cooldown--;
+                if (squaredDistanceTo(attacker) <= 6.25 && canSee(attacker)) {
+                    getNavigation().stop();
+                    if (cooldown == 0 && tryAttack(attacker)) cooldown = 20;
+                } else if (age % 10 == 0) getNavigation().startMovingTo(attacker, 1.17);
+            }
+            @Override public void stop() {
+                attacker = null;
+                getNavigation().stop();
+            }
+        });
         goalSelector.add(3, new Goal() {
             private int repath;
             private int failedRoutes;
+            private boolean pursuing;
             { setControls(java.util.EnumSet.of(Control.MOVE)); }
 
             private boolean available() {
@@ -76,8 +118,14 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 if (behavior == Behavior.GUARD) return guardPoint != null
                         && squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) > 9;
                 var owner = getOwner();
-                return owner != null && owner.isAlive() && !owner.isSpectator()
-                        && owner.getWorld() == getWorld() && squaredDistanceTo(owner) >= 64;
+                if (owner == null || !owner.isAlive() || owner.isSpectator() || owner.getWorld() != getWorld()) {
+                    pursuing = false;
+                    return false;
+                }
+                double distance = squaredDistanceTo(owner);
+                if (distance <= 16) pursuing = false;
+                if (distance >= 64) pursuing = true;
+                return pursuing;
             }
 
             @Override public boolean shouldContinue() {
@@ -108,7 +156,13 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 var owner = getOwner();
                 if (owner == null) return;
                 double distance = squaredDistanceTo(owner);
-                var path = getNavigation().findPathTo(owner, 3);
+                var offset = getPos().subtract(owner.getPos()).multiply(1,0,1).normalize().multiply(2.8);
+                var approach = net.minecraft.util.math.BlockPos.ofFloored(owner.getPos().add(offset));
+                var path = getNavigation().findPathTo(approach, 0);
+                if (path == null || !path.reachesTarget()) {
+                    var alternate = getNavigation().findPathTo(owner, 1);
+                    if (alternate != null) path = alternate;
+                }
                 boolean reachable = path != null && path.reachesTarget();
                 if (reachable) {
                     failedRoutes = 0;
@@ -211,10 +265,9 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     @Override public boolean damage(DamageSource source, float amount) {
         if (recovering()) return false;
         boolean hit = super.damage(source, amount);
-        if (hit && !recovering() && isAlive() && isTame() && getWorld() instanceof ServerWorld world
-                && source.getAttacker() instanceof net.minecraft.entity.LivingEntity) {
+        if (hit && !recovering() && isAlive() && isTame() && getWorld() instanceof ServerWorld world) {
             long now = world.getTime();
-            enterCombat(now);
+            if (source.getAttacker() instanceof net.minecraft.entity.LivingEntity) enterCombat(now);
             damageHealAfter = now + 60;
         }
         return hit;

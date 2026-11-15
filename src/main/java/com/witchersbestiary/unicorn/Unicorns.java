@@ -30,7 +30,7 @@ public final class Unicorns {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(WHISTLE));
         FabricDefaultAttributeRegistry.register(TYPE, AbstractHorseEntity.createBaseHorseAttributes()
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 28).add(EntityAttributes.GENERIC_MOVEMENT_SPEED, .235)
-            .add(EntityAttributes.GENERIC_JUMP_STRENGTH, .65));
+            .add(EntityAttributes.GENERIC_JUMP_STRENGTH, .65).add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 3));
         SpawnRestriction.register(TYPE, SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
             (type, world, reason, pos, random) -> AnimalEntity.isValidNaturalSpawn(type, world, reason, pos, random)
                 && random.nextInt(3) == 0
