@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [" IC", "IL "],
+  "key": {
+    "I": {"item": "minecraft:iron_nugget"},
+    "C": {"item": "minecraft:copper_ingot"},
+    "L": {"item": "minecraft:leather"}
+  },
+  "result": {"id": "witchersbestiary:unicorn_whistle", "count": 1}
+}

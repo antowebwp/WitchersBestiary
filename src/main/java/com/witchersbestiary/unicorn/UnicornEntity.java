@@ -161,6 +161,8 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             return ActionResult.success(getWorld().isClient);
         }
         if (!player.getUuid().equals(getOwnerUuid())) return ActionResult.PASS;
+        if (player.isSneaking() && stack.getItem() instanceof UnicornWhistle whistle)
+            return whistle.useOnEntity(stack, player, this, hand);
         if (!player.isSneaking()) {
             var feeding = feedingCooldown.interact(this, player, hand, getOwnerUuid(),
                 food -> food.isOf(Items.GOLDEN_APPLE) ? 8 : food.isOf(Items.GOLDEN_CARROT) ? 6 :
@@ -259,6 +261,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     @Override public void tick() {
         super.tick();
         if (!(getWorld() instanceof ServerWorld world)) return;
+        if (isTame()) UnicornWhistleState.get(world.getServer()).update(this, false);
         var position = getPos();
         double distance = lastMotionPosition == null ? 0 : position.subtract(lastMotionPosition).horizontalLength();
         lastMotionPosition = position;

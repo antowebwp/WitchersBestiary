@@ -22,7 +22,12 @@ public final class Unicorns {
             .passengerAttachments(new net.minecraft.util.math.Vec3d(0, 1.60, -.157))
             .maxTrackingRange(10).build(ID.toString()));
 
+    public static final Item WHISTLE = Registry.register(Registries.ITEM,
+            Identifier.of("witchersbestiary", "unicorn_whistle"), new UnicornWhistle());
+
     public static void initialize() {
+        UnicornWhistle.initialize();
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> entries.add(WHISTLE));
         FabricDefaultAttributeRegistry.register(TYPE, AbstractHorseEntity.createBaseHorseAttributes()
             .add(EntityAttributes.GENERIC_MAX_HEALTH, 28).add(EntityAttributes.GENERIC_MOVEMENT_SPEED, .235)
             .add(EntityAttributes.GENERIC_JUMP_STRENGTH, .65));
