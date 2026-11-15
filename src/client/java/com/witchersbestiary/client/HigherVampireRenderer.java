@@ -23,7 +23,7 @@ public final class HigherVampireRenderer extends GeoEntityRenderer<HigherVampire
         var matrix = matrices.peek().getPositionMatrix();
         double pulse = 1 + .026 * Math.sin((vampire.age + delta) * .37);
         double[] height = {.02, .46, 1.26, 2.23, 2.99, 3.37};
-        double[] width = {.26, .88, 1.04, .94, .62, .04};
+        double[] width = {.43, .98, 1.13, 1.07, .70, .015};
         int cracks = (int)(12 * (1 - vampire.cocoonIntegrity()));
         for (int band = 0; band < height.length - 1; band++) {
             for (int segment = 0; segment < 12; segment++) {
@@ -33,9 +33,9 @@ public final class HigherVampireRenderer extends GeoEntityRenderer<HigherVampire
                 double seam = index < cracks ? .05 + .055*(1-vampire.cocoonIntegrity()) : 0;
                 int red = 65 + (segment * 3 + band * 7) % 34, green = 10 + (index * 3) % 12;
                 vertex(out, matrix, a + seam, width[band]*pulse, height[band], red, green);
-                vertex(out, matrix, b - seam, width[band]*pulse, height[band], red, green);
-                vertex(out, matrix, b - seam*.6 + .15, width[band+1]*pulse, height[band+1], red + 16, green);
                 vertex(out, matrix, a + seam*.6 + .15, width[band+1]*pulse, height[band+1], red + 16, green);
+                vertex(out, matrix, b - seam*.6 + .15, width[band+1]*pulse, height[band+1], red + 16, green);
+                vertex(out, matrix, b - seam, width[band]*pulse, height[band], red, green);
             }
         }
     }
@@ -55,6 +55,13 @@ public final class HigherVampireRenderer extends GeoEntityRenderer<HigherVampire
 
         @Override public Identifier getModelResource(HigherVampireEntity vampire, GeoRenderer<HigherVampireEntity> renderer) {
             return Identifier.of("witchersbestiary", "geo/" + form(vampire) + ".geo.json");
+        }
+
+        @Override
+        public void setCustomAnimations(HigherVampireEntity vampire, long id,
+                software.bernie.geckolib.animation.AnimationState<HigherVampireEntity> state) {
+            getBone("left_wing").ifPresent(bone -> bone.setHidden(vampire.isCocooned()));
+            getBone("right_wing").ifPresent(bone -> bone.setHidden(vampire.isCocooned()));
         }
 
         @Override public Identifier getAnimationResource(HigherVampireEntity vampire) {
