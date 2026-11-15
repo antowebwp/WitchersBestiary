@@ -71,6 +71,17 @@ final class UnicornWhistle extends Item {
         return TypedActionResult.consume(stack);
     }
 
+    static void cancelPending(ServerPlayerEntity player, UnicornEntity unicorn) {
+        var server = player.getServer();
+        var pending = PENDING.get(server);
+        if (pending == null) return;
+        var request = pending.get(player.getUuid());
+        if (request == null || !request.entity.equals(unicorn.getUuid())) return;
+        pending.remove(player.getUuid());
+        request.world.getChunkManager().removeTicket(LOAD, request.chunk, 2, player.getUuid());
+        if (pending.isEmpty()) PENDING.remove(server);
+    }
+
     private static UUID bound(ItemStack stack) {
         if (!(stack.getItem() instanceof UnicornWhistle)) return null;
         var data = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
@@ -87,7 +98,8 @@ final class UnicornWhistle extends Item {
                     && player.getServerWorld() == request.world
                     && request.entity.equals(bound(player.getStackInHand(request.hand)))) {
                 if (request.world.getEntity(request.entity) instanceof UnicornEntity unicorn) {
-                    call(player, unicorn);
+                    if (request.world.getTime() < request.end) call(player, unicorn);
+                    else feedback(player, "unavailable");
                 } else if (request.world.getTime() < request.end) {
                     return false;
                 } else {

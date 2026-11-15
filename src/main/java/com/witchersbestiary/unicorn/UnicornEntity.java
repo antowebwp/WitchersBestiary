@@ -137,7 +137,6 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
 
         followGoal = new Goal() {
             private int repath;
-            private int failedRoutes;
             { setControls(java.util.EnumSet.of(Control.MOVE)); }
 
             @Override public boolean canStart() {
@@ -152,7 +151,6 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
 
             @Override public void start() {
                 repath = 0;
-                failedRoutes = 0;
             }
 
             @Override public boolean shouldRunEveryTick() { return true; }
@@ -163,24 +161,13 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 repath = 9;
                 double distance = squaredDistanceTo(owner);
                 var path = getNavigation().findPathTo(owner.getBlockPos(), 0);
-                if (path != null && path.reachesTarget()) {
-                    failedRoutes = 0;
-                    getNavigation().startMovingAlong(path, distance > 256 ? 1.42 : 1.18);
-                    return;
-                }
-
-                if (path != null) getNavigation().startMovingAlong(path, 1.28);
-                if (++failedRoutes < 2 || distance <= 1024 || !(getWorld() instanceof ServerWorld world)) return;
-                var safe = UnicornLanding.find(world, UnicornEntity.this, owner.getBlockPos()).orElse(null);
-                if (safe != null && followOwner() == owner && squaredDistanceTo(owner) > 1024) {
-                    getNavigation().stop();
-                    teleport(safe.x, safe.y, safe.z, false);
-                    failedRoutes = 0;
+                if (path != null) {
+                    double speed = path.reachesTarget() ? (distance > 256 ? 1.42 : 1.18) : 1.28;
+                    getNavigation().startMovingAlong(path, speed);
                 }
             }
 
             @Override public void stop() {
-                failedRoutes = 0;
                 repath = 0;
                 getNavigation().stop();
             }
@@ -259,6 +246,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 stopCommandMovement();
                 guardPoint = next == Behavior.GUARD ? getBlockPos() : null;
                 dataTracker.set(BEHAVIOR, (byte) next.ordinal());
+                if (player instanceof ServerPlayerEntity owner) UnicornWhistle.cancelPending(owner, this);
                 player.sendMessage(Text.translatable("unicorn.witchersbestiary." + next.name().toLowerCase(java.util.Locale.ROOT)), true);
                 player.sendMessage(speedStatus(), false);
             }
