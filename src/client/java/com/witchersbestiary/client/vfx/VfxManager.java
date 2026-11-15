@@ -1,6 +1,7 @@
 package com.witchersbestiary.client.vfx;
 
 import com.witchersbestiary.signs.SignPackets;
+import com.witchersbestiary.signs.SignType;
 import com.witchersbestiary.alchemy.BombVfx;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -33,6 +34,11 @@ public final class VfxManager {
 
     private record BombKey(BombVfx.Kind type, int entity, long burst) {}
     private record BombInstance(BombVfx.Cue cue, long start, long end) {}
+    private static final int MAX_RITUALS = 40;
+    private record RitualKey(SignType sign, int entity, Vec3d center, boolean impact) {}
+    private record Ritual(SignPackets.Visual packet, long start, long end) {}
+    private static final LinkedHashMap<RitualKey, Ritual> RITUALS = new LinkedHashMap<>();
+
     private static long nextBurst;
     private static Instance preview;
 
@@ -68,14 +74,22 @@ public final class VfxManager {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> clear());
         ClientTickEvents.END_WORLD_TICK.register(world -> {
             long now = world.getTime();
-            CascadeGrapeshot.prune(world);
+            CascadeBursts.prune(world);
             var player = MinecraftClient.getInstance().player;
             if (player != null) for (var instance : BOMBS.values()) {
                 var cue = instance.cue;
                 double distance = player.squaredDistanceTo(cue.center());
                 if (cue.type() == BombVfx.Kind.GRAPESHOT && distance <= MAX_DISTANCE_SQUARED)
-                    CascadeGrapeshot.tick(world, cue, now - instance.start, LOW_DETAIL || distance > 22*22);
+                    CascadeBursts.tick(world, cue, now - instance.start, LOW_DETAIL || distance > 22*22);
             }
+            RITUALS.entrySet().removeIf(entry -> {
+                var key = entry.getKey();
+                var effect = entry.getValue();
+                if (effect.end <= now) return true;
+                if (key.center != null) return false;
+                var entity = world.getEntityById(key.entity);
+                return now - effect.start > 3 && (entity == null || !entity.isAlive());
+            });
             ACTIVE.values().removeIf(instance -> instance.timeline.end <= now);
             BOMBS.values().removeIf(fx -> fx.end <= now || fx.cue.entityId() >= 0
                     && now - fx.start > 4 && world.getEntityById(fx.cue.entityId()) == null);
@@ -88,17 +102,19 @@ public final class VfxManager {
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             if (context.matrixStack() == null || context.consumers() == null) return;
             double time = context.world().getTime() + context.tickCounter().getTickDelta(false);
-            CascadeGrapeshot.setFrustum(context.frustum());
+            CascadeBursts.setFrustum(context.frustum());
             for (var entry : ACTIVE.entrySet()) render(context, entry.getValue(), time, entry.getKey());
             if (preview != null) render(context, preview, time, null);
+            for (var entry : RITUALS.entrySet()) renderRitual(context, entry.getKey(), entry.getValue(), time);
             for (var fx : BOMBS.values()) renderBomb(context, fx, time);
         });
     }
 
     private static void clear() {
         ACTIVE.clear();
+        RITUALS.clear();
         BOMBS.clear();
-        CascadeGrapeshot.clear();
+        CascadeBursts.clear();
         preview = null;
     }
 
@@ -140,6 +156,69 @@ public final class VfxManager {
         BombVolumes.render(mesh, cue, center.subtract(camera), age, fx.end - time, LOW_DETAIL || distance > 22*22);
     }
 
+    public static void ritual(SignPackets.Visual packet, long now) {
+        var sign = SignType.byIndex(packet.sign());
+        boolean impact = packet.form() >= 4;
+        var center = impact || sign == SignType.YRDEN ? packet.from() : null;
+        var key = new RitualKey(sign, packet.owner(), center, impact);
+        var previous = RITUALS.get(key);
+        long start = previous != null && previous.end > now && !impact ? previous.start : now;
+        putRitual(key, new Ritual(packet, start, now + packet.ticks()));
+    }
+
+    public static void quen(SignPackets.QuenShell packet, long now) {
+        var key = new RitualKey(SignType.QUEN, packet.entityId(), null, false);
+        if (packet.ticks() == 0) {
+            RITUALS.remove(key);
+            return;
+        }
+        ritual(new SignPackets.Visual(packet.entityId(), SignType.QUEN.ordinal(), packet.form(), packet.ticks(),
+                Vec3d.ZERO, Vec3d.ZERO, 2), now);
+    }
+
+    public static void ice(int entity, int ticks, long now) {
+        putRitual(new RitualKey(null, entity, null, false), new Ritual(null, now, now + Math.clamp(ticks, 1, 60)));
+    }
+
+    private static void putRitual(RitualKey key, Ritual ritual) {
+        if (!RITUALS.containsKey(key) && RITUALS.size() >= MAX_RITUALS) RITUALS.pollFirstEntry();
+        RITUALS.put(key, ritual);
+    }
+
+    private static void renderRitual(WorldRenderContext context, RitualKey key, Ritual effect, double time) {
+        var entity = key.center == null ? context.world().getEntityById(key.entity) : null;
+        if (key.center == null && (entity == null || !entity.isAlive())) return;
+        var point = entity == null ? key.center : entity.getLerpedPos(context.tickCounter().getTickDelta(false));
+        var camera = context.camera().getPos();
+        double distance = camera.squaredDistanceTo(point);
+        if (time >= effect.end || distance > MAX_DISTANCE_SQUARED) return;
+        var packet = effect.packet;
+        double radius = packet == null ? 2 : Math.max(1.5, packet.radius());
+        if (context.frustum() != null && !context.frustum().isVisible(new Box(point, point).expand(radius + 1))) return;
+        var mesh = new PixelMesh(context.consumers().getBuffer(RenderLayer.getDebugQuads()),
+                context.matrixStack().peek().getPositionMatrix());
+        var origin = point.subtract(camera);
+        double age = time - effect.start;
+        double fade = Math.clamp((effect.end - time) / (key.sign == null ? 9 : 3), 0, 1);
+        if (key.sign == null) {
+            SignRituals.ice(mesh, origin.add(0, .04, 0), Math.min(1.6, .35 + entity.getWidth() * .55), age, fade);
+        } else if (key.impact) {
+            SignRituals.reaction(mesh, origin, packet.to().subtract(packet.from()), packet.form() - 4,
+                    key.sign == SignType.QUEN, age, fade);
+        } else if (key.sign == SignType.YRDEN) {
+            var foot = context.world().raycast(new RaycastContext(point.add(0, .2, 0), point.add(0, -.25, 0),
+                    RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, context.camera().getFocusedEntity()));
+            if (foot.getType() != HitResult.Type.MISS)
+                SignRituals.ward(mesh, foot.getPos().subtract(camera).add(0, .045, 0), packet.form(), packet.radius(), age, fade);
+        } else if (key.sign == SignType.QUEN) {
+            SignRituals.shell(mesh, origin, packet.form(), age, fade,
+                    context.camera().getFocusedEntity() == entity && !context.camera().isThirdPerson());
+        } else if (key.sign == SignType.AXII) {
+            var head = origin.add(0, entity.getStandingEyeHeight() + .41, 0);
+            SignRituals.mind(mesh, head, packet.from().subtract(camera), packet.form(), age, fade);
+        }
+    }
+
     public static void aard(SignPackets.Visual packet, long now) {
         var key = new Key(packet.owner(), false, true);
         if (!ACTIVE.containsKey(key) && ACTIVE.size() >= MAX_EFFECTS) ACTIVE.pollFirstEntry();
@@ -149,14 +228,18 @@ public final class VfxManager {
         ACTIVE.put(key, new Instance(new Transform(origin, delta, bounds),
                 new Timeline(now, now + packet.ticks()),
                 (out, matrix, center, direction, form, spread, age, opacity) ->
-                        SignVolumes.aard(new PixelMesh(out, matrix), center, direction, form, spread, age, opacity),
+                        {
+                            var mesh = new PixelMesh(out, matrix);
+                            if (form == 0) SignVolumes.aard(mesh, center, direction, form, spread, age, opacity);
+                            else SignRituals.air(mesh, center, direction, form, age, opacity);
+                        },
                 RenderLayer.getDebugQuads(), packet.form(), packet.radius()));
     }
 
     public record Counts(int signs, int bombs, int cascadeEmitters, int cascadeParticles) {}
 
     public static Counts counts() {
-        return new Counts(ACTIVE.size(), BOMBS.size(), CascadeGrapeshot.emitters(), CascadeGrapeshot.particles());
+        return new Counts(ACTIVE.size() + RITUALS.size(), BOMBS.size(), CascadeBursts.emitters(), CascadeBursts.particles());
     }
 
     private static Transform localBreath(WorldRenderContext context, Transform packet, Key key) {
@@ -206,6 +289,13 @@ public final class VfxManager {
         long start = key.channelled && previous != null && previous.timeline.end > now
                 ? previous.timeline.start : now;
         ACTIVE.put(key, fire(packet.from(), packet.to(), start, now + packet.ticks(), packet.form(), packet.radius()));
+        var client = MinecraftClient.getInstance();
+        if (packet.form() == 1 && client.player != null && client.world != null) {
+            double distance = client.player.squaredDistanceTo(packet.from());
+            if (distance <= MAX_DISTANCE_SQUARED)
+                CascadeBursts.fireburst(client.world, packet.from().add(0, -.32, 0),
+                        now ^ packet.owner(), LOW_DETAIL || distance > 22 * 22);
+        }
     }
 
     private static Instance fire(Vec3d from, Vec3d to, long start, long end, int form, float spread) {
@@ -213,7 +303,9 @@ public final class VfxManager {
         double padding = form == 2 ? 1 : direction.length() + 1;
         var transform = new Transform(from, direction, new Box(from, to).expand(padding));
         if (form == 1 || form == 3)
-            return new Instance(transform, new Timeline(start, end), FireVfx::render, FireVfx.LAYER, form, spread);
+            return new Instance(transform, new Timeline(start, end), (out, matrix, center, delta, shape, ignored, age, fade) ->
+                            SignRituals.flame(new PixelMesh(out, matrix), center, delta, shape, age, fade),
+                    RenderLayer.getDebugQuads(), form, spread);
         return new Instance(transform, new Timeline(start, end), SignVolumes::fire, RenderLayer.getDebugQuads(), form, spread);
     }
 }

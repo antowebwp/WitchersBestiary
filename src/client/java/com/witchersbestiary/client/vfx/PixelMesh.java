@@ -50,6 +50,13 @@ record PixelMesh(VertexConsumer out, Matrix4f matrix) {
         }
     }
 
+    void quad(Vec3d a, Vec3d b, Vec3d c, Vec3d d, int color, int alpha) {
+        for (var p : new Vec3d[]{a, b, c, d}) {
+            out.vertex(matrix, (float)p.x, (float)p.y, (float)p.z)
+                    .color(color >> 16 & 255, color >> 8 & 255, color & 255, alpha);
+        }
+    }
+
     void pixel(Vec3d p, double size, int color, int alpha) {
         bar(p.add(0, -size, 0), p.add(0, size, 0), size, size, color, alpha);
     }
