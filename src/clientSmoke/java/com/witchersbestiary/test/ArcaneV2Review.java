@@ -1,6 +1,8 @@
 package com.witchersbestiary.test;
 
 import com.witchersbestiary.client.signs.SignsClient;
+import com.witchersbestiary.client.vfx.VfxManager;
+import net.minecraft.entity.MovementType;
 import com.witchersbestiary.entity.projectile.WitcherBombEntity;
 import com.witchersbestiary.registry.ModItems;
 import com.witchersbestiary.signs.SignManager;
@@ -34,12 +36,16 @@ import net.minecraft.world.level.LevelInfo;
 
 final class ArcaneV2Review {
     private enum Shot {
-        IGNI, BREATH_SIDE, BREATH_45, AARD, GRAPESHOT, MOON_DUST, SAMUM, GAS, GAS_BREATH
+        IGNI, BREATH_SIDE, BREATH_45, AARD, GRAPESHOT, MOON_DUST, SAMUM, GAS, GAS_BREATH,
+        BREATH_MOTION, BREATH_WALL, QUEN, YRDEN, AXII
     }
 
+    private final Rc1Stress stress = new Rc1Stress();
+    private int cleanupRequested;
+    private Vec3d motionOrigin;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
     private final ArrayList<CompletableFuture<Void>> writes = new ArrayList<>();
-    private static final Shot[] SHOTS = Shot.values();
+    private static final Shot[] SHOTS = Boolean.getBoolean("witchersbestiary.rc1SmokeTail") ? new Shot[]{Shot.AXII} : Shot.values();
     private int ticks, phase, index, launched, started, captured = -1, resume;
     private boolean flying, ignitionRequested, ended;
     private volatile int ready = -1;
@@ -50,7 +56,10 @@ final class ArcaneV2Review {
 
     void start() {
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
-        WorldRenderEvents.END.register(context -> capture());
+        WorldRenderEvents.END.register(context -> {
+            stress.frame();
+            capture();
+        });
     }
 
     private void tick(MinecraftClient client) {
@@ -70,7 +79,42 @@ final class ArcaneV2Review {
                         r -> r.get(RegistryKeys.WORLD_PRESET).get(WorldPresets.FLAT).createDimensionsRegistryHolder(), null);
                 return;
             }
+            if (phase == 9) {
+                if (VfxManager.counts().bombs() != 0) {
+                    phase = 8;
+                    client.getServer().stop(false);
+                    client.getNetworkHandler().getConnection().disconnect(net.minecraft.text.Text.literal("RC1 unload"));
+                } else if (ticks - cleanupRequested > 25) {
+                    throw new IllegalStateException("World cleanup fixture did not receive gas");
+                }
+                return;
+            }
+            if (phase == 8) {
+                if (client.world != null) return;
+                var counts = VfxManager.counts();
+                if (counts.signs() + counts.bombs() + counts.cascadeEmitters() != 0)
+                    throw new IllegalStateException("World FX survived disconnect: " + counts);
+                Files.writeString(Path.of("../result.txt"),
+                        SHOTS.length == 1 ? "Axii, stress and active gas unload passed."
+                                : "Casts, projectiles, Moon Dust marker, both Dragon gas ignition paths, and active gas unload passed.");
+                stop(client);
+                return;
+            }
             if (client.player == null || client.world == null || client.currentScreen != null) return;
+            if (phase == 6 && writes.stream().allMatch(CompletableFuture::isDone)) {
+                writes.forEach(CompletableFuture::join);
+                if (stress.tick(client)) {
+                    cleanupRequested = ticks;
+                    phase = 9;
+                    var server = client.getServer();
+                    server.execute(() -> {
+                        var player = server.getPlayerManager().getPlayerList().getFirst();
+                        com.witchersbestiary.alchemy.DragonGas.release(player.getServerWorld(), player,
+                                player.getPos().add(0,.2,3));
+                    });
+                }
+                return;
+            }
             if (!castOk) throw new IllegalStateException("Real cast rejected for " + SHOTS[index]);
             if (phase == 1) {
                 if (ticks < resume) return;
@@ -97,13 +141,14 @@ final class ArcaneV2Review {
                 if (item < 0) {
                     var focus = client.player.getPos().add(0,1.35,3.2);
                     setCamera(client, focus, switch (shot) {
-                        case BREATH_SIDE -> new Vec3d(7.0,1.0,0);
+                        case BREATH_SIDE, BREATH_WALL -> new Vec3d(7.0,1.0,0);
                         case BREATH_45 -> new Vec3d(4.25,1.15,-4.25);
-                        case AARD -> new Vec3d(4.4,2.6,-5.25);
+                        case AARD, YRDEN -> new Vec3d(4.4,2.6,-5.25);
                         default -> new Vec3d(4.5,1.4,-4.6);
                     });
                     if (breath(shot)) SignsClient.send(10, SignType.IGNI.ordinal());
-                    else cast(client, shot == Shot.AARD ? SignType.AARD : SignType.IGNI, 3, 0);
+                    else cast(client, sign(shot), shot == Shot.YRDEN ? 31 : 3, 0);
+                    motionOrigin = client.player.getPos();
                     started = ticks;
                     phase = 4;
                 } else {
@@ -114,12 +159,7 @@ final class ArcaneV2Review {
             }
             if (phase == 3) trackImpact(client);
             if (phase == 4) advance(client, SHOTS[index]);
-            if (phase == 6 && writes.stream().allMatch(CompletableFuture::isDone)) {
-                writes.forEach(CompletableFuture::join);
-                Files.writeString(Path.of("../result.txt"),
-                        "Real sign casts and bomb throws. Moon Dust marked its target. Both Igni forms consumed Dragon gas.");
-                stop(client);
-            }
+
         } catch (Exception error) {
             error.printStackTrace();
             stop(client);
@@ -146,24 +186,32 @@ final class ArcaneV2Review {
             }
             var state = SignManager.state(player);
             state.learn(SignType.IGNI);
-            state.learn(SignType.AARD);
+            state.learn(sign(shot));
             if (current == 0) {
                 state.award(100);
                 for (var node : SignPlayerState.Upgrade.values()) state.upgrade(SignType.IGNI, node);
                 if (!state.unlock(SignType.IGNI, 2) || !state.equip(SignType.IGNI, 1, 2)) castOk = false;
             }
-            state.select(shot == Shot.AARD ? SignType.AARD : SignType.IGNI);
+            state.select(sign(shot));
+            if (shot == Shot.BREATH_WALL) {
+                for (int x = -1; x <= 1; x++) for (int y = 0; y < 3; y++)
+                    world.setBlockState(feet.add(x,y,3), Blocks.STONE_BRICKS.getDefaultState());
+            }
+            if (shot == Shot.QUEN) {
+                for (int x = -1; x <= 1; x++) for (int y = 0; y < 3; y++)
+                    world.setBlockState(feet.add(x,y,3), Blocks.AIR.getDefaultState());
+            }
             int bomb = bomb(shot);
             player.setPitch(bomb < 0 ? 3 : 32);
             player.setYaw(0);
             player.setStackInHand(Hand.MAIN_HAND, bomb < 0 ? ItemStack.EMPTY : new ItemStack(ModItems.BOMBS.get(bomb)));
             if (shot == Shot.GAS && reviewTarget != null) reviewTarget.discard();
-            if (shot == Shot.MOON_DUST) {
+            if (shot == Shot.MOON_DUST || shot == Shot.AXII) {
                 var target = EntityType.ZOMBIE.create(world);
                 if (target == null) throw new IllegalStateException("Unable to spawn suppression target");
-                target.setAiDisabled(true);
+                target.setAiDisabled(shot != Shot.AXII);
                 target.setPersistent();
-                target.setPosition(player.getPos().add(.92,0,2.5));
+                target.setPosition(player.getPos().add(shot == Shot.AXII ? 0 : .92,0,2.5));
                 world.spawnEntity(target);
                 reviewTarget = target;
             }
@@ -192,8 +240,13 @@ final class ArcaneV2Review {
     private void advance(MinecraftClient client, Shot shot) {
         int age = ticks - started;
         if (breath(shot)) {
-            if (age % 6 == 0 && age < 23) SignsClient.send(8, SignType.IGNI.ordinal());
-            if (age == 23) SignsClient.send(7, SignType.IGNI.ordinal());
+            int release = shot == Shot.BREATH_MOTION ? 52 : 23;
+            if (age % 6 == 0 && age < release) SignsClient.send(8, SignType.IGNI.ordinal());
+            if (shot == Shot.BREATH_MOTION && age < release) move(client, age);
+            if (age == release) SignsClient.send(7, SignType.IGNI.ordinal());
+            if (age == release+7 && VfxManager.counts().signs() != 0)
+                throw new IllegalStateException("Breath did not clear after release");
+
         }
         if (shot == Shot.MOON_DUST && age >= 6 && age < 24) {
 
@@ -228,7 +281,8 @@ final class ArcaneV2Review {
         int length = switch (shot) {
             case GAS, GAS_BREATH -> 69;
             case MOON_DUST -> 51;
-            case BREATH_SIDE, BREATH_45 -> 32;
+            case BREATH_SIDE, BREATH_45, BREATH_WALL -> 32;
+            case BREATH_MOTION -> 62;
             default -> 27;
         };
         if (age < length) return;
@@ -259,8 +313,30 @@ final class ArcaneV2Review {
         };
     }
 
+    private void move(MinecraftClient client, int age) {
+        var player = client.player;
+        if (age >= 8 && age < 20) player.move(MovementType.SELF, new Vec3d(0,0,.13));
+        else if (age >= 20 && age < 30) player.move(MovementType.SELF, new Vec3d(0,0,-.13));
+        else if (age >= 30 && age < 42) player.move(MovementType.SELF, new Vec3d(.13,0,0));
+        else if (age >= 42) player.setYaw((age-41)*5f);
+        if (age == 18 && player.getPos().z < motionOrigin.z + .9)
+            throw new IllegalStateException("Forward movement was not applied");
+        if (age == 39 && player.getPos().x < motionOrigin.x + .8)
+            throw new IllegalStateException("Strafe was not applied");
+    }
+
+    private static SignType sign(Shot shot) {
+        return switch (shot) {
+            case AARD -> SignType.AARD;
+            case QUEN -> SignType.QUEN;
+            case YRDEN -> SignType.YRDEN;
+            case AXII -> SignType.AXII;
+            default -> SignType.IGNI;
+        };
+    }
+
     private static boolean breath(Shot shot) {
-        return shot == Shot.BREATH_SIDE || shot == Shot.BREATH_45;
+        return shot == Shot.BREATH_SIDE || shot == Shot.BREATH_45 || shot == Shot.BREATH_MOTION || shot == Shot.BREATH_WALL;
     }
 
     private static void setCamera(MinecraftClient client, Vec3d focus, Vec3d offset) {

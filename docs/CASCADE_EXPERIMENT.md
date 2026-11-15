@@ -37,3 +37,16 @@ This branch's remapped dev build requires the separate Cascade Fabric release `1
 The existing cast packets drive Igni, Fire Breath and Aard. The existing entity tracker drives Dragon gas and Moon Dust suppression marks. Entity removal immediately takes attached visuals out of drawing and bounded client maps expire their instances. Client rendering uses a procedural pixel palette and shaded faces, and does not require bloom or a shader pack. `-Dwitchersbestiary.fxLowDetail=true` uses reduced detail for Moon Dust, Samum and Dragon's Dream even up close. They also reduce detail beyond 22 blocks. This is not a frame-time profile for RX 570.
 
 Run `./gradlew.bat runArcaneV2Review` to record actual framebuffer sequences in `build/arcane-fx-v2-review`. The test code is excluded from the remapped game mod.
+
+## RC1 validation
+
+Fire Breath locally reanchors its visible mesh to the caster's interpolated eye and heading. The server packet still bounds the reach and lifetime. A client collision ray can shorten that reach at a wall. Remote casters keep their server-supplied geometry. The server's contact checks, concentration and damage are unchanged.
+
+Arcane FX schedules the four approved Grapeshot emitter layers on the receiving client. Cascade still simulates and draws the ring, both shard sizes and the sparks. Emitters are scoped to a client world, culled on the same 48-block range as the voxel effect, and capped at 48. The case report counts actual Cascade particles separately from Arcane FX sign and bomb instances. The PC benchmark samples render-to-render intervals at 960 by 540 with the frame rate capped at 120; it measures the test scenes rather than worst-case modpack performance.
+
+- `./gradlew.bat build remapJar runGametest -PgameTestClass=IgniBreathTests,BombInteractionTests,SignFormsTests`
+- `./gradlew.bat runArcaneV2Review` records the final framebuffer sequences and frame-time CSV. Assemble the requested images with `python tools/assemble-arcane-fx-rc1.py`.
+- `./gradlew.bat stage20ePrepareLaunch` plus `python tools/run-arcane-fx-rc1-network.py` starts a dedicated loopback server and two native clients.
+- `./gradlew.bat remapArcaneRc1Harness stage20ePrepareLaunch` plus `python tools/run-arcane-fx-rc1-compat.py <directory-with-original-renderer-jars>` exercises original Sodium 0.6.13 and Iris 1.8.8 through Fabric production mappings. Loom 1.7.4 cannot directly consume their newer Loom metadata.
+
+Cascade is a required separate dependency. The Arcane FX JAR bundles no Cascade binaries or sources. Cascade itself is MIT licensed. The approval comparison and the standalone client test assets remain outside the game mod artifact.

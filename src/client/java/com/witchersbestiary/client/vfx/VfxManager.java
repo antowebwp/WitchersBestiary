@@ -3,12 +3,16 @@ package com.witchersbestiary.client.vfx;
 import com.witchersbestiary.signs.SignPackets;
 import com.witchersbestiary.alchemy.BombVfx;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.render.RenderLayer;
 import java.util.LinkedHashMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.world.RaycastContext;
+import net.minecraft.util.hit.HitResult;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -60,13 +64,18 @@ public final class VfxManager {
                             preview = null;
                             return 1;
                         }))));
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> {
-            ACTIVE.clear();
-            BOMBS.clear();
-            preview = null;
-        });
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> clear());
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> clear());
         ClientTickEvents.END_WORLD_TICK.register(world -> {
             long now = world.getTime();
+            CascadeGrapeshot.prune(world);
+            var player = MinecraftClient.getInstance().player;
+            if (player != null) for (var instance : BOMBS.values()) {
+                var cue = instance.cue;
+                double distance = player.squaredDistanceTo(cue.center());
+                if (cue.type() == BombVfx.Kind.GRAPESHOT && distance <= MAX_DISTANCE_SQUARED)
+                    CascadeGrapeshot.tick(world, cue, now - instance.start, LOW_DETAIL || distance > 22*22);
+            }
             ACTIVE.values().removeIf(instance -> instance.timeline.end <= now);
             BOMBS.values().removeIf(fx -> fx.end <= now || fx.cue.entityId() >= 0
                     && now - fx.start > 4 && world.getEntityById(fx.cue.entityId()) == null);
@@ -79,10 +88,18 @@ public final class VfxManager {
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             if (context.matrixStack() == null || context.consumers() == null) return;
             double time = context.world().getTime() + context.tickCounter().getTickDelta(false);
-            for (var instance : ACTIVE.values()) render(context, instance, time);
-            if (preview != null) render(context, preview, time);
+            CascadeGrapeshot.setFrustum(context.frustum());
+            for (var entry : ACTIVE.entrySet()) render(context, entry.getValue(), time, entry.getKey());
+            if (preview != null) render(context, preview, time, null);
             for (var fx : BOMBS.values()) renderBomb(context, fx, time);
         });
+    }
+
+    private static void clear() {
+        ACTIVE.clear();
+        BOMBS.clear();
+        CascadeGrapeshot.clear();
+        preview = null;
     }
 
     private static void acceptBomb(BombVfx.Cue cue, long now) {
@@ -136,8 +153,34 @@ public final class VfxManager {
                 RenderLayer.getDebugQuads(), packet.form(), packet.radius()));
     }
 
-    private static void render(WorldRenderContext context, Instance instance, double time) {
-        var transform = instance.transform;
+    public record Counts(int signs, int bombs, int cascadeEmitters, int cascadeParticles) {}
+
+    public static Counts counts() {
+        return new Counts(ACTIVE.size(), BOMBS.size(), CascadeGrapeshot.emitters(), CascadeGrapeshot.particles());
+    }
+
+    private static Transform localBreath(WorldRenderContext context, Transform packet, Key key) {
+        var player = MinecraftClient.getInstance().player;
+        if (key == null || !key.channelled || player == null || key.owner != player.getId()) return packet;
+        float delta = context.tickCounter().getTickDelta(false);
+        var eye = player.getCameraPosVec(delta).add(0, -.12, 0);
+        var aim = player.getRotationVec(delta);
+        double reach = packet.direction.length();
+        var requested = eye.add(aim.multiply(reach + .35));
+        var hit = context.world().raycast(new RaycastContext(eye, requested, RaycastContext.ShapeType.COLLIDER,
+                RaycastContext.FluidHandling.NONE, player));
+        double distance = eye.distanceTo(hit.getPos());
+        if (hit.getType() != HitResult.Type.MISS) {
+            double normal = Math.abs(aim.dotProduct(Vec3d.of(hit.getSide().getVector())));
+            distance = Math.max(0, distance - Math.min(.38, .28 * Math.sqrt(Math.max(0, 1 - normal*normal)) / Math.max(.05, normal)));
+        }
+        var from = eye.add(aim.multiply(Math.min(.35, distance)));
+        var to = eye.add(aim.multiply(distance));
+        return new Transform(from, to.subtract(from), new Box(from, to).expand(1));
+    }
+
+    private static void render(WorldRenderContext context, Instance instance, double time, Key key) {
+        var transform = localBreath(context, instance.transform, key);
         var camera = context.camera().getPos();
         double opacity = instance.timeline.opacity(time);
         if (opacity <= 0 || camera.squaredDistanceTo(transform.origin) > MAX_DISTANCE_SQUARED) return;

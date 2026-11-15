@@ -43,9 +43,10 @@ record PixelMesh(VertexConsumer out, Matrix4f matrix) {
         int green = (int)((color >> 8 & 255) * shade);
         int blue = (int)((color & 255) * shade);
         for (int vertex : FACES[face]) {
-            var p = base.add((vertex & 1) == 0 ? Vec3d.ZERO : right)
-                    .add((vertex & 2) == 0 ? Vec3d.ZERO : up).add((vertex & 4) == 0 ? Vec3d.ZERO : axis);
-            out.vertex(matrix, (float)p.x, (float)p.y, (float)p.z).color(red, green, blue, alpha);
+            int r = vertex & 1, u = vertex >> 1 & 1, f = vertex >> 2 & 1;
+            out.vertex(matrix, (float)(base.x + r*right.x + u*up.x + f*axis.x),
+                    (float)(base.y + r*right.y + u*up.y + f*axis.y),
+                    (float)(base.z + r*right.z + u*up.z + f*axis.z)).color(red, green, blue, alpha);
         }
     }
 

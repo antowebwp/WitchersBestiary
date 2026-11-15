@@ -56,8 +56,9 @@ loom {
    client()
    source sourceSets.clientSmoke
    vmArg '-Dwitchersbestiary.arcaneV2Review=true'
+   if (project.hasProperty('rc1SmokeTail')) vmArg '-Dwitchersbestiary.rc1SmokeTail=true'
    programArgs '--width', '960', '--height', '540'
-   runDir 'build/arcane-fx-v2-review/client'
+   runDir project.hasProperty('rc1ClientDir') ? project.property('rc1ClientDir') : 'build/arcane-fx-v2-final/client'
   }
   stage22jReview {
    client()
@@ -970,4 +971,21 @@ tasks.named('processClientSmokeResources') {
  filesMatching('fabric.mod.json') {
   expand cascadeMixin: cascadeEnabled ? ',"mixins":["witchersbestiary-cascade-review.mixins.json"]' : ''
  }
+}
+
+tasks.register('arcaneRc1HarnessJar', Jar) {
+ dependsOn tasks.named('clientSmokeClasses')
+ destinationDirectory.set(layout.buildDirectory.dir('arcane-rc1-harness'))
+ archiveClassifier.set('arcane-rc1-review-dev')
+ from(sourceSets.clientSmoke.output) {
+  include 'com/witchersbestiary/test/ArcaneV2Review*.class', 'com/witchersbestiary/test/Rc1*.class'
+ }
+ from('src/clientSmoke/resources/arcane-rc1-production.fabric.json') { rename { 'fabric.mod.json' } }
+}
+tasks.register('remapArcaneRc1Harness', net.fabricmc.loom.task.RemapJarTask) {
+ dependsOn tasks.named('arcaneRc1HarnessJar')
+ inputFile = tasks.named('arcaneRc1HarnessJar').flatMap { it.archiveFile }
+ destinationDirectory.set(layout.buildDirectory.dir('arcane-rc1-harness'))
+ archiveClassifier.set('arcane-rc1-review')
+ classpath.from(sourceSets.clientSmoke.compileClasspath)
 }
