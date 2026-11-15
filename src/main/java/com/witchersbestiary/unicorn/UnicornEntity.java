@@ -20,6 +20,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -31,6 +32,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private static final TrackedData<Integer> RECOVERY = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> HEALING = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Byte> GAIT = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.BYTE);
+    private static final TrackedData<Byte> BEHAVIOR = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.BYTE);
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     private static final int MAX_SPEED_LEVEL = 25;
     private static final Identifier RIDING_SPEED = Identifier.of("witchersbestiary", "unicorn_riding_speed");
@@ -38,8 +40,9 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private double ridingDistance;
     private int lastRidingCredit = Integer.MIN_VALUE;
     private enum Behavior { FOLLOW, WAIT, GUARD }
-    private Behavior behavior = Behavior.FOLLOW;
-    private net.minecraft.util.math.BlockPos guardPoint;
+    private static final Behavior[] BEHAVIORS = Behavior.values();
+    private BlockPos guardPoint;
+    private Goal guardAttackGoal, guardReturnGoal, followGoal;
     private int castingTicks;
     private long combatUntil, combatHealAt, damageHealAfter;
     private net.minecraft.util.math.Vec3d lastMotionPosition;
@@ -54,21 +57,24 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         builder.add(RECOVERY, 0);
         builder.add(HEALING, false);
         builder.add(GAIT, (byte)0);
+        builder.add(BEHAVIOR, (byte) Behavior.FOLLOW.ordinal());
     }
 
     @Override protected void initGoals() {
-        goalSelector.add(0, new SwimGoal(this));
+        goalSelector.add(0, new SwimGoal(this) {
+            @Override public boolean canStart() { return !waiting() && super.canStart(); }
+        });
         goalSelector.add(1, new EscapeDangerGoal(this, 1.25) {
             @Override public boolean canStart() { return !isTame() && super.canStart(); }
         });
-        goalSelector.add(2, new Goal() {
+        guardAttackGoal = new Goal() {
             private net.minecraft.entity.mob.HostileEntity attacker;
             private int cooldown;
             { setControls(java.util.EnumSet.of(Control.MOVE, Control.LOOK)); }
 
             @Override public boolean canStart() {
                 var owner = getOwner();
-                if (behavior != Behavior.GUARD || guardPoint == null || recovering() || castingTicks > 0
+                if (behavior() != Behavior.GUARD || guardPoint == null || recovering() || castingTicks > 0
                         || hasPassengers() || owner == null || owner.age - owner.getLastAttackedTime() > 100
                         || !(owner.getAttacker() instanceof net.minecraft.entity.mob.HostileEntity hostile)
                         || !eligible(hostile)) return false;
@@ -83,13 +89,13 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             }
 
             @Override public boolean shouldContinue() {
-                return behavior == Behavior.GUARD && guardPoint != null && !hasPassengers()
+                return behavior() == Behavior.GUARD && guardPoint != null && !hasPassengers()
                         && !recovering() && castingTicks == 0 && attacker != null && eligible(attacker);
             }
 
             @Override public boolean shouldRunEveryTick() { return true; }
             @Override public void tick() {
-                if (attacker == null) return;
+                if (!shouldContinue()) return;
                 getLookControl().lookAt(attacker, 25, 25);
                 if (cooldown > 0) cooldown--;
                 if (squaredDistanceTo(attacker) <= 6.25 && canSee(attacker)) {
@@ -101,87 +107,85 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 attacker = null;
                 getNavigation().stop();
             }
-        });
-        goalSelector.add(3, new Goal() {
+        };
+        goalSelector.add(2, guardAttackGoal);
+
+        guardReturnGoal = new Goal() {
             private int repath;
-            private int failedRoutes;
-            private boolean pursuing;
             { setControls(java.util.EnumSet.of(Control.MOVE)); }
 
-            private boolean available() {
-                return isTame() && !recovering() && castingTicks == 0 && !hasPassengers()
-                        && behavior != Behavior.WAIT;
+            private boolean canReturn(double threshold) {
+                return canUseCommand(Behavior.GUARD) && guardPoint != null
+                        && squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) > threshold;
             }
 
+            @Override public boolean canStart() { return canReturn(9); }
+            @Override public boolean shouldContinue() { return canReturn(4); }
+            @Override public void start() { repath = 0; }
+            @Override public boolean shouldRunEveryTick() { return true; }
+
+            @Override public void tick() {
+                if (!shouldContinue() || repath-- > 0) return;
+                repath = 9;
+                var anchor = Vec3d.ofBottomCenter(guardPoint);
+                getNavigation().startMovingTo(anchor.x, anchor.y, anchor.z, 1.12);
+            }
+
+            @Override public void stop() { getNavigation().stop(); }
+        };
+        goalSelector.add(3, guardReturnGoal);
+
+        followGoal = new Goal() {
+            private int repath;
+            private int failedRoutes;
+            { setControls(java.util.EnumSet.of(Control.MOVE)); }
+
             @Override public boolean canStart() {
-                if (!available()) return false;
-                if (behavior == Behavior.GUARD) return guardPoint != null
-                        && squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) > 9;
-                var owner = getOwner();
-                if (owner == null || !owner.isAlive() || owner.isSpectator() || owner.getWorld() != getWorld()) {
-                    pursuing = false;
-                    return false;
-                }
-                double distance = squaredDistanceTo(owner);
-                if (distance <= 16) pursuing = false;
-                if (distance >= 64) pursuing = true;
-                return pursuing;
+                var owner = followOwner();
+                return owner != null && squaredDistanceTo(owner) >= 64;
             }
 
             @Override public boolean shouldContinue() {
-                if (!available()) return false;
-                if (behavior == Behavior.GUARD) return guardPoint != null
-                        && squaredDistanceTo(Vec3d.ofBottomCenter(guardPoint)) > 4;
-                var owner = getOwner();
-                return owner != null && owner.isAlive() && !owner.isSpectator()
-                        && owner.getWorld() == getWorld() && squaredDistanceTo(owner) > 16;
+                var owner = followOwner();
+                return owner != null && squaredDistanceTo(owner) > 16;
             }
 
             @Override public void start() {
                 repath = 0;
                 failedRoutes = 0;
-                tick();
             }
 
             @Override public boolean shouldRunEveryTick() { return true; }
 
             @Override public void tick() {
-                if (repath-- > 0) return;
+                var owner = followOwner();
+                if (owner == null || squaredDistanceTo(owner) <= 16 || repath-- > 0) return;
                 repath = 9;
-                if (behavior == Behavior.GUARD) {
-                    if (guardPoint != null) getNavigation().startMovingTo(
-                            guardPoint.getX() + .5, guardPoint.getY(), guardPoint.getZ() + .5, 1.12);
-                    return;
-                }
-                var owner = getOwner();
-                if (owner == null) return;
                 double distance = squaredDistanceTo(owner);
-                var offset = getPos().subtract(owner.getPos()).multiply(1,0,1).normalize().multiply(2.8);
-                var approach = net.minecraft.util.math.BlockPos.ofFloored(owner.getPos().add(offset));
-                var path = getNavigation().findPathTo(approach, 0);
-                if (path == null || !path.reachesTarget()) {
-                    var alternate = getNavigation().findPathTo(owner, 1);
-                    if (alternate != null) path = alternate;
-                }
-                boolean reachable = path != null && path.reachesTarget();
-                if (reachable) {
+                var path = getNavigation().findPathTo(owner.getBlockPos(), 0);
+                if (path != null && path.reachesTarget()) {
                     failedRoutes = 0;
                     getNavigation().startMovingAlong(path, distance > 256 ? 1.42 : 1.18);
-                } else {
-                    failedRoutes++;
-                    if (path != null) getNavigation().startMovingAlong(path, 1.28);
-                    if (distance > 1024 && failedRoutes >= 2 && getWorld() instanceof ServerWorld world) {
-                        var safe = UnicornLanding.find(world, UnicornEntity.this, owner.getBlockPos()).orElse(null);
-                        if (safe == null) return;
-                        getNavigation().stop();
-                        teleport(safe.x, safe.y, safe.z, false);
-                        failedRoutes = 0;
-                    }
+                    return;
+                }
+
+                if (path != null) getNavigation().startMovingAlong(path, 1.28);
+                if (++failedRoutes < 2 || distance <= 1024 || !(getWorld() instanceof ServerWorld world)) return;
+                var safe = UnicornLanding.find(world, UnicornEntity.this, owner.getBlockPos()).orElse(null);
+                if (safe != null && followOwner() == owner && squaredDistanceTo(owner) > 1024) {
+                    getNavigation().stop();
+                    teleport(safe.x, safe.y, safe.z, false);
+                    failedRoutes = 0;
                 }
             }
 
-            @Override public void stop() { getNavigation().stop(); }
-        });
+            @Override public void stop() {
+                failedRoutes = 0;
+                repath = 0;
+                getNavigation().stop();
+            }
+        };
+        goalSelector.add(3, followGoal);
         goalSelector.add(5, new WanderAroundFarGoal(this, .75) {
             @Override public boolean canStart() { return !isTame() && super.canStart(); }
         });
@@ -194,7 +198,29 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     public boolean recovering() { return dataTracker.get(RECOVERY) > 0; }
     public boolean healing() { return dataTracker.get(HEALING); }
     public byte gait() { return dataTracker.get(GAIT); }
-    public boolean waiting() { return behavior == Behavior.WAIT; }
+    private Behavior behavior() { return BEHAVIORS[dataTracker.get(BEHAVIOR)]; }
+    public boolean waiting() { return behavior() == Behavior.WAIT; }
+
+    private boolean canUseCommand(Behavior mode) {
+        return behavior() == mode && isTame() && !recovering() && castingTicks == 0 && !hasPassengers();
+    }
+
+    private net.minecraft.entity.LivingEntity followOwner() {
+        if (!canUseCommand(Behavior.FOLLOW)) return null;
+        var owner = getOwner();
+        return owner != null && owner.isAlive() && !owner.isSpectator() && owner.getWorld() == getWorld() ? owner : null;
+    }
+
+    private void stopCommandMovement() {
+        for (var goal : goalSelector.getGoals()) {
+            if (goal.getGoal() == guardAttackGoal || goal.getGoal() == guardReturnGoal || goal.getGoal() == followGoal)
+                goal.stop();
+        }
+        getNavigation().stop();
+        getMoveControl().moveTo(getX(), getY(), getZ(), 0);
+        setForwardSpeed(0);
+        setSidewaysSpeed(0);
+    }
 
     private final com.witchersbestiary.entity.PetFeeding feedingCooldown = new com.witchersbestiary.entity.PetFeeding();
     @Override public ActionResult interactMob(PlayerEntity player, Hand hand) {
@@ -223,26 +249,26 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                     food.isOf(Items.APPLE) || food.isOf(Items.CARROT) ? 4 : 0);
             if (feeding != null) return feeding;
         }
-        if (player.isSneaking() && stack.isEmpty()) {
+        if (player.isSneaking() && hand == Hand.MAIN_HAND && stack.isEmpty()) {
             if (!getWorld().isClient) {
-                behavior = switch (behavior) {
+                Behavior next = switch (behavior()) {
                     case FOLLOW -> Behavior.WAIT;
                     case WAIT -> Behavior.GUARD;
                     case GUARD -> Behavior.FOLLOW;
                 };
-                guardPoint = behavior == Behavior.GUARD ? getBlockPos() : null;
-                getNavigation().stop();
-                player.sendMessage(Text.translatable("unicorn.witchersbestiary." + behavior.name().toLowerCase(java.util.Locale.ROOT))
-                    .append(" В· ").append(speedStatus()), true);
+                stopCommandMovement();
+                guardPoint = next == Behavior.GUARD ? getBlockPos() : null;
+                dataTracker.set(BEHAVIOR, (byte) next.ordinal());
+                player.sendMessage(Text.translatable("unicorn.witchersbestiary." + next.name().toLowerCase(java.util.Locale.ROOT)), true);
+                player.sendMessage(speedStatus(), false);
             }
             return ActionResult.success(getWorld().isClient);
         }
         if (!player.isSneaking() && hand == Hand.MAIN_HAND && stack.isEmpty() && isSaddled()) {
             if (hasPassengers() || player.hasVehicle()) return ActionResult.PASS;
             if (!getWorld().isClient) {
-                getNavigation().stop();
+                stopCommandMovement();
                 if (!player.startRiding(this)) return ActionResult.FAIL;
-                player.sendMessage(speedStatus(), true);
             }
             return ActionResult.success(getWorld().isClient);
         }
@@ -253,9 +279,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             }
             return ActionResult.success(getWorld().isClient);
         }
-        ActionResult result = super.interactMob(player, hand);
-        if (!getWorld().isClient && hand == Hand.MAIN_HAND) player.sendMessage(speedStatus(), true);
-        return result;
+        return super.interactMob(player, hand);
     }
 
     @Override public Text getDefaultName() {
@@ -331,7 +355,6 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         if (age % 100 == 0) world.spawnParticles(ParticleTypes.END_ROD, getX(), getBodyY(.95), getZ(), 1, .28, .12, .28, .001);
         if (getOwner() instanceof ServerPlayerEntity owner) {
             refreshMountedRegeneration(owner);
-            if (owner.getVehicle() == this && age % 20 == 0) owner.sendMessage(speedStatus(), true);
             healOwner(world, owner);
         }
     }
@@ -373,7 +396,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private Text speedStatus() {
         var status = Text.translatable("unicorn.witchersbestiary.speed", speedLevel, MAX_SPEED_LEVEL);
         if (speedLevel < MAX_SPEED_LEVEL) {
-            status.append(" В· ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
+            status.append(" | ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
                 (int) ridingDistance, distanceForLevel(speedLevel)));
         }
         double speed = Math.round(strideSpeed * 200) / 10.0;
@@ -412,7 +435,8 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             speedLevel++;
             if (speedLevel == MAX_SPEED_LEVEL) ridingDistance = 0;
             updateRidingSpeed();
-            rider.sendMessage(speedStatus(), true);
+            rider.sendMessage(Text.translatable("unicorn.witchersbestiary.speed_level_up",
+                speedLevel + "/" + MAX_SPEED_LEVEL), true);
         }
     }
 
@@ -434,7 +458,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         nbt.putInt("UnicornSpeedLevel", speedLevel);
         nbt.putDouble("UnicornRidingDistance", ridingDistance);
         nbt.putBoolean("UnicornWaiting", waiting());
-        nbt.putString("UnicornBehavior", behavior.name());
+        nbt.putString("UnicornBehavior", behavior().name());
         if (guardPoint != null) nbt.putLong("UnicornGuardPoint", guardPoint.asLong());
         nbt.putInt("UnicornRecovery", dataTracker.get(RECOVERY));
     }
@@ -446,14 +470,15 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         ridingDistance = speedLevel < MAX_SPEED_LEVEL && Double.isFinite(savedDistance)
             && savedDistance >= 0 && savedDistance < distanceForLevel(speedLevel) ? savedDistance : 0;
         updateRidingSpeed();
-        behavior = switch (nbt.getString("UnicornBehavior")) {
+        Behavior saved = switch (nbt.getString("UnicornBehavior")) {
             case "GUARD" -> Behavior.GUARD;
             case "WAIT" -> Behavior.WAIT;
             case "FOLLOW" -> Behavior.FOLLOW;
             default -> nbt.getBoolean("UnicornWaiting") ? Behavior.WAIT : Behavior.FOLLOW;
         };
-        guardPoint = behavior == Behavior.GUARD
-                ? (nbt.contains("UnicornGuardPoint") ? net.minecraft.util.math.BlockPos.fromLong(nbt.getLong("UnicornGuardPoint")) : getBlockPos())
+        dataTracker.set(BEHAVIOR, (byte) saved.ordinal());
+        guardPoint = saved == Behavior.GUARD
+                ? (nbt.contains("UnicornGuardPoint") ? BlockPos.fromLong(nbt.getLong("UnicornGuardPoint")) : getBlockPos())
                 : null;
         dataTracker.set(RECOVERY, Math.clamp(nbt.getInt("UnicornRecovery"), 0, 600));
     }
