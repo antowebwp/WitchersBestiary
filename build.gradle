@@ -1021,3 +1021,18 @@ tasks.register('remapArcaneRc1Harness', net.fabricmc.loom.task.RemapJarTask) {
  archiveClassifier.set('arcane-rc1-review')
  classpath.from(sourceSets.clientSmoke.compileClasspath)
 }
+
+tasks.register('unicornRevivalHarnessJar', Jar) {
+ dependsOn tasks.named('clientSmokeClasses')
+ destinationDirectory.set(layout.buildDirectory.dir('unicorn-revival/harness'))
+ archiveClassifier.set('unicorn-revival-review-dev')
+ from(sourceSets.clientSmoke.output) { include 'com/witchersbestiary/test/UnicornRevivalReview*.class' }
+ from('src/clientSmoke/resources/unicorn-revival.fabric.json') { rename { 'fabric.mod.json' } }
+}
+tasks.register('remapUnicornRevivalHarness', net.fabricmc.loom.task.RemapJarTask) {
+ dependsOn tasks.named('unicornRevivalHarnessJar')
+ inputFile = tasks.named('unicornRevivalHarnessJar').flatMap { it.archiveFile }
+ destinationDirectory.set(layout.buildDirectory.dir('unicorn-revival/harness'))
+ archiveClassifier.set('unicorn-revival-review')
+ classpath.from(sourceSets.clientSmoke.compileClasspath)
+}

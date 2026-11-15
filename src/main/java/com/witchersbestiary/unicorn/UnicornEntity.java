@@ -212,10 +212,25 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         setSidewaysSpeed(0);
     }
 
+    @Override protected boolean canAddPassenger(net.minecraft.entity.Entity passenger) {
+        return passenger instanceof PlayerEntity player && canMount(player);
+    }
+
+    private boolean canMount(PlayerEntity player) {
+        return isAlive() && !isBaby() && !recovering() && isTame() && isSaddled() && !hasPassengers()
+                && !player.isSpectator() && player.getUuid().equals(getOwnerUuid());
+    }
+
+    // Icy's Better Horses adds this method to AbstractHorseEntity at runtime.
+    // Its rider validation must use the same owner as the unicorn's native controls.
+    public java.util.UUID bh_getOwner() {
+        return getOwnerUuid();
+    }
+
     private final com.witchersbestiary.entity.PetFeeding feedingCooldown = new com.witchersbestiary.entity.PetFeeding();
     @Override public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
-        if (recovering()) return ActionResult.PASS;
+        if (recovering() || !isAlive() || player.isSpectator()) return ActionResult.PASS;
         if (!isTame()) {
             if (!stack.isOf(Items.GOLDEN_CARROT) && !stack.isOf(Items.GOLDEN_APPLE)) return ActionResult.PASS;
             if (getWorld() instanceof ServerWorld world) {
@@ -256,7 +271,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
             return ActionResult.success(getWorld().isClient);
         }
         if (!player.isSneaking() && hand == Hand.MAIN_HAND && stack.isEmpty() && isSaddled()) {
-            if (hasPassengers() || player.hasVehicle()) return ActionResult.PASS;
+            if (!canMount(player) || player.hasVehicle()) return ActionResult.FAIL;
             if (!getWorld().isClient) {
                 stopCommandMovement();
                 if (!player.startRiding(this)) return ActionResult.FAIL;
@@ -313,15 +328,22 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         world.spawnParticles(ParticleTypes.WAX_ON, getX(), getBodyY(.7), getZ(), 2, .22, .18, .22, .01);
     }
 
+    @Override public void onDeath(DamageSource source) {
+        if (!(getWorld() instanceof ServerWorld) || !beginRecovery()) super.onDeath(source);
+    }
+
     boolean beginRecovery() {
-        if (!isTame()) return false;
+        if (!isTame() || isRemoved()) return false;
+        if (recovering()) return true;
         setHealth(1);
+        dead = false;
+        deathTime = 0;
         combatUntil = combatHealAt = damageHealAfter = 0;
         dataTracker.set(RECOVERY, 600);
         castingTicks = 0;
         dataTracker.set(HEALING, false);
         removeAllPassengers();
-        getNavigation().stop();
+        stopCommandMovement();
         if (getOwner() instanceof ServerPlayerEntity owner) owner.sendMessage(Text.translatable("unicorn.witchersbestiary.recovery"), true);
         return true;
     }
@@ -338,7 +360,13 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         if (recovering()) {
             int remaining = dataTracker.get(RECOVERY) - 1;
             dataTracker.set(RECOVERY, remaining);
-            if (remaining == 0) { setHealth(getMaxHealth()); extinguish(); }
+            if (remaining == 0) {
+                dead = false;
+                deathTime = 0;
+                setHealth(getMaxHealth());
+                extinguish();
+                updateSaddledFlag();
+            }
             return;
         }
         tickCombatHealing(world);
@@ -474,6 +502,12 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 ? (nbt.contains("UnicornGuardPoint") ? BlockPos.fromLong(nbt.getLong("UnicornGuardPoint")) : getBlockPos())
                 : null;
         dataTracker.set(RECOVERY, Math.clamp(nbt.getInt("UnicornRecovery"), 0, 600));
+        if (isTame() && (recovering() || getHealth() > 0)) {
+            dead = false;
+            deathTime = 0;
+            if (recovering() && getHealth() <= 0) setHealth(1);
+            updateSaddledFlag();
+        }
     }
 
     @Override public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {

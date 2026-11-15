@@ -80,11 +80,26 @@ public final class UnicornTests implements FabricGameTest {
         c.assertTrue(owner.getVehicle()==horse&&horse.getControllingPassenger()==owner&&horse.canJump(),"Owner rides with vanilla saddle controls and jump");
         horse.damage(world.getDamageSources().genericKill(),1000);
         c.assertTrue(horse.recovering()&&horse.getHealth()==1&&horse.isAlive()&&!owner.hasVehicle(),"Lethal damage starts recovery without death or mount");
-        var data=new NbtCompound();horse.writeCustomDataToNbt(data);
-        var restored=Unicorns.TYPE.create(world);restored.readCustomDataFromNbt(data);
-        c.assertTrue(restored.recovering()&&restored.waiting()&&restored.isSaddled()&&owner.getUuid().equals(restored.getOwnerUuid()),"Owner, saddle, wait and recovery persist");
-        for(int i=0;i<600;i++)restored.tick();
-        c.assertTrue(!restored.recovering()&&restored.getHealth()==restored.getMaxHealth(),"Recovery ends on the same entity");
+        horse.equipBodyArmor(new ItemStack(Items.IRON_HORSE_ARMOR));
+        var data = horse.writeNbt(new NbtCompound());
+        var id = horse.getUuid();
+        data.putShort("DeathTime", (short) 12);
+        data.putFloat("Health", 0);
+        data.putDouble("UnicornRidingDistance", 24.5);
+        data.putInt("UnicornSpeedLevel", 7);
+        var restored = Unicorns.TYPE.create(world);
+        restored.readNbt(data);
+        c.assertTrue(restored.getUuid().equals(id) && restored.recovering() && restored.waiting()
+                && restored.isAlive() && restored.isSaddled() && restored.getBodyArmor().isOf(Items.IRON_HORSE_ARMOR)
+                && owner.getUuid().equals(restored.getOwnerUuid()), "The same UUID, owner, saddle, armor, wait and recovery persist");
+        for (int i = 0; i < 600; i++) restored.tick();
+        c.assertTrue(!restored.recovering() && restored.getHealth() == restored.getMaxHealth()
+                && restored.deathTime == 0, "Recovery clears vanilla death state");
+        var finished = restored.writeNbt(new NbtCompound());
+        c.assertTrue(finished.getInt("UnicornSpeedLevel") == 7 && finished.getDouble("UnicornRidingDistance") == 24.5,
+                "Recovery preserves speed progression");
+        c.assertTrue(restored.interactMob(other, Hand.MAIN_HAND) == net.minecraft.util.ActionResult.PASS,
+                "Non-owner cannot mount a recovered unicorn");
         horse.discard();restored.discard();owner.discard();other.discard();c.complete();
     }
 
@@ -135,7 +150,6 @@ public final class UnicornTests implements FabricGameTest {
         save.remove("UnicornSpeedLevel");
         save.remove("UnicornRidingDistance");
         horse.readCustomDataFromNbt(save);
-        double base = horse.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         owner.startRiding(horse, true);
         owner.setYaw(0);
         horse.setOnGround(true);
@@ -181,7 +195,7 @@ public final class UnicornTests implements FabricGameTest {
             horse.recordRiddenMove(owner, step);
             horse.writeCustomDataToNbt(save);
             c.assertTrue(save.getInt("UnicornSpeedLevel") == 25 && save.getDouble("UnicornRidingDistance") == 0
-                && Math.abs(max / base - 1.45) < .001, "Level cap and 45% increase");
+                && Math.abs(max * 42.1579 - 22) < .001, "Level cap and 22 blocks/s");
             var loaded = Unicorns.TYPE.create(world);
             loaded.readCustomDataFromNbt(save);
             c.assertTrue(Math.abs(loaded.getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) - max) < .0001,
