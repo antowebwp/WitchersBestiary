@@ -27,6 +27,13 @@ def start(plan_name, folder, properties, args):
     cwd = out / folder
     cwd.mkdir(exist_ok=True)
     jvm = [value for value in plan["jvm"] if "witchersbestiary.stage20e" not in value]
+    environment = "server" if plan_name == "Server" else "client"
+    entrypoint = "KnotServer" if plan_name == "Server" else "KnotClient"
+    jvm.extend([
+        f"-Dfabric.dli.config={root / '.gradle/loom-cache/launch.cfg'}",
+        f"-Dfabric.dli.env={environment}",
+        f"-Dfabric.dli.main=net.fabricmc.loader.impl.launch.knot.{entrypoint}",
+    ])
     command = jvm + properties + ["-cp", plan["classpath"], plan["main"]] + args
     argfile = out / f"{folder}.args"
     argfile.write_text("\n".join('"' + arg.replace("\\","\\\\").replace('"','\\"') + '"' for arg in command))
