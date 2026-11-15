@@ -24,12 +24,18 @@ public final class UnicornRenderer extends GeoEntityRenderer<UnicornEntity> {
             @Override public Identifier getAnimationResource(UnicornEntity entity) { return asset("animations/unicorn.animation.json"); }
         });
         shadowRadius = .68f;
-        addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<UnicornEntity>(this) {
+        addRenderLayer(new software.bernie.geckolib.renderer.layer.GeoRenderLayer<UnicornEntity>(this) {
             @Override public void render(net.minecraft.client.util.math.MatrixStack matrices, UnicornEntity entity,
                 software.bernie.geckolib.cache.object.BakedGeoModel model, net.minecraft.client.render.RenderLayer layer,
                 net.minecraft.client.render.VertexConsumerProvider buffers, net.minecraft.client.render.VertexConsumer buffer,
                 float delta, int light, int overlay) {
-                if (entity.healing()) super.render(matrices, entity, model, layer, buffers, buffer, delta, light, overlay);
+                if (!entity.healing()) return;
+                // GeckoLib's auto-glow generator punches the mask out of the base atlas.
+                // Draw the authored mask directly to retain the original horn in every pose.
+                var glow = net.minecraft.client.render.RenderLayer.getEyes(asset("textures/entity/unicorn_glowmask.png"));
+                getRenderer().reRender(model, matrices, buffers, entity, glow, buffers.getBuffer(glow),
+                        delta, net.minecraft.client.render.LightmapTextureManager.MAX_LIGHT_COORDINATE,
+                        overlay, 0xffffffff);
             }
         });
     }

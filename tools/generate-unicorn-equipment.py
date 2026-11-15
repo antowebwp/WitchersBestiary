@@ -16,7 +16,7 @@ cubes = [
 ]
 bones[:] = [bone for bone in bones if bone["name"] != "armor_shell"]
 bones.append({"name": "armor_shell", "parent": "body", "pivot": [0, 20.16, 0], "cubes": cubes})
-model_path.write_text(json.dumps(model, separators=(",", ":")) + "\n")
+model_path.write_text(json.dumps(model, indent=2) + "\n")
 base = Image.open(ROOT / "textures/entity/unicorn.png").convert("RGBA")
 materials = {
     "leather": ((119, 74, 44), (174, 114, 66), (71, 45, 34)),
@@ -39,8 +39,6 @@ for name, (body, rim, shadow) in materials.items():
             draw.point((i,y+depth+1),fill=rim)
             draw.point((i,bottom-2),fill=shadow)
     atlas.save(ROOT / f"textures/entity/unicorn_armor_{name}.png")
-    (ROOT / f"textures/entity/unicorn_armor_{name}_glowmask.png").write_bytes(
-        (ROOT / "textures/entity/unicorn_glowmask.png").read_bytes())
 
 icon = Image.new("RGBA",(16,16))
 draw = ImageDraw.Draw(icon)
