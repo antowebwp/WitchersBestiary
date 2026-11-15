@@ -1,0 +1,18 @@
+{
+  "name": "Кровавое наследие",
+  "category": "witchersbestiary:witcher_swords",
+  "icon": "witchersbestiary:blood_legacy",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:blood_legacy",
+      "title": "Кровавое наследие"
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "blood_legacy",
+      "profile": "BLOOD_LEGACY",
+      "bomb": false
+    }
+  ]
+}

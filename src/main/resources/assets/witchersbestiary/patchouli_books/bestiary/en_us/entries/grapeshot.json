@@ -1,0 +1,23 @@
+{
+  "name": "Grapeshot",
+  "category": "witchersbestiary:bombs",
+  "icon": "witchersbestiary:grapeshot",
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "witchersbestiary:textures/gui/bestiary/grapeshot.png"
+      ]
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "grapeshot",
+      "profile": "GRAPESHOT",
+      "bomb": true
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:workshop/grapeshot"
+    }
+  ]
+}

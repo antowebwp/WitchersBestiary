@@ -25,11 +25,11 @@ public final class ModItems {
     public static final Item GRAVEYARD_ESSENCE=register("graveyard_essence",new Item(new Item.Settings().rarity(Rarity.UNCOMMON)));
     public static final Item NECROPHAGE_REMAINS=register("necrophage_remains",new Item(new Item.Settings()));
     public static final Item GRAVEBOUND_STEEL_FRAGMENT=register("gravebound_steel_fragment",new Item(new Item.Settings().rarity(Rarity.RARE)));
-    public static final Item STEEL_HUNTER_SWORD=register("steel_hunter_sword",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.STEEL,7,1.7,950));
+    public static final Item STEEL_HUNTER_SWORD=register("steel_hunter_sword",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.STEEL,com.witchersbestiary.combat.StageCombatBalance.Sword.STEEL,1.7,950));
     public static final Item CRIMSON_PHYLACTERY=register("crimson_phylactery",new com.witchersbestiary.contracts.hunt.VampireHunt());
-    public static final Item BLOOD_LEGACY=register("blood_legacy",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.SILVER,5,1.6,850));
-    public static final Item SILVER_WITCHER_SWORD=register("silver_witcher_sword",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.SILVER,5,1.6,850));
-    public static final Item GRAVE_BLADE=register("grave_blade",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.GRAVE,7,1.5,1250));
+    public static final Item BLOOD_LEGACY=register("blood_legacy",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.SILVER,com.witchersbestiary.combat.StageCombatBalance.Sword.BLOOD_LEGACY,1.6,850));
+    public static final Item SILVER_WITCHER_SWORD=register("silver_witcher_sword",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.SILVER,com.witchersbestiary.combat.StageCombatBalance.Sword.SILVER,1.6,850));
+    public static final Item GRAVE_BLADE=register("grave_blade",new com.witchersbestiary.equipment.armory.WitcherSwordItem(com.witchersbestiary.equipment.armory.WitcherSwordItem.Kind.GRAVE,com.witchersbestiary.combat.StageCombatBalance.Sword.GRAVE,1.5,1250));
     private ModItems() { }
     public static final Item LESHEN_HEAD = register("leshen_head", new BlockItem(ModBlocks.LESHEN_HEAD, new Item.Settings().rarity(Rarity.RARE)));
     public static final Item FOREST_ESSENCE = register("forest_essence", new Item(new Item.Settings()));

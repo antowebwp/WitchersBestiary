@@ -1,0 +1,22 @@
+{
+  "name": "Могильный клинок",
+  "category": "witchersbestiary:witcher_swords",
+  "icon": "witchersbestiary:grave_blade",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:grave_blade",
+      "title": "Могильный клинок"
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "grave_blade",
+      "profile": "GRAVE",
+      "bomb": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:grave_blade"
+    }
+  ]
+}

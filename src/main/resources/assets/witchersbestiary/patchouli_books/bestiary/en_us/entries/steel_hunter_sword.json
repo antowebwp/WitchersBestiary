@@ -1,0 +1,22 @@
+{
+  "name": "Steel sword",
+  "category": "witchersbestiary:witcher_swords",
+  "icon": "witchersbestiary:steel_hunter_sword",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:steel_hunter_sword",
+      "title": "Steel sword"
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "steel_hunter_sword",
+      "profile": "STEEL",
+      "bomb": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:steel_hunter_sword"
+    }
+  ]
+}

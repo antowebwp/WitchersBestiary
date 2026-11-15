@@ -18,6 +18,10 @@ public final class MonsterHealthScaling {
         if (!(target instanceof CategorizedMonster)
                 || !(target instanceof HostileEntity || target instanceof InfernalBasiliskEntity)
                 || target instanceof Tameable tame && tame.getOwnerUuid() != null) return 0;
+        return component(target, fraction, cap);
+    }
+
+    public static float component(LivingEntity target, double fraction, float cap) {
         if (target instanceof HigherVampireEntity vampire && vampire.isCocooned()) return 0;
         var id = Registries.ENTITY_TYPE.getId(target.getType()).toString();
         var contract = ProceduralHunts.combat(target);

@@ -13,9 +13,10 @@ import java.util.List;
 public final class WitcherSwordItem extends SwordItem {
  public enum Kind {STEEL,SILVER,GRAVE}
  public final Kind kind;
- public WitcherSwordItem(Kind kind,int damage,double speed,int durability){super(material(kind,durability),new Settings().rarity(kind==Kind.GRAVE?Rarity.RARE:kind==Kind.SILVER?Rarity.UNCOMMON:Rarity.COMMON).attributeModifiers(AttributeModifiersComponent.builder()
-  .add(EntityAttributes.GENERIC_ATTACK_DAMAGE,new EntityAttributeModifier(Item.BASE_ATTACK_DAMAGE_MODIFIER_ID,damage-1,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND)
-  .add(EntityAttributes.GENERIC_ATTACK_SPEED,new EntityAttributeModifier(Item.BASE_ATTACK_SPEED_MODIFIER_ID,speed-4,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND).build()));this.kind=kind;}
+ private final com.witchersbestiary.combat.StageCombatBalance.Sword balance;
+ public WitcherSwordItem(Kind kind,com.witchersbestiary.combat.StageCombatBalance.Sword balance,double speed,int durability){super(material(kind,durability),new Settings().rarity(kind==Kind.GRAVE?Rarity.RARE:kind==Kind.SILVER?Rarity.UNCOMMON:Rarity.COMMON).attributeModifiers(AttributeModifiersComponent.builder()
+  .add(EntityAttributes.GENERIC_ATTACK_DAMAGE,new EntityAttributeModifier(Item.BASE_ATTACK_DAMAGE_MODIFIER_ID,balance.base-1,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND)
+  .add(EntityAttributes.GENERIC_ATTACK_SPEED,new EntityAttributeModifier(Item.BASE_ATTACK_SPEED_MODIFIER_ID,speed-4,EntityAttributeModifier.Operation.ADD_VALUE),AttributeModifierSlot.MAINHAND).build()));this.kind=kind;this.balance=balance;}
  private static ToolMaterial material(Kind kind,int durability){return new ToolMaterial(){
   public int getDurability(){return durability;}
   public float getMiningSpeedMultiplier(){return 6;}
@@ -29,12 +30,7 @@ public final class WitcherSwordItem extends SwordItem {
   if(!(target instanceof LivingEntity living)||!(source.getAttacker() instanceof net.minecraft.entity.player.PlayerEntity player)||source.getSource()!=player||!source.isOf(net.minecraft.entity.damage.DamageTypes.PLAYER_ATTACK))return 0;
   double full=player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
   float bonus=ArmoryCombat.bonus(new ItemStack(this),living)*(float)Math.clamp(full>0?baseDamage/full:0,0,1);
-  double fraction = this == com.witchersbestiary.registry.ModItems.BLOOD_LEGACY ? .0065 : switch (kind) {
-   case STEEL -> .0035;
-   case SILVER -> .005;
-   case GRAVE -> 0;
-  };
-  bonus += com.witchersbestiary.combat.MonsterHealthScaling.bonus(living,fraction,8);
+  bonus += com.witchersbestiary.combat.MonsterHealthScaling.bonus(living,balance.percent / 100,8);
   ArmoryCombat.prepare(living,source,bonus);return 0;
  }
  @Override public boolean postHit(ItemStack stack,LivingEntity target,LivingEntity attacker){boolean result=super.postHit(stack,target,attacker);ArmoryCombat.afterHit(this,target,attacker);

@@ -16,16 +16,24 @@
       "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
     },
     {
-      "type": "patchouli:text",
-      "text": "Fireburst: Burn enemies around you."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "igni",
+      "form": 0
     },
     {
-      "type": "patchouli:text",
-      "text": "Fire breath: Repeat a short stream of flame."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "igni",
+      "form": 1
     },
     {
-      "type": "patchouli:text",
-      "text": "Ground fire wave: Sweep fire across targets near ground level."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "igni",
+      "form": 2
+    },
+    {
+      "type": "witchersbestiary:sign_balance",
+      "sign": "igni",
+      "form": 3
     }
   ]
 }

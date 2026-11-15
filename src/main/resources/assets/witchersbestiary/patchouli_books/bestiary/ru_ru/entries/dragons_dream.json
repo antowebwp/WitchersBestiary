@@ -1,0 +1,23 @@
+{
+  "name": "Сон дракона",
+  "category": "witchersbestiary:bombs",
+  "icon": "witchersbestiary:dragons_dream",
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "witchersbestiary:textures/gui/bestiary/dragons_dream.png"
+      ]
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "dragons_dream",
+      "profile": "DRAGONS_DREAM",
+      "bomb": true
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:workshop/dragons_dream"
+    }
+  ]
+}

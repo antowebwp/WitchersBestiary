@@ -1,4 +1,5 @@
 package com.witchersbestiary.signs;
+import com.witchersbestiary.combat.StageCombatBalance;
 import com.witchersbestiary.equipment.armory.SchoolArmor;
 import java.util.*;import net.minecraft.server.network.ServerPlayerEntity;import net.minecraft.server.world.ServerWorld;import net.minecraft.entity.*;import net.minecraft.entity.mob.*;import net.minecraft.entity.passive.*;import net.minecraft.entity.effect.*;import net.minecraft.entity.damage.*;import net.minecraft.registry.*;import net.minecraft.registry.tag.DamageTypeTags;import net.minecraft.util.*;import net.minecraft.util.math.*;import net.minecraft.particle.*;import net.minecraft.sound.*;import net.minecraft.text.Text;import net.fabricmc.fabric.api.networking.v1.*;import net.fabricmc.fabric.api.event.lifecycle.v1.*;
 public final class SignManager {
@@ -9,6 +10,7 @@ public final class SignManager {
  private record Burn(UUID owner,RegistryKey<net.minecraft.world.World> dimension,long until){}
  private static final Map<UUID,Burn> BURNS=new HashMap<>();
  public static DamageSource resolveBurn(LivingEntity victim,DamageSource source){if(!source.isOf(DamageTypes.ON_FIRE)||!(victim.getWorld() instanceof ServerWorld w))return source;var burn=BURNS.get(victim.getUuid());if(burn==null||burn.until<w.getTime())return source;var owner=w.getServer().getPlayerManager().getPlayer(burn.owner);if(owner==null||owner.getWorld()!=w||!allowed(owner)||!enemy(owner,victim)){victim.extinguish();BURNS.remove(victim.getUuid());return null;}return new DamageSource(w.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(FIRE),owner);}
+ public static float burnDamage(LivingEntity victim, ServerPlayerEntity owner){return StageCombatBalance.burnDamage(victim,level(owner,SignType.IGNI,SignPlayerState.Upgrade.POWER));}
  private static void clearBurns(net.minecraft.server.MinecraftServer server,UUID owner){var it=BURNS.entrySet().iterator();while(it.hasNext()){var entry=it.next();var burn=entry.getValue();if(owner==null||owner.equals(burn.owner)){var w=server.getWorld(burn.dimension);if(w!=null&&w.getEntity(entry.getKey()) instanceof LivingEntity e)e.extinguish();it.remove();}}}
  private static final Map<UUID,Runtime> ACTIVE=new HashMap<>();private static final Map<UUID,Long> CALM=new HashMap<>(),EXPOSED=new HashMap<>();
  public static boolean yrdenExposed(LivingEntity e){return EXPOSED.getOrDefault(e.getUuid(),Long.MIN_VALUE)>e.getWorld().getTime();}
@@ -105,12 +107,12 @@ public final class SignManager {
   int power=level(p,sign,SignPlayerState.Upgrade.POWER),effect=level(p,sign,SignPlayerState.Upgrade.EFFECT);
   switch(sign){
    case IGNI,AARD->{
-    float damage=(sign==SignType.IGNI?6.24f:1.44f)*(1+.1f*power)*SchoolArmor.signDamage(p)*combo;
+    float multiplier=SchoolArmor.signDamage(p)*combo;
     if(sign==SignType.IGNI){
      var eye=p.getEyePos();
      com.witchersbestiary.alchemy.DragonGas.ignite(p,eye,eye.add(p.getRotationVec(1).multiply(range(p,sign))),angle);
     }
-    for(var target:targets.stream().limit(12).toList())hit(p,target,sign,form,damage,duration,effect);
+    for(var target:targets.stream().limit(12).toList())hit(p,target,sign,form,StageCombatBalance.signDamage(target,sign,form,power,multiplier),duration,effect);
     var origin=sign==SignType.IGNI&&form==3?p.getPos().add(0,.2,0):p.getEyePos();
     visual(w,p.getId(),sign,form,9,origin,origin.add(p.getRotationVec(1).multiply(range(p,sign))),
         form==1?180:sign==SignType.IGNI?37.5f:45);
@@ -280,11 +282,11 @@ public final class SignManager {
   if(damage.getAttacker() instanceof LivingEntity attacker&&enemy(owner,attacker)&&owner.canSee(attacker)){
    awardCombat(owner,attacker);
    if(shield.shieldForm==2&&!signDamage(damage)&&owner.squaredDistanceTo(attacker)<=64)
-    attacker.damage(source(owner,SignType.QUEN),taken*(.35f+.05f*level(owner,SignType.QUEN,SignPlayerState.Upgrade.EFFECT)));
+    attacker.damage(source(owner,SignType.QUEN),StageCombatBalance.signDamage(attacker,SignType.QUEN,2,level(owner,SignType.QUEN,SignPlayerState.Upgrade.EFFECT),1));
   }
   if(shield.shieldForm==1&&shield.shield<=0&&!signDamage(damage))
    for(var target:targets(owner,SignType.QUEN,3+.35*level(owner,SignType.QUEN,SignPlayerState.Upgrade.RANGE),180,false).stream().limit(12).toList())
-    target.damage(source(owner,SignType.QUEN),4+level(owner,SignType.QUEN,SignPlayerState.Upgrade.EFFECT));
+    target.damage(source(owner,SignType.QUEN),StageCombatBalance.signDamage(target,SignType.QUEN,1,level(owner,SignType.QUEN,SignPlayerState.Upgrade.EFFECT),1));
   sync(owner);return amount-taken;
  }
  public static void sync(ServerPlayerEntity p){if(!ServerPlayNetworking.canSend(p,SignPackets.View.ID))return;var s=state(p);var r=runtime(p);ServerPlayNetworking.send(p,new SignPackets.View(r.session,s.learned(),s.selected().ordinal(),(float)s.concentration(),s.cooldown(s.selected()),r.shield,r.shieldTicks,r.trapTicks,s.cooldown(SignType.IGNI),s.cooldown(SignType.AARD),s.cooldown(SignType.QUEN),s.cooldown(SignType.YRDEN),s.cooldown(SignType.AXII)));}
@@ -298,7 +300,7 @@ public final class SignManager {
     var hit=TRAP_HITS.get(target.getUuid());
     if(hit==null||hit.dimension()!=world.getRegistryKey()||hit.next()<=world.getTime()){
      TRAP_HITS.put(target.getUuid(),new TrapHit(world.getRegistryKey(),world.getTime()+40));
-     if(target.damage(source(player,SignType.YRDEN),((runtime.trapForm==3?2:1)+.25f*level(player,SignType.YRDEN,SignPlayerState.Upgrade.POWER))*runtime.trapDamageMultiplier))awardCombat(player,target);
+     if(target.damage(source(player,SignType.YRDEN),StageCombatBalance.signDamage(target,SignType.YRDEN,runtime.trapForm,level(player,SignType.YRDEN,SignPlayerState.Upgrade.POWER),runtime.trapDamageMultiplier)))awardCombat(player,target);
     }
     if(target instanceof com.witchersbestiary.combat.CategorizedMonster monster&&monster.getMonsterCategory()==com.witchersbestiary.combat.MonsterCategory.SPECTER)EXPOSED.put(target.getUuid(),world.getTime()+15);
    }
@@ -358,7 +360,7 @@ public final class SignManager {
   int power=level(p,SignType.IGNI,SignPlayerState.Upgrade.POWER);
   for(var target:world.getEntitiesByClass(LivingEntity.class,new Box(start,end).expand(.45),
       e->enemy(p,e)&&breathContact(p,e,start,end)).stream().limit(12).toList())
-   hit(p,target,SignType.IGNI,2,(1.8f+.2f*power)*r.breathDamageMultiplier,0,0);
+   hit(p,target,SignType.IGNI,2,StageCombatBalance.signDamage(target,SignType.IGNI,2,power,r.breathDamageMultiplier),0,0);
  }
 
  private static Vec3d clipBreath(ServerPlayerEntity p,Vec3d start,Vec3d end){

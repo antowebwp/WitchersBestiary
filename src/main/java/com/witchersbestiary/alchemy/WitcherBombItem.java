@@ -46,8 +46,10 @@ public final class WitcherBombItem extends Item {
             for (var target : server.getEntitiesByClass(LivingEntity.class, new Box(center, center).expand(2.5),
                     entity -> entity.squaredDistanceTo(center) <= 6.25
                             && com.witchersbestiary.signs.SignManager.enemy(owner, entity) && server.raycast(new net.minecraft.world.RaycastContext(center, entity.getEyePos(), net.minecraft.world.RaycastContext.ShapeType.COLLIDER, net.minecraft.world.RaycastContext.FluidHandling.NONE, owner)).getType() == net.minecraft.util.hit.HitResult.Type.MISS)) {
+                var balance = com.witchersbestiary.combat.StageCombatBalance.Bomb.values()[type];
+                target.damage(server.getDamageSources().thrown(null, owner), balance.damage(target));
                 switch (type) {
-                    case 0 -> target.damage(server.getDamageSources().playerAttack(owner), 6);
+                    case 0 -> { }
                     case 1 -> MoonDust.apply(target);
                     case 2 -> { target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 80, 2)); target.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 60)); }
                     default -> throw new IllegalStateException("Unknown bomb type");

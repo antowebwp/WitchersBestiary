@@ -16,16 +16,24 @@
       "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
     },
     {
-      "type": "patchouli:text",
-      "text": "Shield burst: Damage nearby enemies when the shield breaks."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "quen",
+      "form": 0
     },
     {
-      "type": "patchouli:text",
-      "text": "Reflection: Return part of absorbed damage to the attacker."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "quen",
+      "form": 1
     },
     {
-      "type": "patchouli:text",
-      "text": "Protection aura: Share your shield with nearby teammates."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "quen",
+      "form": 2
+    },
+    {
+      "type": "witchersbestiary:sign_balance",
+      "sign": "quen",
+      "form": 3
     }
   ]
 }

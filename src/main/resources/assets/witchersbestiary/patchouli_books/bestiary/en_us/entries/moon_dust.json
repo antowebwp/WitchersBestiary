@@ -1,0 +1,23 @@
+{
+  "name": "Moon Dust",
+  "category": "witchersbestiary:bombs",
+  "icon": "witchersbestiary:moon_dust",
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "witchersbestiary:textures/gui/bestiary/moon_dust.png"
+      ]
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "moon_dust",
+      "profile": "MOON_DUST",
+      "bomb": true
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:workshop/moon_dust"
+    }
+  ]
+}

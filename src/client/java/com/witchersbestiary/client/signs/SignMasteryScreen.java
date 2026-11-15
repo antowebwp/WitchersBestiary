@@ -56,7 +56,7 @@ public final class SignMasteryScreen extends Screen {
                 var label=Text.translatable(unlocked?"sign.mastery.known":"sign.mastery.unlock",formName(sign,form),form+2,form*2);
                 var widget=button(label,x,y+form*21,width,()->SignsClient.send(4,branch*16+choice));
                 widget.active=learned&&!unlocked&&total>=form*2&&displayed.points()>=form+2;
-                widget.setTooltip(Tooltip.of(Text.translatable(formKey(sign,form)+".tip")));
+                widget.setTooltip(Tooltip.of(Text.translatable(formKey(sign,form)+".tip").append("\n").append(damageSummary(sign,form))));
             }
         } else {
             for(int slot=0;slot<2;slot++){
@@ -67,7 +67,7 @@ public final class SignMasteryScreen extends Screen {
                     SignsClient.send(5,branch*16+index*4+next);
                 });
                 widget.active=learned&&displayed.unlocked(branch)!=1;
-                widget.setTooltip(Tooltip.of(Text.translatable(formKey(sign,form)+".tip")));
+                widget.setTooltip(Tooltip.of(Text.translatable(formKey(sign,form)+".tip").append("\n").append(damageSummary(sign,form))));
             }
         }
     }
@@ -77,6 +77,21 @@ public final class SignMasteryScreen extends Screen {
     }
     private int top(){return Math.max(25,(height-190)/2);}
     private static String formKey(SignType sign,int form){return "sign.mastery.form."+sign.name().toLowerCase(Locale.ROOT)+"."+form;}
+    public static Text damageSummary(SignType sign, int form) {
+        var mastery = SignsClient.mastery;
+        var node = sign == SignType.QUEN ? SignPlayerState.Upgrade.EFFECT : SignPlayerState.Upgrade.POWER;
+        int rank = mastery == null ? 0 : mastery.level(sign.ordinal(), node.ordinal());
+        double current = com.witchersbestiary.combat.StageCombatBalance.signPercent(sign, form, rank);
+        if (current == 0) return Text.translatable("book.combat.no_direct_damage");
+        var format = new java.text.DecimalFormat("0.##");
+        var text = Text.translatable("book.combat.sign_percent", format.format(current) + "%");
+        if (rank < 3) {
+            double next = com.witchersbestiary.combat.StageCombatBalance.signPercent(sign, form, rank + 1);
+            text.append("\n").append(Text.translatable("book.combat.next_percent", format.format(next) + "%"));
+        }
+        return text;
+    }
+
     public static Text formName(SignType sign,int form){return Text.translatable(formKey(sign,form));}
     @Override public void tick(){if(displayed!=SignsClient.mastery)clearAndInit();}
     @Override public void render(DrawContext draw,int x,int y,float delta){

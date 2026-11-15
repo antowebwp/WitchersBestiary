@@ -16,16 +16,24 @@
       "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
     },
     {
-      "type": "patchouli:text",
-      "text": "Ring blast: Push enemies in all directions."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "aard",
+      "form": 0
     },
     {
-      "type": "patchouli:text",
-      "text": "Charged thrust: Strike with stronger knockback."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "aard",
+      "form": 1
     },
     {
-      "type": "patchouli:text",
-      "text": "Vortex: Pull enemies toward you."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "aard",
+      "form": 2
+    },
+    {
+      "type": "witchersbestiary:sign_balance",
+      "sign": "aard",
+      "form": 3
     }
   ]
 }

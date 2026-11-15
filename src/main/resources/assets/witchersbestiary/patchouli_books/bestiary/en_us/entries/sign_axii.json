@@ -16,16 +16,24 @@
       "text": "Hold R to select. Tap G for slot 1 or hold G for about 0.4 seconds for slot 2. Alternate forms add 4 concentration; each cost upgrade saves 2. Signs are disabled in official bouts."
     },
     {
-      "type": "patchouli:text",
-      "text": "Mass confusion: Calm several hostile mobs in a wide cone."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 0
     },
     {
-      "type": "patchouli:text",
-      "text": "Domination: Turn one hostile mob against another."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 1
     },
     {
-      "type": "patchouli:text",
-      "text": "Redirect aggression: Redirect several hostile mobs toward other enemies."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 2
+    },
+    {
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 3
     }
   ]
 }

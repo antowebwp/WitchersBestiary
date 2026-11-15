@@ -1,0 +1,22 @@
+{
+  "name": "Silver sword",
+  "category": "witchersbestiary:witcher_swords",
+  "icon": "witchersbestiary:silver_witcher_sword",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:silver_witcher_sword",
+      "title": "Silver sword"
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "silver_witcher_sword",
+      "profile": "SILVER",
+      "bomb": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:silver_witcher_sword"
+    }
+  ]
+}

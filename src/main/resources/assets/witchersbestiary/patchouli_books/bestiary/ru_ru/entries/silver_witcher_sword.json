@@ -1,0 +1,22 @@
+{
+  "name": "Серебряный меч",
+  "category": "witchersbestiary:witcher_swords",
+  "icon": "witchersbestiary:silver_witcher_sword",
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:silver_witcher_sword",
+      "title": "Серебряный меч"
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "silver_witcher_sword",
+      "profile": "SILVER",
+      "bomb": false
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:silver_witcher_sword"
+    }
+  ]
+}

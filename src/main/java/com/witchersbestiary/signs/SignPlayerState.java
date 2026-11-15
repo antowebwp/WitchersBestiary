@@ -63,9 +63,10 @@ public final class SignPlayerState {
  public boolean commit(SignType sign,long request){return commit(sign,request,0);}
  public boolean commit(SignType sign,long request,int form){if(sign==null||request<=lastRequest||!knows(sign)||cooldown(sign)>0||concentration<cost(sign,form))return false;lastRequest=request;concentration=Math.max(0,concentration-cost(sign,form));cooldowns[sign.ordinal()]=sign.cooldown;regenDelay=30;return true;}
  public void tick(){tick(1);}
+ public static final double BREATH_COST_PER_TICK = .25;
  public boolean spendBreathTick(){
-  if(concentration<.25){concentration=0;regenDelay=30;return false;}
-  concentration-=.25;regenDelay=30;return true;
+  if(concentration<BREATH_COST_PER_TICK){concentration=0;regenDelay=30;return false;}
+  concentration-=BREATH_COST_PER_TICK;regenDelay=30;return true;
  }
  public void tick(double regeneration){for(int i=0;i<cooldowns.length;i++)if(cooldowns[i]>0)cooldowns[i]--;if(regenDelay>0)regenDelay--;else concentration=Math.min(100,concentration+(.25+.02*level(selected,Upgrade.REGEN))*regeneration);}
  public NbtCompound write(){var n=new NbtCompound();n.putInt("schema",2);n.putInt("points",points);n.putLong("combatAwardAfter",combatAwardAfter);var combat=new NbtCompound();recentTargets.forEach((target,until)->combat.putLong(target.toString(),until));n.put("recentTargets",combat);n.putIntArray("upgrades",upgrades);n.putIntArray("unlocks",unlocks);n.putIntArray("slots",slots);n.putInt("learned",learned);n.putInt("selected",selected.ordinal());n.putDouble("concentration",concentration);n.putInt("regenDelay",regenDelay);n.putIntArray("cooldowns",cooldowns);return n;}

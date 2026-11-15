@@ -1,0 +1,23 @@
+{
+  "name": "Самум",
+  "category": "witchersbestiary:bombs",
+  "icon": "witchersbestiary:samum",
+  "pages": [
+    {
+      "type": "patchouli:image",
+      "images": [
+        "witchersbestiary:textures/gui/bestiary/samum.png"
+      ]
+    },
+    {
+      "type": "witchersbestiary:weapon_balance",
+      "id": "samum",
+      "profile": "SAMUM",
+      "bomb": true
+    },
+    {
+      "type": "patchouli:crafting",
+      "recipe": "witchersbestiary:workshop/samum"
+    }
+  ]
+}

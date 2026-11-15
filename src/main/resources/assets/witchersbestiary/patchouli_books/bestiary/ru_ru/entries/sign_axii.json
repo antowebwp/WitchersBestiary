@@ -16,16 +16,24 @@
       "text": "Удерживайте R для выбора. Нажатие G применяет слот 1, удержание G около 0,4 с — слот 2. Формы стоят ещё 4 концентрации, улучшение экономии снимает 2 за уровень. Знаки отключены в официальных поединках."
     },
     {
-      "type": "patchouli:text",
-      "text": "Массовое замешательство: Успокаивает несколько врагов в широком конусе."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 0
     },
     {
-      "type": "patchouli:text",
-      "text": "Подчинение: Обращает одного врага против другого."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 1
     },
     {
-      "type": "patchouli:text",
-      "text": "Перенаправление: Перенаправляет несколько врагов на других противников."
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 2
+    },
+    {
+      "type": "witchersbestiary:sign_balance",
+      "sign": "axii",
+      "form": 3
     }
   ]
 }

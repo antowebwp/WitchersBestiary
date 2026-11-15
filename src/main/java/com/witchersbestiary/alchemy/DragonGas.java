@@ -58,7 +58,8 @@ public final class DragonGas {
             for (var target : world.getEntitiesByClass(LivingEntity.class, new Box(center, center).expand(RADIUS),
                     entity -> SignManager.enemy(player, entity) && entity.squaredDistanceTo(center) <= RADIUS * RADIUS
                             && visible(world, player, center, entity.getEyePos()))) {
-                target.damage(world.getDamageSources().playerAttack(player), 6);
+                target.damage(world.getDamageSources().thrown(null, player),
+                        com.witchersbestiary.combat.StageCombatBalance.Bomb.DRAGONS_DREAM.damage(target));
                 target.setOnFireFor(3);
             }
         }
