@@ -940,3 +940,28 @@ if (project.hasProperty('stage22bBop')) {
   }
  }
 }
+if (providers.gradleProperty('cascadeExperiment').isPresent()) {
+ dependencies {
+  modImplementation 'maven.modrinth:cascademc:oSSE53mh'
+ }
+ sourceSets.clientSmoke {
+  java.srcDir 'src/cascadeSmoke/java'
+  resources.srcDir 'src/cascadeSmoke/resources'
+ }
+ loom.runs {
+  cascadeReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.cascadeReview=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/cascade-review/client'
+  }
+ }
+}
+tasks.named('processClientSmokeResources') {
+ def cascadeEnabled = providers.gradleProperty('cascadeExperiment').isPresent()
+ inputs.property 'cascadeReview', cascadeEnabled
+ filesMatching('fabric.mod.json') {
+  expand cascadeMixin: cascadeEnabled ? ',"mixins":["witchersbestiary-cascade-review.mixins.json"]' : ''
+ }
+}
