@@ -17,6 +17,12 @@ public final class MoonDust {
         target.setAttached(MARK, target.getWorld().getTime() + 120);
         target.removeStatusEffect(StatusEffects.INVISIBILITY);
         target.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, 120));
+        if (target.getWorld() instanceof net.minecraft.server.world.ServerWorld world)
+            BombVfx.suppression(world, target, 120);
+    }
+
+    static int remaining(LivingEntity target) {
+        return (int)Math.clamp(target.getAttachedOrElse(MARK, 0L) - target.getWorld().getTime(), 0, 120);
     }
 
     public static boolean active(LivingEntity target) {

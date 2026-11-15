@@ -41,7 +41,6 @@ public final class SignGeometry {
                 double age = time-effect.start;
                 double fade = Math.clamp((effect.end-time)/3,0,1);
                 switch (SignType.byIndex(p.sign())) {
-                    case AARD -> wave(context.consumers().getBuffer(SignPixels.MATERIAL),matrix,origin,delta,p.form(),p.radius(),age,fade);
                     case YRDEN -> seal(context.consumers().getBuffer(SignPixels.MATERIAL),matrix,origin.add(0,.029,0),p.radius(),p.form(),age,fade);
                     case AXII -> {
                         var target=world.getEntityById(p.owner());
@@ -81,6 +80,10 @@ public final class SignGeometry {
             VfxManager.igni(packet, world.getTime());
             return;
         }
+        if (packet.sign() == SignType.AARD.ordinal()) {
+            VfxManager.aard(packet, world.getTime());
+            return;
+        }
         var key = new Key(packet.owner(), packet.sign(),
                 packet.sign() == SignType.YRDEN.ordinal() ? packet.from() : Vec3d.ZERO);
         if (!EFFECTS.containsKey(key) && EFFECTS.size() >= 64) EFFECTS.pollFirstEntry();
@@ -89,37 +92,6 @@ public final class SignGeometry {
         boolean persistent = packet.sign() == SignType.YRDEN.ordinal();
         EFFECTS.put(key, new Effect(packet, persistent && previous != null && previous.end > now
                 ? previous.start : now, now + packet.ticks()));
-    }
-
-    private static void wave(VertexConsumer out, Matrix4f matrix, Vec3d origin, Vec3d delta,
-                             int form, float arc, double age, double fade) {
-        var axis = delta.normalize();
-        var side = axis.crossProduct(new Vec3d(0, 1, 0)).normalize();
-        if (side.lengthSquared() < .01) side = new Vec3d(1, 0, 0);
-        if (form == 1) {
-            axis = new Vec3d(0, 0, 1);
-            side = new Vec3d(1, 0, 0);
-        }
-        var up = form == 1 ? new Vec3d(0, 1, 0) : side.crossProduct(axis);
-        double spread = form == 1 ? Math.PI : Math.toRadians(arc);
-        double travel = Math.clamp((age + 1) / 7, 0, 1);
-        if (form == 3) travel = 1 - .75 * travel;
-        int layers = form == 2 ? 4 : 3;
-        int segments = form == 1 ? 20 : 7;
-        for (int layer = layers - 1; layer >= 0; layer--) {
-            double radius = delta.length() * travel * (1 - layer * .16);
-            for (int i = 0; i < segments; i++) {
-                double left = spread * (2.0 * i / segments - 1);
-                double right = spread * (2.0 * (i + .93) / segments - 1);
-                var a = origin.add(axis.multiply(Math.cos(left) * radius)).add(side.multiply(Math.sin(left) * radius));
-                var b = origin.add(axis.multiply(Math.cos(right) * radius)).add(side.multiply(Math.sin(right) * radius));
-                var crest = up.multiply(.5 + .16 * Math.sin(i * 2 + age));
-                var back = a.subtract(origin).normalize().multiply(.30 + layer * .07);
-                SignPixels.tile(out, matrix, 0, layer == 0 ? 0xe6f8ff : 0x9ac9ef,
-                        (int)((220 - layer * 39) * fade),
-                        a.add(crest), b.add(crest), b.subtract(crest).subtract(back), a.subtract(crest).subtract(back));
-            }
-        }
     }
 
     private static void seal(VertexConsumer out, Matrix4f matrix, Vec3d origin, double radius,

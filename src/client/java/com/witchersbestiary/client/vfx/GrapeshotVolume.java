@@ -1,4 +1,4 @@
-package com.witchersbestiary.test;
+package com.witchersbestiary.client.vfx;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import net.minecraft.util.math.Vec3d;
 import org.joml.Matrix4f;
 
 /** Original pixel materials on the exposed faces of small, staggered voxel volumes. */
-final class GrapeshotVolume {
+public final class GrapeshotVolume {
     private static final int[] FLASH = {0xfffcea, 0xffed9f, 0xffbc4e, 0xf87727};
     private static final int[] FIRE = {0xffdf76, 0xffa42e, 0xe95e1c, 0xa73b24};
     private static final int[] SMOKE = {0x716867, 0x594e50, 0x493f46, 0x3a3239};
@@ -26,9 +26,23 @@ final class GrapeshotVolume {
     private record Lobe(Vec3d axis, Vec3d offset, double start, double end, double reach,
                         double cell, double roll, List<Face> faces, int[] palette) {}
 
+    private static final List<List<Face>> PUFFS = List.of(
+            buildShape(new Random(277), true), buildShape(new Random(363), true),
+            buildShape(new Random(811), true));
     private final List<Lobe> lobes = new ArrayList<>();
 
-    GrapeshotVolume() {
+    static void puff(PixelMesh mesh, Vec3d center, double size, double angle, int[] palette, int variant, int alpha) {
+        double cell = size * .46;
+        var right = new Vec3d(Math.cos(angle)*cell, 0, Math.sin(angle)*cell);
+        var up = new Vec3d(0, cell*.84, 0);
+        var depth = right.crossProduct(PixelMesh.UP);
+        for (var face : PUFFS.get(variant % PUFFS.size())) {
+            var point = center.add(right.multiply(face.x)).add(up.multiply(face.y)).add(depth.multiply(face.z));
+            mesh.cellFace(point, right, up, depth, face.side, palette[face.material], alpha);
+        }
+    }
+
+    public GrapeshotVolume() {
         var random = new Random(3141);
         add(random, new Vec3d(.82,.44,-.57), Vec3d.ZERO, 0, 3.2, .30, .101, FLASH);
         add(random, new Vec3d(-.46,.84,-.18), Vec3d.ZERO, 0, 2.9, .26, .092, FLASH);
@@ -90,7 +104,7 @@ final class GrapeshotVolume {
         return List.copyOf(faces);
     }
 
-    void render(WorldRenderContext context, Vec3d center, double age) {
+    public void render(WorldRenderContext context, Vec3d center, double age) {
         var matrix = context.matrixStack().peek().getPositionMatrix();
         var vertices = context.consumers().getBuffer(RenderLayer.getDebugQuads());
         for (var lobe : lobes) {

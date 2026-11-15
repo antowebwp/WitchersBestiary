@@ -29,3 +29,11 @@ The first recipe sent all six emitters at once. Cascade's hemisphere sampler pla
 The revised test recipe draws exposed faces of independently oriented, procedurally colored voxel lobes. Four lobes form the flash, five expand in asymmetrical directions and six rise and disperse as smoke. Cascade still supplies the timed ring, two sizes of rotating metallic shards and short spark trails. The previous recipe remains available for the first shot of the same test run. Only the client test mod contains these changes.
 
 Run `./gradlew.bat -PcascadeExperiment runCascadeReview` for the revised comparison. The test uses a small flat world and a stone platform. It throws four real Grapeshots, once with the previous recipe and once per camera angle with the revised recipe. Framebuffer captures are keyed to the first client tick observing each collision cue. The reduced server tick rate gives the client time to render each sample. The comparison grids and GIF live under build/cascade-volume-review. The scene checks the silhouette and timing; production modpack performance and Iris/Sodium compatibility are outside this run.
+
+## Experimental signs and bombs integration
+
+This branch's remapped dev build requires the separate Cascade Fabric release `1.0.0+1.21.1` (Modrinth version `oSSE53mh`). The game mod owns bomb visual cues, sign packets, culling and effect lifetimes. Cascade retains Grapeshot's approved ring, shards and sparks. The approved voxel recipe is shared by the game and its comparison harness.
+
+The existing cast packets drive Igni, Fire Breath and Aard. The existing entity tracker drives Dragon gas and Moon Dust suppression marks. Entity removal immediately takes attached visuals out of drawing and bounded client maps expire their instances. Client rendering uses a procedural pixel palette and shaded faces, and does not require bloom or a shader pack. `-Dwitchersbestiary.fxLowDetail=true` uses reduced detail for Moon Dust, Samum and Dragon's Dream even up close. They also reduce detail beyond 22 blocks. This is not a frame-time profile for RX 570.
+
+Run `./gradlew.bat runArcaneV2Review` to record actual framebuffer sequences in `build/arcane-fx-v2-review`. The test code is excluded from the remapped game mod.

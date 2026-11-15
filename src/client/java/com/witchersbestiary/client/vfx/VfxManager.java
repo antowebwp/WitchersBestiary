@@ -1,6 +1,9 @@
 package com.witchersbestiary.client.vfx;
 
 import com.witchersbestiary.signs.SignPackets;
+import com.witchersbestiary.alchemy.BombVfx;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.render.RenderLayer;
 import java.util.LinkedHashMap;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -19,9 +22,17 @@ public final class VfxManager {
     private static final double MAX_DISTANCE_SQUARED = 48 * 48;
     private static final LinkedHashMap<Key, Instance> ACTIVE = new LinkedHashMap<>();
 
+    private static final int MAX_BOMBS = 24;
+    private static final boolean LOW_DETAIL = Boolean.getBoolean("witchersbestiary.fxLowDetail");
+    private static final GrapeshotVolume GRAPESHOT = new GrapeshotVolume();
+    private static final LinkedHashMap<BombKey, BombInstance> BOMBS = new LinkedHashMap<>();
+
+    private record BombKey(BombVfx.Kind type, int entity, long burst) {}
+    private record BombInstance(BombVfx.Cue cue, long start, long end) {}
+    private static long nextBurst;
     private static Instance preview;
 
-    private record Key(int owner, boolean channelled) {}
+    private record Key(int owner, boolean channelled, boolean aard) {}
     private record Transform(Vec3d origin, Vec3d direction, Box bounds) {}
     private record Timeline(long start, long end) {
         double opacity(double now) {
@@ -51,18 +62,78 @@ public final class VfxManager {
                         }))));
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> {
             ACTIVE.clear();
+            BOMBS.clear();
             preview = null;
         });
         ClientTickEvents.END_WORLD_TICK.register(world -> {
             long now = world.getTime();
             ACTIVE.values().removeIf(instance -> instance.timeline.end <= now);
+            BOMBS.values().removeIf(fx -> fx.end <= now || fx.cue.entityId() >= 0
+                    && now - fx.start > 4 && world.getEntityById(fx.cue.entityId()) == null);
             if (preview != null && preview.timeline.end <= now) preview = null;
         });
+        ClientPlayNetworking.registerGlobalReceiver(BombVfx.Cue.ID, (cue, context) -> {
+            var world = context.client().world;
+            if (world != null) acceptBomb(cue, world.getTime());
+        });
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            if (context.matrixStack() == null || context.consumers() == null) return;
             double time = context.world().getTime() + context.tickCounter().getTickDelta(false);
             for (var instance : ACTIVE.values()) render(context, instance, time);
             if (preview != null) render(context, preview, time);
+            for (var fx : BOMBS.values()) renderBomb(context, fx, time);
         });
+    }
+
+    private static void acceptBomb(BombVfx.Cue cue, long now) {
+        int duration = switch (cue.type()) {
+            case GRAPESHOT -> 26;
+            case MOON_DUST -> 48;
+            case SAMUM -> 7;
+            case GAS -> 160;
+            case IGNITION -> 34;
+            case SUPPRESSION -> 120;
+        };
+        if (cue.ticks() > 0) duration = Math.min(duration, cue.ticks());
+        var key = new BombKey(cue.type(), cue.entityId(), cue.entityId() < 0 ? nextBurst++ : 0);
+        if (!BOMBS.containsKey(key) && BOMBS.size() >= MAX_BOMBS) BOMBS.pollFirstEntry();
+        BOMBS.put(key, new BombInstance(cue, now, now + duration));
+    }
+
+    private static void renderBomb(WorldRenderContext context, BombInstance fx, double time) {
+        var cue = fx.cue;
+        var center = cue.center();
+        if (cue.entityId() >= 0) {
+            var entity = context.world().getEntityById(cue.entityId());
+            if (entity == null || entity.isRemoved()) return;
+            center = entity.getPos();
+            if (cue.type() == BombVfx.Kind.SUPPRESSION) center = center.add(0, entity.getHeight()+.37, 0);
+        }
+        var camera = context.camera().getPos();
+        double distance = camera.squaredDistanceTo(center);
+        if (distance > MAX_DISTANCE_SQUARED || fx.end <= time) return;
+        if (context.frustum() != null && !context.frustum().isVisible(new Box(center, center).expand(5))) return;
+        double age = time - fx.start;
+        if (cue.type() == BombVfx.Kind.GRAPESHOT) {
+            GRAPESHOT.render(context, center.add(0,.45,0), age);
+            return;
+        }
+        var mesh = new PixelMesh(context.consumers().getBuffer(RenderLayer.getDebugQuads()),
+                context.matrixStack().peek().getPositionMatrix());
+        BombVolumes.render(mesh, cue, center.subtract(camera), age, fx.end - time, LOW_DETAIL || distance > 22*22);
+    }
+
+    public static void aard(SignPackets.Visual packet, long now) {
+        var key = new Key(packet.owner(), false, true);
+        if (!ACTIVE.containsKey(key) && ACTIVE.size() >= MAX_EFFECTS) ACTIVE.pollFirstEntry();
+        var delta = packet.to().subtract(packet.from());
+        var origin = packet.from();
+        var bounds = new Box(origin, origin).expand(delta.length() + 1);
+        ACTIVE.put(key, new Instance(new Transform(origin, delta, bounds),
+                new Timeline(now, now + packet.ticks()),
+                (out, matrix, center, direction, form, spread, age, opacity) ->
+                        SignVolumes.aard(new PixelMesh(out, matrix), center, direction, form, spread, age, opacity),
+                RenderLayer.getDebugQuads(), packet.form(), packet.radius()));
     }
 
     private static void render(WorldRenderContext context, Instance instance, double time) {
@@ -86,7 +157,7 @@ public final class VfxManager {
     }
 
     public static void igni(SignPackets.Visual packet, long now) {
-        var key = new Key(packet.owner(), packet.form() == 2);
+        var key = new Key(packet.owner(), packet.form() == 2, false);
         var previous = ACTIVE.get(key);
         if (previous == null && ACTIVE.size() >= MAX_EFFECTS) ACTIVE.pollFirstEntry();
         long start = key.channelled && previous != null && previous.timeline.end > now
@@ -98,6 +169,8 @@ public final class VfxManager {
         var direction = to.subtract(from);
         double padding = form == 2 ? 1 : direction.length() + 1;
         var transform = new Transform(from, direction, new Box(from, to).expand(padding));
-        return new Instance(transform, new Timeline(start, end), FireVfx::render, FireVfx.LAYER, form, spread);
+        if (form == 1 || form == 3)
+            return new Instance(transform, new Timeline(start, end), FireVfx::render, FireVfx.LAYER, form, spread);
+        return new Instance(transform, new Timeline(start, end), SignVolumes::fire, RenderLayer.getDebugQuads(), form, spread);
     }
 }

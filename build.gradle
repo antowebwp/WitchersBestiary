@@ -13,6 +13,7 @@ loom {
 repositories { maven { url = 'https://maven.terraformersmc.com/releases/' } }
 dependencies {
  modCompileOnly 'com.terraformersmc:modmenu:11.0.3'
+ modImplementation 'maven.modrinth:cascademc:oSSE53mh'
  if(project.hasProperty('stage18WithMenu')) modRuntimeOnly 'com.terraformersmc:modmenu:11.0.3'
  if(project.hasProperty('stage19fProfile')) modCompileOnly 'maven.modrinth:5aaWibi9:JagCscwi'
  else modImplementation 'maven.modrinth:5aaWibi9:JagCscwi'
@@ -51,6 +52,13 @@ loom {
   'witchersbestiary-client-tests' { sourceSet sourceSets.clientSmoke }
  }
  runs {
+  arcaneV2Review {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.arcaneV2Review=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/arcane-fx-v2-review/client'
+  }
   stage22jReview {
    client()
    source sourceSets.clientSmoke
@@ -941,9 +949,7 @@ if (project.hasProperty('stage22bBop')) {
  }
 }
 if (providers.gradleProperty('cascadeExperiment').isPresent()) {
- dependencies {
-  modImplementation 'maven.modrinth:cascademc:oSSE53mh'
- }
+
  sourceSets.clientSmoke {
   java.srcDir 'src/cascadeSmoke/java'
   resources.srcDir 'src/cascadeSmoke/resources'

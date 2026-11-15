@@ -23,7 +23,8 @@
     "java": ">=21",
     "fabric-api": "*",
     "patchouli": "1.21.1-93-FABRIC",
-    "geckolib": ">=4.8.4 <5"
+    "geckolib": ">=4.8.4 <5",
+    "cascade": "1.0.0+1.21.1"
   },
   "mixins": [
     "witchersbestiary.mixins.json",

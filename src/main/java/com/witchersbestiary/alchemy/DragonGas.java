@@ -29,6 +29,10 @@ public final class DragonGas {
         world.spawnEntity(cloud);
     }
 
+    static boolean isGas(AreaEffectCloudEntity cloud) {
+        return cloud.getCommandTags().contains(GAS);
+    }
+
     public static int ignite(ServerPlayerEntity player, Vec3d start, Vec3d end, double arc) {
         var world = player.getServerWorld();
         var delta = end.subtract(start);

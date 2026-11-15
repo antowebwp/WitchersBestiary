@@ -1,6 +1,7 @@
 package com.witchersbestiary.test;
 
 import com.witchersbestiary.registry.ModItems;
+import com.witchersbestiary.client.vfx.GrapeshotVolume;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
