@@ -117,12 +117,14 @@ public final class SignManager {
     visual(w,p.getId(),sign,form,9,origin,origin.add(p.getRotationVec(1).multiply(range(p,sign))),
         form==1?180:sign==SignType.IGNI?37.5f:45);
    }
-   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;syncQuen(p,form,12);quenContour(w,p.getPos(),form,true);}
+   case QUEN->{r.shield=(12+power*2)*combo;r.shieldTicks=240+duration*20;r.shieldForm=form;syncQuen(p,form,12);}
    case YRDEN->{
     r.trap=trap;r.trapForm=form;r.trapDamageMultiplier=SchoolArmor.signDamage(p)*combo;r.trapTicks=Math.round((200+duration*20)*combo);
     var centers=new ArrayList<Vec3d>();centers.add(trap);
     if(form==2)for(int side:new int[]{-1,1}){var edge=trap.add(p.getRotationVec(1).multiply(1,0,1).normalize().rotateY((float)(side*Math.PI/2)).multiply(2.7));if(validTrap(w,edge))centers.add(edge);}
     r.traps=List.copyOf(centers);
+    float radius=(float)trapRadius(p,r.trapForm);
+    for(var center:r.traps)visual(w,p.getId(),sign,form,12,center,center,radius);
    }
    case AXII->{
     int count=form==0||form==2?1:Math.min(6,targets.size());
@@ -219,44 +221,6 @@ public final class SignManager {
    if(observer!=player&&observer.squaredDistanceTo(player)<=40*40&&ServerPlayNetworking.canSend(observer,SignPackets.QuenShell.ID))
     ServerPlayNetworking.send(observer,packet);
  }
- private static void quenContour(ServerWorld world,Vec3d center,int form,boolean flash){
-  var glow=dust(SignType.QUEN,flash?1.1f:.64f);
-  double phase=world.getTime()*.17;
-  int points=flash?18:8;
-  for(int i=0;i<points;i++){
-   double angle=phase+i*Math.PI*2/points;
-   double height=.95+Math.sin(angle*(form==2?3:2))*.74;
-   double radius=(form==3?1.28:.92)*Math.sqrt(1-Math.pow((height-.95)/1.12,2));
-   var point=center.add(Math.cos(angle)*radius,height,Math.sin(angle)*radius);
-   world.spawnParticles(glow,point.x,point.y,point.z,1,0,0,0,0);
-  }
- }
- private static void yrdenCircle(ServerWorld world,Vec3d center,int ticks,double radius){
-  var dust=new DustParticleEffect(new org.joml.Vector3f(.78f,.31f,1),ticks%20==0?1.35f:1.1f);
-  for(int i=0;i<36;i++){
-   double angle=i*Math.PI/18;
-   yrdenMark(world,center.add(Math.cos(angle)*radius,0,Math.sin(angle)*radius),dust);
-  }
-  // Four short chevrons point from the boundary into the circle.
-  for(int quadrant=0;quadrant<4;quadrant++){
-   double angle=quadrant*Math.PI/2;
-   for(int n=-2;n<=2;n++){
-    var point=new Vec3d(n*.15,.09,radius*.67+Math.abs(n)*.17).rotateY((float)angle).add(center);
-    yrdenMark(world,point,dust);
-   }
-  }
- }
- private static void yrdenMark(ServerWorld world,Vec3d point,DustParticleEffect dust){
-  var pos=BlockPos.ofFloored(point);
-  if(!world.isChunkLoaded(pos))return;
-  for(int dy=1;dy>=-1;dy--){
-   var surface=pos.up(dy);
-   if(validTrap(world,new Vec3d(point.x,surface.getY(),point.z))){
-    world.spawnParticles(dust,point.x,surface.getY()+.08,point.z,1,0,0,0,0);
-    return;
-   }
-  }
- }
  private static void burst(ServerWorld w,Vec3d at,SignType sign,int count){
   w.spawnParticles(dust(sign,.9f),at.x,at.y,at.z,count,.45,.5,.45,.01);
  }
@@ -278,7 +242,11 @@ public final class SignManager {
   if(shield.shieldTicks<=0||shield.shield<=0)return amount;
   float taken=Math.min(shield.shield,amount);shield.shield-=taken;
   if(shield.shield<=0)syncQuen(owner,shield.shieldForm,0);
-  var world=owner.getServerWorld();burst(world,p.getPos().add(0,1,0),SignType.QUEN,shield.shield<=0?12:4);
+  var world=owner.getServerWorld();
+  var contact=p.getPos().add(0,1,0);
+  var direction=damage.getAttacker()==null?contact:damage.getAttacker().getPos().add(0,1,0);
+  int reaction=shield.shield<=0&&shield.shieldForm==1?1:shield.shieldForm==2&&!signDamage(damage)?2:0;
+  visual(world,p.getId(),SignType.QUEN,4+reaction,10,contact,direction,3);
   if(damage.getAttacker() instanceof LivingEntity attacker&&enemy(owner,attacker)&&owner.canSee(attacker)){
    awardCombat(owner,attacker);
    if(shield.shieldForm==2&&!signDamage(damage)&&owner.squaredDistanceTo(attacker)<=64)
@@ -290,8 +258,11 @@ public final class SignManager {
   sync(owner);return amount-taken;
  }
  public static void sync(ServerPlayerEntity p){if(!ServerPlayNetworking.canSend(p,SignPackets.View.ID))return;var s=state(p);var r=runtime(p);ServerPlayNetworking.send(p,new SignPackets.View(r.session,s.learned(),s.selected().ordinal(),(float)s.concentration(),s.cooldown(s.selected()),r.shield,r.shieldTicks,r.trapTicks,s.cooldown(SignType.IGNI),s.cooldown(SignType.AARD),s.cooldown(SignType.QUEN),s.cooldown(SignType.YRDEN),s.cooldown(SignType.AXII)));}
+ private static double trapRadius(ServerPlayerEntity player,int form){
+  return ((form==2?1.85:3)+.35*level(player,SignType.YRDEN,SignPlayerState.Upgrade.RANGE))*SchoolArmor.signRange(player);
+ }
  private static void tickTrap(ServerPlayerEntity player,Runtime runtime){
-  var world=player.getServerWorld();double radius=((runtime.trapForm==2?1.85:3)+.35*level(player,SignType.YRDEN,SignPlayerState.Upgrade.RANGE))*SchoolArmor.signRange(player);
+  var world=player.getServerWorld();double radius=trapRadius(player,runtime.trapForm);
   int effect=level(player,SignType.YRDEN,SignPlayerState.Upgrade.EFFECT);
   for(var center:runtime.traps){
    for(var target:world.getEntitiesByClass(LivingEntity.class,new Box(center.add(-radius,-1,-radius),center.add(radius,3,radius)),
@@ -300,11 +271,14 @@ public final class SignManager {
     var hit=TRAP_HITS.get(target.getUuid());
     if(hit==null||hit.dimension()!=world.getRegistryKey()||hit.next()<=world.getTime()){
      TRAP_HITS.put(target.getUuid(),new TrapHit(world.getRegistryKey(),world.getTime()+40));
-     if(target.damage(source(player,SignType.YRDEN),StageCombatBalance.signDamage(target,SignType.YRDEN,runtime.trapForm,level(player,SignType.YRDEN,SignPlayerState.Upgrade.POWER),runtime.trapDamageMultiplier)))awardCombat(player,target);
+     if(target.damage(source(player,SignType.YRDEN),StageCombatBalance.signDamage(target,SignType.YRDEN,runtime.trapForm,level(player,SignType.YRDEN,SignPlayerState.Upgrade.POWER),runtime.trapDamageMultiplier))){
+      awardCombat(player,target);
+      var impact=target.getPos().add(0,.55,0);
+      visual(world,target.getId(),SignType.YRDEN,4+runtime.trapForm,10,impact,impact,1.3f);
+     }
     }
     if(target instanceof com.witchersbestiary.combat.CategorizedMonster monster&&monster.getMonsterCategory()==com.witchersbestiary.combat.MonsterCategory.SPECTER)EXPOSED.put(target.getUuid(),world.getTime()+15);
    }
-   yrdenCircle(world,center,runtime.trapTicks,radius);
   }
  }
  private static void updateRedirects(net.minecraft.server.MinecraftServer server){
@@ -387,7 +361,8 @@ public final class SignManager {
     if(--runtime.shieldTicks==0){
      if(runtime.shield>0)syncQuen(player,runtime.shieldForm,0);
      runtime.shield=0;
-     burst(player.getServerWorld(),player.getPos().add(0,1,0),SignType.QUEN,8);
+     var at=player.getPos().add(0,1,0);
+     visual(player.getServerWorld(),player.getId(),SignType.QUEN,4,8,at,at,1.2f);
     }else if(runtime.shieldTicks%8==0&&runtime.shield>0){
      syncQuen(player,runtime.shieldForm,Math.min(runtime.shieldTicks,12));
     }
@@ -396,7 +371,7 @@ public final class SignManager {
     runtime.trapTicks--;
     if(server.getTicks()%10==0) {
      tickTrap(player,runtime);
-     float radius=(float)(((runtime.trapForm==2?1.85:3)+.35*level(player,SignType.YRDEN,SignPlayerState.Upgrade.RANGE))*SchoolArmor.signRange(player));
+     float radius=(float)(trapRadius(player,runtime.trapForm));
      for(var center:runtime.traps)visual(player.getServerWorld(),player.getId(),SignType.YRDEN,runtime.trapForm,
          Math.min(runtime.trapTicks,12),center,center,radius);
     }
