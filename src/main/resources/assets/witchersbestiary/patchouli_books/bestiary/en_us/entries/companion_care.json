@@ -14,6 +14,10 @@
     {
       "type": "patchouli:text",
       "text": "Tame an exhausted Infernal Basilisk with a Molten Heart. Raw or cooked meat heals 4 or 6 HP, blaze powder 8 and blaze rods 12. Only the owner can feed; food is spent only on successful healing. Use an empty hand to mount."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Riding raises speed over 25 levels. Unicorns start at different speeds and all reach 22 blocks per second on level ground at maximum rank. Sneak-use with an empty hand to see the level and ridden distance in chat."
     }
   ]
 }

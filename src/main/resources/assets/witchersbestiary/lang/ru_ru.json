@@ -763,6 +763,7 @@
   "item.witchersbestiary.unicorn_whistle.unavailable": "Единорог не может безопасно откликнуться.",
   "unicorn.witchersbestiary.guard": "Охранять",
   "unicorn.witchersbestiary.follow": "Следовать",
+  "unicorn.witchersbestiary.riding_speed": "Скорость: %s / %s",
   "unicorn.witchersbestiary.current_speed": "%s бл./с",
   "unicorn.witchersbestiary.next_bonus": "Следующий уровень: +%s%% базовой скорости",
   "unicorn.witchersbestiary.speed_level_up": "Единорог стал быстрее! Уровень скорости %s",

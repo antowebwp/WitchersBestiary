@@ -14,6 +14,7 @@ repositories { maven { url = 'https://maven.terraformersmc.com/releases/' } }
 dependencies {
  modCompileOnly 'com.terraformersmc:modmenu:11.0.3'
  modImplementation 'maven.modrinth:cascademc:oSSE53mh'
+ if (project.hasProperty('unicornSpeedReview')) modRuntimeOnly 'maven.modrinth:jade:adpNvTZS'
  if(project.hasProperty('stage18WithMenu')) modRuntimeOnly 'com.terraformersmc:modmenu:11.0.3'
  if(project.hasProperty('stage19fProfile')) modCompileOnly 'maven.modrinth:5aaWibi9:JagCscwi'
  else modImplementation 'maven.modrinth:5aaWibi9:JagCscwi'
@@ -58,6 +59,12 @@ loom {
    vmArg '-Dwitchersbestiary.stage22qBookReview=true'
    programArgs '--width', '960', '--height', '540'
    runDir 'build/stage22q/client'
+  }
+  unicornSpeedReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.unicornSpeedReview=true'
+   runDir 'build/unicorn-speed/client'
   }
   stage22rReview {
    client()
@@ -632,14 +639,23 @@ tasks.register('verifyReleaseMixins') {
     def refs = readJson(config.refmap).mappings
     ((config.mixins ?: []) + (config.client ?: [])).each { shortName ->
      def key = config.package.replace('.', '/') + '/' + shortName
-     if (!zip.getEntry(key + '.class') || !refs[key]) throw new GradleException("Missing class/refmap mapping for ${key} in ${name}")
-     refs[key].each { selector, target ->
-      if (!(target =~ /(?:method|field)_\d+/)) throw new GradleException("Unmapped release selector ${key}: ${selector} -> ${target}")
+     def entry = zip.getEntry(key + '.class')
+     if (!entry) throw new GradleException("Missing mixin class for ${key} in ${name}")
+     if (shortName == 'JadeUnicornSpeedMixin') {
+      // Jade owns this selector. Its optional hook carries both development and intermediary descriptors.
+      def bytecode = zip.getInputStream(entry).withCloseable { new String(it.bytes, java.nio.charset.StandardCharsets.ISO_8859_1) }
+      if (!bytecode.contains('switchText(Ljava/lang/String;ZDD)Lnet/minecraft/class_2561;'))
+       throw new GradleException("Jade's Unicorn speed hook lacks its intermediary descriptor")
+     } else {
+      if (!refs[key]) throw new GradleException("Missing refmap mapping for ${key} in ${name}")
+      refs[key].each { selector, target ->
+       if (!(target =~ /(?:method|field)_\d+/)) throw new GradleException("Unmapped release selector ${key}: ${selector} -> ${target}")
+      }
      }
      covered.add(shortName)
     }
    }
-   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin', 'VillageNoticeBoardMixin', 'CrownPickupMixin', 'ItemPickupOwner', 'SwordAttackMixin', 'SchoolArmorAnvilMixin', 'PlayerFistPoseMixin', 'FistFirstPersonMixin', 'PhylacteryUseMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
+   if (covered != ['LivingEntityMixin', 'BasiliskLavaContactMixin', 'ItemStackOilTooltipMixin', 'SpawnRestrictionAccessor', 'RootPlayerMovementMixin', 'MonsterAiMixin', 'RecipeCatalogReloadMixin', 'ProgressiveHealthAttributeMixin', 'VillageNoticeBoardMixin', 'CrownPickupMixin', 'ItemPickupOwner', 'SwordAttackMixin', 'SchoolArmorAnvilMixin', 'PlayerFistPoseMixin', 'FistFirstPersonMixin', 'PhylacteryUseMixin', 'JadeUnicornSpeedMixin'] as Set) throw new GradleException("Unexpected production mixins: ${covered}")
    def client = readJson('witchersbestiary.client.mixins.json')
    def mappings = readJson(client.refmap).mappings['com/witchersbestiary/combat/mixin/RecipeCatalogReloadMixin']
    def selector = 'onSynchronizeRecipes(Lnet/minecraft/network/packet/s2c/play/SynchronizeRecipesS2CPacket;)V'

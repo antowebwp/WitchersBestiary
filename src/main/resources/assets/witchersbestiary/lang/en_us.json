@@ -763,6 +763,7 @@
   "item.witchersbestiary.unicorn_whistle.unavailable": "Your unicorn cannot safely answer the whistle.",
   "unicorn.witchersbestiary.guard": "Guard",
   "unicorn.witchersbestiary.follow": "Follow",
+  "unicorn.witchersbestiary.riding_speed": "Speed: %s / %s",
   "unicorn.witchersbestiary.current_speed": "%s blocks/s",
   "unicorn.witchersbestiary.next_bonus": "Next level: +%s%% base speed",
   "unicorn.witchersbestiary.speed_level_up": "Your unicorn is faster! Speed level %s",

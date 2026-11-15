@@ -35,6 +35,9 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
     private static final TrackedData<Byte> BEHAVIOR = DataTracker.registerData(UnicornEntity.class, TrackedDataHandlerRegistry.BYTE);
     private final AnimatableInstanceCache animationCache = GeckoLibUtil.createInstanceCache(this);
     private static final int MAX_SPEED_LEVEL = 25;
+    // Steady full-forward horse movement on grass at 20 TPS in Minecraft 1.21.1.
+    private static final double RIDING_BLOCKS_PER_SECOND_PER_ATTRIBUTE = 42.1579;
+    public static final double MAX_RIDING_SPEED = 22.0;
     private static final Identifier RIDING_SPEED = Identifier.of("witchersbestiary", "unicorn_riding_speed");
     private int speedLevel = 1;
     private double ridingDistance;
@@ -385,18 +388,22 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         var status = Text.translatable("unicorn.witchersbestiary.speed", speedLevel, MAX_SPEED_LEVEL);
         if (speedLevel < MAX_SPEED_LEVEL) {
             status.append(" | ").append(Text.translatable("unicorn.witchersbestiary.speed_progress",
-                (int) ridingDistance, distanceForLevel(speedLevel)));
+                    (int) ridingDistance, distanceForLevel(speedLevel)));
         }
-        double speed = Math.round(strideSpeed * 200) / 10.0;
-        status.append(" | ").append(Text.translatable("unicorn.witchersbestiary.current_speed", speed));
-        if (speedLevel < MAX_SPEED_LEVEL) {
-            int filled = Math.clamp((int)(10 * ridingDistance / distanceForLevel(speedLevel)), 0, 10);
-            double nextBonus = 100 * (ridingBonus(speedLevel + 1) - ridingBonus(speedLevel));
-            status.append(" ").append("▰".repeat(filled)).append("▱".repeat(10 - filled));
-            status.append(" | ").append(Text.translatable("unicorn.witchersbestiary.next_bonus",
-                    String.format(java.util.Locale.ROOT, "%.2f", nextBonus)));
-        }
-        return status;
+        return status.append(" | ").append(ridingSpeedText());
+    }
+
+    public Text ridingSpeedText() {
+        return Text.translatable("unicorn.witchersbestiary.riding_speed",
+                formatSpeed(ridingSpeed()), formatSpeed(MAX_RIDING_SPEED));
+    }
+
+    private static String formatSpeed(double speed) {
+        return String.format(java.util.Locale.ROOT, "%.2f", speed);
+    }
+
+    private double ridingSpeed() {
+        return getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) * RIDING_BLOCKS_PER_SECOND_PER_ATTRIBUTE;
     }
 
     // Called only after vanilla accepts a ridden vehicle move.
@@ -409,7 +416,7 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         if (tick == lastRidingCredit) return;
         double distance = displacement.horizontalLength();
         // Vanilla mounted ground motion can exceed the raw movement attribute per tick.
-        double limit = getAttributeValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) * 2.1 + .025;
+        double limit = ridingSpeed() / 20 + .075;
         if (!(distance >= .02 && distance <= limit) || Math.abs(displacement.y) > 1) return;
 
         Vec3d input = new Vec3d(rider.sidewaysSpeed * .5, 0, rider.forwardSpeed)
@@ -428,17 +435,15 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         }
     }
 
-    private double ridingBonus(int level) {
-        return Math.max(0, Math.min(.45 * (level - 1) / (MAX_SPEED_LEVEL - 1),
-                .49 / getAttributeBaseValue(EntityAttributes.GENERIC_MOVEMENT_SPEED) - 1));
-    }
-
     private void updateRidingSpeed() {
         var speed = getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         speed.removeModifier(RIDING_SPEED);
-        double bonus = ridingBonus(speedLevel);
-        if (bonus > 0) speed.addTemporaryModifier(new EntityAttributeModifier(
-            RIDING_SPEED, bonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+        double initial = speed.getBaseValue();
+        double maximum = MAX_RIDING_SPEED / RIDING_BLOCKS_PER_SECOND_PER_ATTRIBUTE;
+        double progress = (speedLevel - 1.0) / (MAX_SPEED_LEVEL - 1);
+        double bonus = (maximum - initial) * progress;
+        if (bonus != 0) speed.addTemporaryModifier(new EntityAttributeModifier(
+            RIDING_SPEED, bonus, EntityAttributeModifier.Operation.ADD_VALUE));
     }
 
     @Override public void writeCustomDataToNbt(NbtCompound nbt) {
