@@ -24,6 +24,11 @@
       "type": "patchouli:text",
       "title": "Ethereal phase",
       "text": "Dissolves over 12 ticks, moves invisibly through ordinary blocks, then warns and reappears over 10 ticks. Cannot cross bedrock or world boundaries. Wraith: 1.8 sec, 14–20 sec interval, no healing."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Cold patches and ectoplasm mark a route to the haunted site."
     }
   ]
 }

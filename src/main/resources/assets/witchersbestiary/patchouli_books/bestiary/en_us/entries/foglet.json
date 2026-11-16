@@ -34,6 +34,11 @@
       "type": "patchouli:text",
       "title": "Hunter’s advice",
       "text": "Do not waste time on decoys. Leave the fog veil and wait for the original to return."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "In damp hollows, watch for tracks that vanish into fog."
     }
   ]
 }

@@ -44,6 +44,11 @@
       "type": "patchouli:text",
       "title": "Ethereal phase",
       "text": "Dissolves over 12 ticks, moves invisibly through ordinary blocks, then warns and reappears over 10 ticks. Cannot cross bedrock or world boundaries. Noonwraith: 2.4 sec, 9–12 sec interval; healing separately limited to 7 HP, 20 sec cooldown and three per lifetime."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Look for scorched stalks and traces of supernatural heat near fields."
     }
   ]
 }

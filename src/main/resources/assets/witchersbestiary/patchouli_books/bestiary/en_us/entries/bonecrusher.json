@@ -29,6 +29,11 @@
       "type": "patchouli:text",
       "title": "Unique equipment",
       "text": "See $(l:hunter_equipment)Hunter Equipment$(/l) for the hammer and vampire fangs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Crushed bones and deep marks in the earth point into ogroid territory."
     }
   ]
 }

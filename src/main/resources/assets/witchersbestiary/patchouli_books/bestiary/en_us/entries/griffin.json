@@ -43,6 +43,11 @@
     {
       "type": "patchouli:text",
       "text": "Backpedaling invites a lunge. Watch the raised wing, then move out of its sweep. A crouch telegraphs takeoff; melee strikes are deflected during ascent. Move across the dive line and use Aard when the griffin is visibly diving. Strike while it recovers on the ground."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Follow feathers and talon gouges. Expect the hunt to end in open terrain with room for flight."
     }
   ]
 }

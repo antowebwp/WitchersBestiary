@@ -24,6 +24,11 @@
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:nekker_claw",
       "text": "Ogroid essence: 55 percent, claw: 45, head: 4 on a player or tamed ally kill. The claw can replace an ogroid fang in the existing oil recipe."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Look for freshly bitten little bones and clawed bark along wooded trails."
     }
   ]
 }

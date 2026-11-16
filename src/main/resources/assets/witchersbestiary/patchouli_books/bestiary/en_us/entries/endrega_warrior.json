@@ -34,6 +34,11 @@
       "type": "patchouli:text",
       "title": "Intercept",
       "text": "Faster than a Fiend, it can briefly intercept a retreating target. It tracks for six ticks, then commits. A late sidestep escapes; walls and gaps stop the rush. A successful slash or intercept may chain into its combo."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Look for shed chitin and gouges from mandibles in its territory."
     }
   ]
 }

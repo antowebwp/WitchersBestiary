@@ -44,6 +44,11 @@
       "type": "patchouli:text",
       "title": "Hunter’s advice",
       "text": "Keep away from the jaws. During preparation either strike hard or sidestep. Punish a missed rush. Use oil in rage and do not let healing prolong the fight."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Shed fur and torn clothes mark where a transformation began."
     }
   ]
 }

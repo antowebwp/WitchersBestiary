@@ -34,6 +34,11 @@
       "type": "patchouli:text",
       "title": "Hunter’s advice",
       "text": "Distance is easier to manage on shore. Avoid fighting in deep water."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Search banks and river margins for webbed tracks and dragged remains."
     }
   ]
 }

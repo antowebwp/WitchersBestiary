@@ -29,6 +29,11 @@
       "type": "patchouli:text",
       "title": "Remains",
       "text": "Swamp gland45%%: universal monster-essence ingredient in existing alchemy. Muddy claw65%%: monster-bone ingredient for bone dust and a material for future recipes. No new elixirs."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Follow mud and tracks along the shoreline. Watch for thrown mud at the lair."
     }
   ]
 }

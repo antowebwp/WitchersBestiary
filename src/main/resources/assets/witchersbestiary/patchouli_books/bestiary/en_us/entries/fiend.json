@@ -44,6 +44,11 @@
       "type": "patchouli:text",
       "title": "Hunting lures",
       "text": "$(l:hunting_lures)Hunting lures$(/l) can call this creature. Read the placement, waiting and cooldown rules before setting an offering."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Crushed brush and broad hoofprints betray its route through woodland."
     }
   ]
 }

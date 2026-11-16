@@ -34,6 +34,11 @@
       "type": "patchouli:text",
       "title": "Hunter’s advice",
       "text": "Leave space to evade its leap. Do not let a pack surround you."
+    },
+    {
+      "type": "patchouli:text",
+      "title": "Contract clues",
+      "text": "Gnawed bones and disturbed soil can lead to a feeding site."
     }
   ]
 }
