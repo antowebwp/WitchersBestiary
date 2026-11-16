@@ -13,6 +13,10 @@
       "id": "blood_legacy",
       "profile": "BLOOD_LEGACY",
       "bomb": false
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Place the Witcher sword first in an anvil and a diamond or netherite sword second. Preview the compatible enchantments. Taking the result consumes the donor. Enchanted books still work."
     }
   ]
 }

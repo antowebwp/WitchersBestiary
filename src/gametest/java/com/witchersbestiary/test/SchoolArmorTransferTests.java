@@ -71,4 +71,65 @@ public final class SchoolArmorTransferTests implements FabricGameTest {
             &&EnchantmentHelper.getEnchantments(bearResult).getLevel(aqua)==1,"Mastercrafted Bear identity and helmet enchantment preserved");
         player.discard();c.complete();
     }
+    @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
+    public void witcherSwordTransferAndVanillaBooks(TestContext c) {
+        var player=c.createMockCreativeServerPlayerInWorld();
+        player.changeGameMode(GameMode.SURVIVAL);
+        player.getAbilities().creativeMode=false;
+        player.experienceLevel=30;
+        var registry=c.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT);
+        var sharpness=registry.entryOf(Enchantments.SHARPNESS);
+        var smite=registry.entryOf(Enchantments.SMITE);
+        var unbreaking=registry.entryOf(Enchantments.UNBREAKING);
+        var mending=registry.entryOf(Enchantments.MENDING);
+        var feather=registry.entryOf(Enchantments.FEATHER_FALLING);
+        var handler=new AnvilScreenHandler(1,player.getInventory());
+        for (String id : java.util.List.of("blood_legacy", "grave_blade", "steel_hunter_sword", "silver_witcher_sword")) {
+            var sword=Registries.ITEM.get(Identifier.of("witchersbestiary",id)).getDefaultStack();
+            sword.setDamage(19);
+            sword.set(DataComponentTypes.CUSTOM_NAME,net.minecraft.text.Text.literal("Fixture"));
+            var diamond=Items.DIAMOND_SWORD.getDefaultStack();
+            diamond.addEnchantment(sharpness,3);
+            diamond.addEnchantment(feather,4);
+            handler.getSlot(0).setStack(sword);
+            handler.getSlot(1).setStack(diamond);
+            var result=handler.getSlot(2).getStack().copy();
+            var enchantments=EnchantmentHelper.getEnchantments(result);
+            c.assertTrue(result.isOf(sword.getItem()) && result.getDamage()==19
+                    && result.get(DataComponentTypes.CUSTOM_NAME).equals(sword.get(DataComponentTypes.CUSTOM_NAME))
+                    && enchantments.getLevel(sharpness)==3 && enchantments.getLevel(feather)==0,
+                    "Diamond transfer preserves sword identity and rejects incompatible enchantments");
+            var netherite=Items.NETHERITE_SWORD.getDefaultStack();
+            netherite.addEnchantment(unbreaking,3);
+            netherite.addEnchantment(mending,1);
+            netherite.addEnchantment(smite,4);
+            netherite.addEnchantment(sharpness,3);
+            handler.getSlot(0).setStack(result);
+            handler.getSlot(1).setStack(netherite);
+            result=handler.getSlot(2).getStack().copy();
+            enchantments=EnchantmentHelper.getEnchantments(result);
+            c.assertTrue(enchantments.getLevel(sharpness)==3 && enchantments.getLevel(unbreaking)==3
+                    && enchantments.getLevel(mending)==1 && enchantments.getLevel(smite)==0,
+                    "Netherite transfer keeps exact levels and rejects conflicts");
+            var restored=net.minecraft.item.ItemStack.fromNbt(c.getWorld().getRegistryManager(),
+                    (net.minecraft.nbt.NbtCompound)result.encode(c.getWorld().getRegistryManager())).orElseThrow();
+            c.assertTrue(net.minecraft.item.ItemStack.areItemsAndComponentsEqual(result,restored),
+                    "Result survives serialization");
+            if (id.equals("blood_legacy")) {
+                int cost=handler.getLevelCost();
+                handler.quickMove(player,2);
+                handler.quickMove(player,2);
+                c.assertTrue(player.experienceLevel==30-cost && handler.getSlot(1).getStack().isEmpty()
+                        && player.getInventory().count(sword.getItem())==1, "Donor consumed once");
+            }
+            var book=net.minecraft.item.EnchantedBookItem.forEnchantment(
+                    new net.minecraft.enchantment.EnchantmentLevelEntry(mending,1));
+            handler.getSlot(0).setStack(sword);
+            handler.getSlot(1).setStack(book);
+            c.assertTrue(EnchantmentHelper.getEnchantments(handler.getSlot(2).getStack()).getLevel(mending)==1,
+                    "Vanilla anvil still accepts enchanted books");
+        }
+        player.discard();
+        c.complete();
+    }
 }

@@ -14,7 +14,7 @@
     "CrownPickupMixin",
     "ItemPickupOwner",
     "SwordAttackMixin",
-    "SchoolArmorAnvilMixin"
+    "EquipmentAnvilMixin"
   ],
   "injectors": {
     "defaultRequire": 1
