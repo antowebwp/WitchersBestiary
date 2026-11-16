@@ -26,6 +26,7 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
  private static final net.minecraft.entity.data.TrackedData<Boolean> GLIDE=net.minecraft.entity.data.DataTracker.registerData(GriffinEntity.class,net.minecraft.entity.data.TrackedDataHandlerRegistry.BOOLEAN);
  private static final net.minecraft.entity.data.TrackedData<Boolean> RAGE=net.minecraft.entity.data.DataTracker.registerData(GriffinEntity.class,net.minecraft.entity.data.TrackedDataHandlerRegistry.BOOLEAN);
  private final AnimatableInstanceCache cache=GeckoLibUtil.createInstanceCache(this);
+ private static final double BASE_SCALE=2;
  private final CombatMotion motion=new CombatMotion();
  public enum Action { NONE,CLAW_ATTACK,BITE,WING_ATTACK,WING_RIGHT,WING_SPIN,LUNGE,ROAR,TAKEOFF_PREPARE,TAKEOFF,AIR_CHASE,CIRCLE,DIVE_WARNING,DIVE,LANDING,STAGGER }
  private Action action=Action.NONE;
@@ -55,16 +56,17 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
  private boolean ready(){return !getWorld().isClient&&isAlive()&&!isAiDisabled()&&!Stun.active(this)&&action==Action.NONE&&getTarget()!=null&&getTarget().isAlive();}
  /** Open wings require room before a takeoff. Every touched chunk must already be loaded. */
  public boolean hasFlightClearance(){
-  var box=getBoundingBox().expand(3.1,0,3.1).offset(0,1,0).stretch(0,4,0);var w=getWorld();
+  var box=getBoundingBox().expand(getScale()*3.6,0,getScale()*3.6).offset(0,1,0).stretch(0,8.5,0);var w=getWorld();
   if(!w.isSkyVisible(getBlockPos().up(3))||!w.getWorldBorder().contains(box))return false;
   for(int x=MathHelper.floor(box.minX)>>4;x<=MathHelper.floor(box.maxX)>>4;x++)for(int z=MathHelper.floor(box.minZ)>>4;z<=MathHelper.floor(box.maxZ)>>4;z++)if(!w.isChunkLoaded(new BlockPos(x<<4,getBlockY(),z<<4)))return false;
   return w.isSpaceEmpty(this,box)&&!w.containsFluid(box);
  }
  public boolean beginTakeoff(){if(!ready()||flightCooldown>0||!isOnGround()||!canSee(getTarget())||squaredDistanceTo(getTarget())>1600||!hasFlightClearance())return false;landingPoint=getPos();aerialDamage=0;airTicks=0;forcedLanding=false;flightCooldown=ModConfig.abilityTicks(300);start(Action.TAKEOFF_PREPARE);return true;}
- public boolean beginGroundAttack(Action next){if(!ready()||isFlying()||attackCooldown>0||!java.util.List.of(Action.CLAW_ATTACK,Action.BITE,Action.WING_ATTACK,Action.WING_RIGHT,Action.WING_SPIN,Action.LUNGE).contains(next)||!canSee(getTarget())||(!CombatMotion.meleeHeight(this,getTarget())||CombatMotion.distance(this,getTarget())>(next==Action.LUNGE?8.5:next==Action.WING_ATTACK||next==Action.WING_RIGHT||next==Action.WING_SPIN?3.9:2.8)))return false;direction=Vec3d.fromPolar(0,getYaw());start(next);return true;}
- private boolean hit(LivingEntity target,float damage,double reach,double sector,double knockback){if(!CombatMotion.contact(this,target,direction,reach,sector))return false;boolean hit=target.damage(getDamageSources().mobAttack(this),damage);if(hit&&knockback>0)target.takeKnockback(knockback,getX()-target.getX(),getZ()-target.getZ());return hit||target.isBlocking();}
+ public boolean beginGroundAttack(Action next){if(!ready()||isFlying()||attackCooldown>0||!java.util.List.of(Action.CLAW_ATTACK,Action.BITE,Action.WING_ATTACK,Action.WING_RIGHT,Action.WING_SPIN,Action.LUNGE).contains(next)||!canSee(getTarget())||(!CombatMotion.meleeHeight(this,getTarget())||CombatMotion.distance(this,getTarget())>reach(next==Action.LUNGE?8.5:next==Action.WING_ATTACK||next==Action.WING_RIGHT||next==Action.WING_SPIN?3.9:2.8)))return false;direction=Vec3d.fromPolar(0,getYaw());start(next);return true;}
+ private double reach(double base){return base*(1+Math.max(0,getScale()-1)*.65);}
+ private boolean hit(LivingEntity target,float damage,double reach,double sector,double knockback){if(!CombatMotion.contact(this,target,direction,reach(reach),sector))return false;boolean hit=target.damage(getDamageSources().mobAttack(this),damage);if(hit&&knockback>0)target.takeKnockback(knockback,getX()-target.getX(),getZ()-target.getZ());return hit||target.isBlocking();}
  private boolean flyStep(Vec3d step){if(!CombatMotion.safeStep(this,step,false))return false;setVelocity(step);velocityModified=true;return true;}
- private boolean safeLanding(Vec3d pos){var w=getWorld();var box=getBoundingBox().offset(pos.subtract(getPos()));if(!w.getWorldBorder().contains(box))return false;for(int x=MathHelper.floor(box.minX)>>4;x<=MathHelper.floor(box.maxX)>>4;x++)for(int z=MathHelper.floor(box.minZ)>>4;z<=MathHelper.floor(box.maxZ)>>4;z++)if(!w.isChunkLoaded(new BlockPos(x<<4,MathHelper.floor(pos.y),z<<4)))return false;for(BlockPos foot:BlockPos.iterate(BlockPos.ofFloored(pos).add(-1,-1,-1),BlockPos.ofFloored(pos).add(1,-1,1))){if(!w.isChunkLoaded(foot)||!w.getBlockState(foot).isSolidBlock(w,foot))return false;}return w.isSpaceEmpty(this,box)&&!w.containsFluid(box);}
+ private boolean safeLanding(Vec3d pos){var w=getWorld();var box=getBoundingBox().offset(pos.subtract(getPos()));int support=Math.max(1,MathHelper.floor(getWidth()*.5));if(!w.getWorldBorder().contains(box))return false;for(int x=MathHelper.floor(box.minX)>>4;x<=MathHelper.floor(box.maxX)>>4;x++)for(int z=MathHelper.floor(box.minZ)>>4;z<=MathHelper.floor(box.maxZ)>>4;z++)if(!w.isChunkLoaded(new BlockPos(x<<4,MathHelper.floor(pos.y),z<<4)))return false;for(BlockPos foot:BlockPos.iterate(BlockPos.ofFloored(pos).add(-support,-1,-support),BlockPos.ofFloored(pos).add(support,-1,support))){if(!w.isChunkLoaded(foot)||!w.getBlockState(foot).isSolidBlock(w,foot))return false;}return w.isSpaceEmpty(this,box)&&!w.containsFluid(box);}
  /** Lure requests reuse the existing collision-checked landing state; combat always takes precedence. */
  public boolean approachLureLanding(Vec3d point){if(getTarget()!=null||!isFlying()||Stun.active(this)||!safeLanding(point))return false;landingPoint=point;beginLanding(false);return true;}
  private Vec3d findLanding(){if(safeLanding(landingPoint))return landingPoint;var w=getWorld();for(int ring=0;ring<=12;ring+=3)for(int i=0;i<(ring==0?1:8);i++){var q=BlockPos.ofFloored(getX()+Math.cos(i*Math.PI/4)*ring,getY(),getZ()+Math.sin(i*Math.PI/4)*ring);if(!w.isChunkLoaded(q))continue;Vec3d p=new Vec3d(q.getX()+.5,w.getTopY(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,q.getX(),q.getZ()),q.getZ()+.5);if(Math.abs(p.y-getY())<20&&safeLanding(p))return p;}return null;}
@@ -129,7 +131,7 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
     if(actionTick>=windup)contact=hit(target,10,2.5,.44,.66);
    }else if(actionTick==windup){
     if(action==Action.WING_SPIN||action==Action.WING_ATTACK||action==Action.WING_RIGHT){
-     for(var victim:getWorld().getEntitiesByClass(PlayerEntity.class,getBoundingBox().expand(4,1,4),this::canTarget)){
+     for(var victim:getWorld().getEntitiesByClass(PlayerEntity.class,getBoundingBox().expand(reach(4),1,reach(4)),this::canTarget)){
       boolean doubleSweep=action==Action.WING_SPIN;
       Vec3d sweep=direction.rotateY((float)(action==Action.WING_RIGHT?-.75:.75));
       if(CombatMotion.inSector(this,victim,direction,doubleSweep?.12:-.08)
@@ -147,9 +149,9 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
   if(target==null||!target.isAlive())return;direction=CombatMotion.face(this,target.getPos(),12);getLookControl().lookAt(target,30,30);
   if(flightCooldown==0&&squaredDistanceTo(target)>81&&beginTakeoff())return;
   double distance=CombatMotion.distance(this,target);
-  if(lungeCooldown==0&&distance>=3.0&&distance<=8.5&&(motion.retreatingFrom(this)||distance>5.5)
+  if(lungeCooldown==0&&distance>=reach(3)&&distance<=reach(8.5)&&(motion.retreatingFrom(this)||distance>reach(5.5))
       &&beginGroundAttack(Action.LUNGE)){lungeCooldown=50;return;}
-  if(attackCooldown==0&&distance<=3.75&&canSee(target)){
+  if(attackCooldown==0&&distance<=reach(3.75)&&canSee(target)){
    Action next=switch(attackChoice++%5){
     case 0->Action.CLAW_ATTACK;
     case 1->Action.BITE;
@@ -157,11 +159,11 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
     case 3->Action.WING_RIGHT;
     default->Action.WING_SPIN;
    };
-   if(distance>2.8&&(next==Action.CLAW_ATTACK||next==Action.BITE))next=Action.WING_ATTACK;
+   if(distance>reach(2.8)&&(next==Action.CLAW_ATTACK||next==Action.BITE))next=Action.WING_ATTACK;
    if(beginGroundAttack(next))return;
   }
   if(age%4==0){
-   if(distance>1.8||!CombatMotion.meleeHeight(this,target)||!canSee(target))getNavigation().startMovingTo(target,isEnraged()?1.2:1.1);
+   if(distance>reach(1.8)||!CombatMotion.meleeHeight(this,target)||!canSee(target))getNavigation().startMovingTo(target,isEnraged()?1.2:1.1);
    else getNavigation().stop();
   }
  }
@@ -184,9 +186,9 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
  @Override public boolean damage(DamageSource source,float amount){if(hasTakeoffMeleeProtection()&&ordinaryMelee(source))return false;float before=getHealth();boolean hit=super.damage(source,vulnerableTicks>0?amount*1.3f:amount);if(hit&&isAlive()&&!getWorld().isClient){if(isFlying()){aerialDamage+=Math.max(0,before-getHealth());if(aerialDamage>=18)beginLanding(true);}else if(action==Action.NONE)triggerAnim("action","hurt");}return hit;}
  @Override public boolean handleFallDamage(float distance,float multiplier,DamageSource source){return false;}
  @Override public void onDeath(DamageSource source){dataTracker.set(AIR,false);dataTracker.set(GLIDE,false);setNoGravity(false);action=Action.NONE;stopTriggeredAnim("action",null);super.onDeath(source);}
- @Override public void writeCustomDataToNbt(NbtCompound n){super.writeCustomDataToNbt(n);n.putBoolean("GriffinRage",isEnraged());n.putInt("GriffinFlightCooldown",flightCooldown);}
- @Override public void readCustomDataFromNbt(NbtCompound n){super.readCustomDataFromNbt(n);dataTracker.set(RAGE,n.getBoolean("GriffinRage"));getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(ModConfig.speed(isEnraged()?.37:.32));flightCooldown=n.contains("GriffinFlightCooldown")?Math.clamp(n.getInt("GriffinFlightCooldown"),40,600):180;dataTracker.set(AIR,false);dataTracker.set(GLIDE,false);setNoGravity(false);action=Action.NONE;attackCooldown=20;}
+ @Override public void writeCustomDataToNbt(NbtCompound n){super.writeCustomDataToNbt(n);n.putBoolean("GriffinLargeRig",true);n.putBoolean("GriffinRage",isEnraged());n.putInt("GriffinFlightCooldown",flightCooldown);}
+ @Override public void readCustomDataFromNbt(NbtCompound n){super.readCustomDataFromNbt(n);var scale=getAttributeInstance(EntityAttributes.GENERIC_SCALE);if(!n.getBoolean("GriffinLargeRig")&&scale.getBaseValue()==1)scale.setBaseValue(BASE_SCALE);dataTracker.set(RAGE,n.getBoolean("GriffinRage"));getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(ModConfig.speed(isEnraged()?.37:.32));flightCooldown=n.contains("GriffinFlightCooldown")?Math.clamp(n.getInt("GriffinFlightCooldown"),40,600):180;dataTracker.set(AIR,false);dataTracker.set(GLIDE,false);setNoGravity(false);action=Action.NONE;attackCooldown=20;}
  @Override public AnimatableInstanceCache getAnimatableInstanceCache(){return cache;}
  @Override public void registerControllers(AnimatableManager.ControllerRegistrar c){c.add(new AnimationController<>(this,"movement",4,s->s.setAndContinue(!isAlive()?RawAnimation.begin().thenPlayAndHold("animation.griffin.death"):RawAnimation.begin().thenLoop("animation.griffin."+(isFlying()?dataTracker.get(GLIDE)?"glide":"fly":s.isMoving()?isAttacking()?"run":"walk":"idle")))));var a=new AnimationController<>(this,"action",0,s->PlayState.STOP);for(String n:new String[]{"claw_attack","bite","sweep_left","sweep_right","wing_spin","lunge","roar","takeoff_prepare","takeoff","dive_warning","landing","dive_attack","hurt","stagger"})a.triggerableAnim(n,RawAnimation.begin().thenPlay("animation.griffin."+n));c.add(a);}
- public static DefaultAttributeContainer.Builder createAttributes(){return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_MAX_HEALTH,180).add(EntityAttributes.GENERIC_ATTACK_DAMAGE,11).add(EntityAttributes.GENERIC_MOVEMENT_SPEED,ModConfig.speed(.32)).add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,.85).add(EntityAttributes.GENERIC_FOLLOW_RANGE,48).add(EntityAttributes.GENERIC_STEP_HEIGHT,1);}
+ public static DefaultAttributeContainer.Builder createAttributes(){return HostileEntity.createHostileAttributes().add(EntityAttributes.GENERIC_SCALE,BASE_SCALE).add(EntityAttributes.GENERIC_MAX_HEALTH,180).add(EntityAttributes.GENERIC_ATTACK_DAMAGE,11).add(EntityAttributes.GENERIC_MOVEMENT_SPEED,ModConfig.speed(.32)).add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,.85).add(EntityAttributes.GENERIC_FOLLOW_RANGE,48).add(EntityAttributes.GENERIC_STEP_HEIGHT,1);}
 }

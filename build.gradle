@@ -79,6 +79,7 @@ loom {
    client()
    source sourceSets.clientSmoke
    vmArg '-Dwitchersbestiary.griffinReview=true'
+   if (project.hasProperty('griffinScalePortrait')) vmArg '-Dwitchersbestiary.griffinScalePortrait=true'
    programArgs '--width', '960', '--height', '540'
    runDir 'build/griffin-reforged/client'
   }

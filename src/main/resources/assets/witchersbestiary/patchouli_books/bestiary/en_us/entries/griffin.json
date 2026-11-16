@@ -6,9 +6,9 @@
     {
       "type": "patchouli:entity",
       "entity": "witchersbestiary:griffin",
-      "scale": 0.65,
+      "scale": 0.325,
       "name": "Griffin",
-      "text": "HYBRID. 180 HP, base damage 11. Four legs, a deep chest and articulated feathered wings spanning about 8.5 blocks."
+      "text": "HYBRID. 180 HP; base damage 11. Its wings spread far beyond the body. It needs a broad, open clearing to take flight."
     },
     {
       "type": "patchouli:text",

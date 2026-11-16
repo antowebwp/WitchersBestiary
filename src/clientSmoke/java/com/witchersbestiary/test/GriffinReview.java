@@ -29,6 +29,7 @@ final class GriffinReview {
     private final java.util.concurrent.ExecutorService writer = Executors.newSingleThreadExecutor();
     private final ArrayList<CompletableFuture<Void>> writes = new ArrayList<>();
     private final HashSet<String> captured = new HashSet<>();
+    private static final boolean PORTRAIT = Boolean.getBoolean("witchersbestiary.griffinScalePortrait");
     private GriffinEntity serverGriffin;
     private int entityId = -1, ticks, combatTicks, hits, stateAge;
     private double maximumHeight;
@@ -38,6 +39,17 @@ final class GriffinReview {
 
     void start() {
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
+        WorldRenderEvents.AFTER_ENTITIES.register(context -> {
+            if (!PORTRAIT || !"scale-player".equals(shot) || context.consumers() == null) return;
+            var client = MinecraftClient.getInstance();
+            var avatar = client.player;
+            if (avatar == null) return;
+            var offset = avatar.getPos().subtract(context.camera().getPos());
+            var renderer = client.getEntityRenderDispatcher();
+            renderer.render(avatar, offset.x, offset.y, offset.z, avatar.getYaw(),
+                    context.tickCounter().getTickDelta(false), context.matrixStack(), context.consumers(),
+                    renderer.getLight(avatar, context.tickCounter().getTickDelta(false)));
+        });
         WorldRenderEvents.END.register(context -> capture());
     }
 
@@ -50,7 +62,7 @@ final class GriffinReview {
                 client.options.hudHidden = true;
                 client.options.pauseOnLostFocus = false;
                 client.options.getViewDistance().setValue(5);
-                client.createIntegratedServerLoader().createAndStart("GriffinReviewAir",
+                client.createIntegratedServerLoader().createAndStart("GriffinReviewLarge",
                         new LevelInfo("Griffin Reforged", GameMode.CREATIVE, false, Difficulty.NORMAL,
                                 true, new GameRules(), DataConfiguration.SAFE_MODE), new GeneratorOptions(22, false, false),
                         r -> r.get(RegistryKeys.WORLD_PRESET).get(WorldPresets.FLAT).createDimensionsRegistryHolder(), null);
@@ -68,6 +80,8 @@ final class GriffinReview {
                     var g = ModEntities.GRIFFIN.create(world);
                     g.refreshPositionAndAngles(.5, -60, .5, 0, 0);
                     g.setAiDisabled(true);
+                    g.setBodyYaw(0);
+                    g.setHeadYaw(0);
                     world.spawnEntity(g);
                     serverGriffin = g;
                     p.teleport(world,.5,-60,6.5,180,0);
@@ -75,22 +89,46 @@ final class GriffinReview {
                 }).join();
                 return;
             }
-            if (!(client.world.getEntityById(entityId) instanceof GriffinEntity griffin)) return;
-            combatTicks++;
-            if (combatTicks < 45) {
-                int view = Math.min(3, combatTicks / 10);
-                double angle = new double[]{0, Math.PI / 2, Math.PI, Math.PI / 4}[view];
-                camera(client, griffin.getPos().add(0,1.4,0), new Vec3d(Math.sin(angle)*8, 2.4, Math.cos(angle)*8));
-                if (combatTicks % 10 == 6) shot = "view-" + view;
+            if (PORTRAIT && combatTicks >= 15) {
+                if (++combatTicks == 29) shot = "scale-player";
+                if (combatTicks == 38) {
+                    writes.forEach(CompletableFuture::join);
+                    stop(client);
+                }
                 return;
             }
-            if (combatTicks == 45) server.submit(() -> {
+            if (!(client.world.getEntityById(entityId) instanceof GriffinEntity griffin)) return;
+            combatTicks++;
+            if (PORTRAIT) {
+                if (combatTicks == 15) server.submit(() -> {
+                    var player = server.getPlayerManager().getPlayerList().getFirst();
+                    player.teleport(player.getServerWorld(), .5, -60, .5, 35, 0);
+                    serverGriffin.discard();
+                }).join();
+                if (combatTicks == 15) {
+                    camera(client, new Vec3d(.5, -58.6, .5), new Vec3d(Math.sqrt(32),2.4,Math.sqrt(32)));
+                }
+                return;
+            }
+            if (combatTicks < 54) {
+                int view = Math.clamp((combatTicks - 10) / 10, 0, 3);
+                double angle = new double[]{0, Math.PI / 2, Math.PI, Math.PI / 4}[view];
+                camera(client, griffin.getPos().add(0,1.4,0), new Vec3d(Math.sin(angle)*15.5, 4.1, Math.cos(angle)*15.5));
+                if (combatTicks >= 15 && combatTicks <= 45 && combatTicks % 10 == 5)
+                    shot = "view-" + view;
+                if (combatTicks == 52) {
+                    camera(client, griffin.getPos().add(0,1.4,0), new Vec3d(Math.sqrt(32),2.4,Math.sqrt(32)));
+                    shot = "scale-compare";
+                }
+                return;
+            }
+            if (combatTicks == 54) server.submit(() -> {
                 var p = server.getPlayerManager().getPlayerList().getFirst();
                 p.changeGameMode(GameMode.SURVIVAL);
                 serverGriffin.setAiDisabled(false);
                 serverGriffin.setTarget(p);
             }).join();
-            client.options.backKey.setPressed(combatTicks > 50 && combatTicks < 118);
+            client.options.backKey.setPressed(combatTicks > 60 && combatTicks < 118);
             if (combatTicks == 216) server.submit(() -> {
                 var p = server.getPlayerManager().getPlayerList().getFirst();
                 p.teleport(p.getServerWorld(), serverGriffin.getX(), -60, serverGriffin.getZ()+21, 180, 0);
@@ -103,6 +141,9 @@ final class GriffinReview {
                     p.setHealth(p.getMaxHealth());
                 }
                 maximumHeight = Math.max(maximumHeight, serverGriffin.getY() + 60);
+                if (combatTicks == 55 && (Math.abs(serverGriffin.getWidth() - 4.8) > .01
+                        || Math.abs(serverGriffin.getHeight() - 5.6) > .01))
+                    throw new IllegalStateException("Scale did not reach the expected body hitbox");
                 return serverGriffin.getAction();
             }).join();
             if (result != previous) {
@@ -111,7 +152,7 @@ final class GriffinReview {
             }
             stateAge++;
             var focus = griffin.getPos().add(0, 1.3, 0);
-            camera(client, focus, new Vec3d(7.1,2.7,6.8));
+            camera(client, focus, new Vec3d(11.2,4.3,11.2));
             if (stateAge == (result == Action.NONE ? 2 : result == Action.AIR_CHASE ? 18 : 7))
                 shot = result.name().toLowerCase(Locale.ROOT);
             if (combatTicks == 470) {
