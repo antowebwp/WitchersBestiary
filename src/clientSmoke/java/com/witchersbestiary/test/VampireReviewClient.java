@@ -24,6 +24,8 @@ import net.minecraft.world.level.LevelInfo;
 import java.nio.file.*;
 
 final class VampireReviewClient implements ClientModInitializer {
+    private static final boolean STAGE22X = Boolean.getBoolean("witchersbestiary.stage22xReview");
+    private boolean windowHidden;
     private final Path output = Path.of("..");
     private volatile int phase, ticks;
     private volatile Throwable failure;
@@ -60,7 +62,11 @@ final class VampireReviewClient implements ClientModInitializer {
 
     private void tick(MinecraftClient client) {
         try {
-            if (failure != null) throw new IllegalStateException(failure);
+            if (Boolean.getBoolean("witchersbestiary.stage22xReview") && !windowHidden) {
+            org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
+            windowHidden = true;
+        }
+        if (failure != null) throw new IllegalStateException(failure);
             if (++ticks > 900 && phase != 99) throw new IllegalStateException("Timeout at phase " + phase);
             if (phase == 0) {
                 if (client.getOverlay() != null) return;
@@ -248,7 +254,7 @@ final class VampireReviewClient implements ClientModInitializer {
                 case 13 -> {
                     if (client.player.getInventory().count(ModItems.BLOOD_LEGACY) != 1) return;
                     int crowns = client.player.getInventory().count(com.witchersbestiary.economy.Currency.CROWN);
-                    if (crowns != 2000 || hunt.status() != ContractInstance.Status.REWARDED)
+                    if (crowns != 600 || hunt.status() != ContractInstance.Status.REWARDED)
                         throw new IllegalStateException("Unexpected reward: " + crowns + " crowns, " + hunt.status());
                     client.options.useKey.setPressed(false);
                     var relic = client.player.getMainHandStack();
@@ -256,6 +262,24 @@ final class VampireReviewClient implements ClientModInitializer {
                     capture(client, "reward");
                     capture(client, "sealed-phylactery");
                     Files.writeString(output.resolve("result.txt"), "Sealed hunt " + hunt.id() + " status=" + hunt.status() + " crowns=" + crowns);
+                    if (STAGE22X) {
+                        next(98);
+                        server(client, () -> {
+                            var server = client.getServer();
+                            var world = server.getOverworld();
+                            var player = server.getPlayerManager().getPlayerList().getFirst();
+                            var key = VillageOffers.identity(world, board) + "/legends";
+                            long age = world.getTime() + 3 * VillageOffers.INTERVAL;
+                            while (Math.floorMod(age / VillageOffers.INTERVAL + key.hashCode(), 3) != 0)
+                                age += VillageOffers.INTERVAL;
+                            VillageOffers.get(server).current(key, age, java.util.List.of(
+                                    "witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer", VampireHunt.ID.toString()));
+                            hunt.vampireReplayReady = 0;
+                            player.teleport(world, board.getX()+.5, board.getY(), board.getZ()-1.5, 0, 0);
+                            next(20);
+                        });
+                        return;
+                    }
                     var group = net.minecraft.registry.Registries.ITEM_GROUP.get(
                             com.witchersbestiary.registry.ModItemGroups.WITCHERS_BESTIARY_KEY);
                     net.minecraft.item.ItemGroups.updateDisplayContext(client.player.networkHandler.getEnabledFeatures(),
@@ -265,6 +289,112 @@ final class VampireReviewClient implements ClientModInitializer {
                         throw new IllegalStateException("Items missing from creative tab");
                     client.setScreen(new net.minecraft.client.gui.screen.ingame.InventoryScreen(client.player));
                     next(15);
+                }
+                case 20 -> {
+                    if (handler instanceof BoardScreenHandler) {
+                        client.interactionManager.clickButton(handler.syncId, 65);
+                        next(21);
+                    } else if (ticks > 25 && ticks % 8 == 0) {
+                        client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND,
+                                new BlockHitResult(Vec3d.ofBottomCenter(board).add(0, .5, -.5), Direction.NORTH, board, false));
+                    }
+                }
+                case 21 -> {
+                    if (ticks < 12 || !(handler instanceof BoardScreenHandler view)) return;
+                    var rows = view.snapshot.getAsJsonArray("offers");
+                    for (var row : rows) {
+                        var offer = row.getAsJsonObject();
+                        if (VampireHunt.ID.toString().equals(offer.get("id").getAsString())) {
+                            client.interactionManager.clickButton(handler.syncId, offer.get("button").getAsInt());
+                            next(22);
+                            return;
+                        }
+                    }
+                }
+                case 22 -> {
+                    if (!(handler instanceof BoardScreenHandler view)) return;
+                    for (var row : view.snapshot.getAsJsonArray("offers")) {
+                        var offer = row.getAsJsonObject();
+                        if (!VampireHunt.ID.toString().equals(offer.get("id").getAsString())
+                                || !"ACCEPTED".equals(offer.get("state").getAsString())) continue;
+                        int selected = offer.get("button").getAsInt();
+                        for (String name : new String[]{"selected", "page"}) {
+                            var field = client.currentScreen.getClass().getDeclaredField(name);
+                            field.setAccessible(true);
+                            field.setInt(client.currentScreen, name.equals("selected") ? selected : selected / 3);
+                        }
+                        ((com.witchersbestiary.client.board.NoticeBoardScreen)client.currentScreen).refresh();
+                        next(23);
+                        return;
+                    }
+                }
+                case 23 -> {
+                    if (ticks < 12) return;
+                    capture(client, "legendary-repeat");
+                    client.player.closeHandledScreen();
+                    next(24);
+                }
+                case 24 -> {
+                    if (ticks < 10) return;
+                    next(98);
+                    server(client, () -> {
+                        var server = client.getServer();
+                        var player = server.getPlayerManager().getPlayerList().getFirst();
+                        var world = player.getServerWorld();
+                        var at = board.east(20);
+                        for (int x=-4; x<=4; x++) for (int z=-4; z<=8; z++) {
+                            world.setBlockState(at.add(x,-1,z), net.minecraft.block.Blocks.STONE.getDefaultState());
+                            for (int y=0; y<5; y++)
+                                world.setBlockState(at.add(x,y,z), net.minecraft.block.Blocks.AIR.getDefaultState());
+                        }
+                        player.teleport(world, at.getX()+.5, at.getY(), at.getZ()+.5, 0, 0);
+                        next(25);
+                    });
+                }
+                case 25 -> {
+                    if (ticks < 20) return;
+                    client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
+                    next(26);
+                }
+                case 26 -> {
+                    if (hunt.vampire == null) return;
+                    next(98);
+                    server(client, () -> {
+                        var player = client.getServer().getPlayerManager().getPlayerList().getFirst();
+                        var world = player.getServerWorld();
+                        var boss = (HigherVampireEntity)world.getEntity(hunt.vampire);
+                        var state = new net.minecraft.nbt.NbtCompound();
+                        boss.writeCustomDataToNbt(state);
+                        state.putBoolean("HybridForm", true);
+                        state.putBoolean("FinalPhase", true);
+                        state.putBoolean("Defeated", true);
+                        state.putBoolean("Sealable", true);
+                        state.putLong("ReviveAt", world.getTime()+1800);
+                        boss.readCustomDataFromNbt(state);
+                        player.teleport(world, boss.getX(), boss.getY(), boss.getZ()-2.5, 0, 12);
+                        next(27);
+                    });
+                }
+                case 27 -> {
+                    if (ticks < 12) return;
+                    for (var entity : client.world.getEntities()) if (entity.getUuid().equals(hunt.vampire))
+                        aim(client, entity.getPos().add(0, .5, 0));
+                    client.options.useKey.setPressed(true);
+                    client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
+                    next(28);
+                }
+                case 28 -> {
+                    if (client.player.getInventory().count(com.witchersbestiary.economy.Currency.CROWN) != 780) return;
+                    client.options.useKey.setPressed(false);
+                    if (!VampireHunt.isSealed(client.player.getMainHandStack())
+                            || client.player.getInventory().count(ModItems.BLOOD_LEGACY) != 1
+                            || client.player.getInventory().count(ModItems.CRIMSON_PHYLACTERY) != 1)
+                        throw new IllegalStateException("Second sealing changed unique items");
+                    capture(client, "legendary-resealed");
+                    Files.writeString(output.resolve("legendary-result.txt"),
+                            "PASS repeat board offer, summon, five-second sealing, 180 additional crowns and no duplicate unique items. Defeated pose was a fixture.");
+                    next(99);
+                    client.scheduleStop();
                 }
                 case 15 -> {
                     if (ticks < 15) return;

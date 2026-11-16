@@ -15,6 +15,7 @@ import net.minecraft.world.level.LevelInfo;
 import java.nio.file.Path;
 
 final class VillageMerchantReview implements ClientModInitializer {
+    private boolean windowHidden;
     private int phase, ticks;
     private volatile Throwable failure;
     private volatile boolean positioned;
@@ -28,7 +29,11 @@ final class VillageMerchantReview implements ClientModInitializer {
 
     private void tick(MinecraftClient client) {
         try {
-            if (failure != null) throw new IllegalStateException(failure);
+            if (Boolean.getBoolean("witchersbestiary.stage22xReview") && !windowHidden) {
+            org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
+            windowHidden = true;
+        }
+        if (failure != null) throw new IllegalStateException(failure);
             if (++ticks > 1800) throw new IllegalStateException("Merchant review timed out in phase " + phase);
             if (phase == 0 && client.getOverlay() == null) {
                 phase++;
@@ -116,7 +121,7 @@ final class VillageMerchantReview implements ClientModInitializer {
                     });
                 } else if (!offers.equals(previous)) {
                     if (phase++ == 5) return;
-                    capture(client, "after");
+                    capture(client, Boolean.getBoolean("witchersbestiary.stage22xReview") ? "merchant-stock" : "after");
                     java.nio.file.Files.writeString(Path.of("../result.txt"), previous + "\n" + offers);
                     client.scheduleStop();
                 }

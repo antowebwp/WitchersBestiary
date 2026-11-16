@@ -905,6 +905,38 @@ tasks.named('runProceduralReview') {
  }
 }
 
+loom.runs {
+ stage22xClueReview {
+  client(); source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.investigationReview=true'
+  vmArg '-Dwitchersbestiary.stage22xReview=true'
+  vmArg '-Dwitchersbestiary.huntMinRadius=48'
+  vmArg '-Dwitchersbestiary.huntMaxRadius=96'
+  programArgs '--username', 'ContractReview', '--width', '1280', '--height', '900'
+  runDir 'build/contracts-reforged/clue-client'
+ }
+ stage22xMerchantReview {
+  client(); source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage22hReview=true'
+  vmArg '-Dwitchersbestiary.stage22xReview=true'
+  programArgs '--username', 'MerchantReview', '--width', '1280', '--height', '900'
+  runDir 'build/contracts-reforged/merchant-client'
+ }
+ stage22xBookReview {
+  client(); source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage22qBookReview=true'
+  vmArg '-Dwitchersbestiary.stage22xReview=true'
+  programArgs '--username', 'BestiaryReview', '--width', '1280', '--height', '900'
+  runDir 'build/contracts-reforged/book-client'
+ }
+ stage22xVampireReview {
+  client(); source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage22gReview=true'
+  vmArg '-Dwitchersbestiary.stage22xReview=true'
+  programArgs '--username', 'VampireReview', '--width', '1280', '--height', '900'
+  runDir 'build/contracts-reforged/vampire-client'
+ }
+}
 loom.runs { investigationReview { client(); source sourceSets.clientSmoke; vmArg "-Dwitchersbestiary.investigationReview=true"; vmArg "-Dwitchersbestiary.huntMinRadius=48"; vmArg "-Dwitchersbestiary.huntMaxRadius=96"; programArgs "--username", "TrackReview", "--width", "1280", "--height", "900"; runDir "build/stage20d-client" } }
 tasks.named('runInvestigationReview') {
  doLast {

@@ -21,7 +21,8 @@ import vazkii.patchouli.api.PatchouliAPI;
 import vazkii.patchouli.client.book.gui.GuiBook;
 
 final class Stage22QBookReview {
-    private static final String[] ENTRIES = {"grapeshot", "moon_dust", "samum", "dragons_dream",
+    private static final boolean STAGE22X = Boolean.getBoolean("witchersbestiary.stage22xReview");
+    private static final String[] ENTRIES = STAGE22X ? new String[] {"contract_field_guide"} : new String[] {"grapeshot", "moon_dust", "samum", "dragons_dream",
             "sign_igni", "sign_aard", "sign_yrden", "sign_quen", "sign_axii", "silver_witcher_sword"};
     private final ArrayList<CompletableFuture<Void>> captures = new ArrayList<>();
     private int age, scene, opened;
@@ -80,7 +81,7 @@ final class Stage22QBookReview {
                 throw new IllegalStateException("Could not open Bestiary entry " + ENTRIES[scene]);
             }
             var image = ScreenshotRecorder.takeScreenshot(client.getFramebuffer());
-            var output = Path.of("..", language + "-" + ENTRIES[scene] + ".png");
+            var output = Path.of("..", STAGE22X && language.equals("en_us") ? "bestiary.png" : language + "-" + ENTRIES[scene] + ".png");
             captures.add(CompletableFuture.runAsync(() -> {
                 try (image) { image.writeTo(output); }
                 catch (IOException error) { throw new IllegalStateException(error); }
