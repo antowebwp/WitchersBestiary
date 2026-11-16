@@ -37,7 +37,8 @@ public final class Contracts {
         for (var existing : store.ownedBy(player.getUuid())) if (existing.expire(System.currentTimeMillis())) store.markDirty();
         if (store.ownedBy(player.getUuid()).stream().filter(c -> c.status() == ContractInstance.Status.ACCEPTED || c.status() == ContractInstance.Status.COMPLETED).count() >= 16)
             throw new IllegalStateException("At most 16 active/unclaimed contracts per player");
-        com.witchersbestiary.contracts.hunt.VampireHunt.validate(player, definitionId, store);
+        boolean replay = com.witchersbestiary.contracts.hunt.VampireHunt.validate(player, definitionId, store) != null;
+        if (replay) definition = com.witchersbestiary.contracts.hunt.VampireHunt.repeat(definition);
         var instanceId=UUID.randomUUID();
         var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(offerSeed==null?instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits():offerSeed,com.witchersbestiary.contracts.procedural.ContractSpecies.species(definition.target().getPath())):null;
         if(profile!=null)definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
@@ -47,10 +48,10 @@ public final class Contracts {
         if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c,board)){
             throw new IllegalStateException("No safe loaded hunt area within 350 blocks with two clues; contract not accepted");
         }
-        if (requireRoute && com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(definitionId)
+        if (requireRoute && !replay && com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(definitionId)
                 && !com.witchersbestiary.contracts.hunt.VampireHunt.prepare(player,c,board))
             throw new IllegalStateException("No reachable vampire tomb was found near this board");
-        store.add(c); com.witchersbestiary.contracts.hunt.VampireHunt.issue(player,c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
+        store.add(c); if (!replay) com.witchersbestiary.contracts.hunt.VampireHunt.issue(player,c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
     /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */
     public static ServerPlayerEntity killer(LivingEntity victim, DamageSource damage) {

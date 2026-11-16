@@ -29,10 +29,32 @@ public final class VampireHunt extends Item {
 
     public VampireHunt() { super(new Settings().maxCount(1).rarity(Rarity.EPIC)); }
 
-    public static void validate(ServerPlayerEntity player, Identifier id, ContractState store) {
-        if (ID.equals(id) && store.ownedBy(player.getUuid()).stream().anyMatch(c -> ID.equals(c.definition().id())
-                && c.status() != ContractInstance.Status.CANCELLED && c.status() != ContractInstance.Status.EXPIRED))
-            throw new IllegalStateException("This legendary hunt has already been accepted");
+    public static ContractInstance validate(ServerPlayerEntity player, Identifier id, ContractState store) {
+        if (!ID.equals(id)) return null;
+        var hunts = store.ownedBy(player.getUuid()).stream().filter(c -> ID.equals(c.definition().id())).toList();
+        if (hunts.stream().anyMatch(c -> c.status() == ContractInstance.Status.ACCEPTED
+                || c.status() == ContractInstance.Status.COMPLETED))
+            throw new IllegalStateException("vampire_active");
+        var original = hunts.stream().filter(c -> c.status() == ContractInstance.Status.REWARDED
+                && !c.definition().description().equals("hunt.witchersbestiary.higher_vampire.repeat")).findFirst().orElse(null);
+        if (original == null) {
+            if (player.getInventory().getEmptySlot() < 0) throw new IllegalStateException("inventory_full");
+            return null;
+        }
+        if (original.vampire != null) throw new IllegalStateException("vampire_active");
+        var inventory = player.getInventory();
+        if (java.util.stream.Stream.concat(inventory.main.stream(), inventory.offHand.stream())
+                .noneMatch(stack -> stack.isOf(ModItems.CRIMSON_PHYLACTERY) && isSealed(stack) && contract(player, stack) == original))
+            throw new IllegalStateException("vampire_phylactery");
+        return original;
+    }
+
+    public static ContractDefinition repeat(ContractDefinition d) {
+        return new ContractDefinition(d.id(), d.name(), "hunt.witchersbestiary.higher_vampire.repeat",
+                d.target(), 1, d.difficulty(), new ContractDefinition.Reward(50, List.of(
+                new ContractDefinition.ItemReward(Identifier.of("witchersbestiary:witcher_crown"), 180),
+                new ContractDefinition.ItemReward(Identifier.of("witchersbestiary:vampire_fang"), 2))),
+                d.minimumLevel(), d.dimension(), d.durationMillis());
     }
 
     public static boolean prepare(ServerPlayerEntity player, ContractInstance c, BlockPos board) {
@@ -194,8 +216,14 @@ public final class VampireHunt extends Item {
         save(stack,c,SEALED);
         store.markDirty();
         boss.discard();
-        if (initial) {
-            try { Contracts.claim(player,c.id()); }
+        var payout = initial ? c : store.ownedBy(player.getUuid()).stream()
+                .filter(hunt -> hunt.status() == ContractInstance.Status.ACCEPTED
+                        && ID.equals(hunt.definition().id())
+                        && "hunt.witchersbestiary.higher_vampire.repeat".equals(hunt.definition().description()))
+                .filter(hunt -> hunt.credit(boss.getUuid(), player.getUuid(), ID, System.currentTimeMillis()))
+                .findFirst().orElse(null);
+        if (payout != null) {
+            try { Contracts.claim(player,payout.id()); }
             catch (IllegalStateException full) { player.sendMessage(Text.translatable("item.witchersbestiary.crimson_phylactery.claim"),false); }
         }
     }

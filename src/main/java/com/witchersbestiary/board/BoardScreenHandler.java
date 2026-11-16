@@ -101,7 +101,10 @@ public final class BoardScreenHandler extends ScreenHandler {
                 ContractState.get(server.getServer()).markDirty();
             }
             else {if(existing==null)throw new IllegalStateException("unavailable");Contracts.claim(server,existing.id());}
-        }catch(IllegalArgumentException|IllegalStateException e){status=button<32&&instance(server,index)!=null?"already":e.getMessage()!=null&&e.getMessage().startsWith("No safe loaded hunt area")?"no_safe_route":"rejected";if(status.equals("no_safe_route"))failures.put(index,status);}
+        }catch(IllegalArgumentException|IllegalStateException e){status=button<32&&instance(server,index)!=null?"already":e.getMessage()!=null&&e.getMessage().startsWith("No safe loaded hunt area")?"no_safe_route":switch(String.valueOf(e.getMessage())){
+            case "vampire_active", "vampire_phylactery", "inventory_full" -> e.getMessage();
+            default -> "rejected";
+        };if(status.equals("no_safe_route"))failures.put(index,status);}
         send(server,status);return true;
     }
     public JsonObject view(ServerPlayerEntity player,String message){

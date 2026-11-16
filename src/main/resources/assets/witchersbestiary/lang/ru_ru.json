@@ -1,4 +1,8 @@
 {
+  "hunt.witchersbestiary.higher_vampire.repeat": "Повторная охота. После перезарядки примените запечатанную багровую филактерию на открытом месте и снова запечатайте вампира.",
+  "gui.witchersbestiary.board.inventory_full": "Освободите один слот основного инвентаря для филактерии.",
+  "gui.witchersbestiary.board.vampire_phylactery": "Найдите свою исходную запечатанную филактерию и принесите её к доске.",
+  "gui.witchersbestiary.board.vampire_active": "Сначала завершите текущую охоту на вампира и заберите награду.",
   "companion.witchersbestiary.guard": "Охранять",
   "troll.witchersbestiary.recognized": "Тролль признал вашу силу. Нажмите Shift + ПКМ, чтобы предложить дружбу.",
   "troll.witchersbestiary.tamed": "Скальный тролль теперь ваш спутник.",
@@ -311,7 +315,7 @@
   "gui.witchersbestiary.board.reward": "Награда",
   "gui.witchersbestiary.board.loading": "Нет доступных заказов",
   "gui.witchersbestiary.board.already": "Этот заказ уже был принят.",
-  "gui.witchersbestiary.board.rejected": "Недоступно или недостаточно места.",
+  "gui.witchersbestiary.board.rejected": "Действие на доске недоступно.",
   "gui.witchersbestiary.board.updated": "Заказ обновлён.",
   "gui.witchersbestiary.board.available": "Доступен",
   "hunt.witchersbestiary.swamp_lord": "Владыка топей",

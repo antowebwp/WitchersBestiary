@@ -1,4 +1,8 @@
 {
+  "hunt.witchersbestiary.higher_vampire.repeat": "Repeat hunt. Use your sealed Crimson Phylactery in a clear area after its cooldown, then seal the vampire again.",
+  "gui.witchersbestiary.board.inventory_full": "Free one main inventory slot for the phylactery.",
+  "gui.witchersbestiary.board.vampire_phylactery": "Retrieve your original sealed phylactery and bring it here.",
+  "gui.witchersbestiary.board.vampire_active": "Claim or finish the current vampire hunt first.",
   "companion.witchersbestiary.guard": "Guarding",
   "troll.witchersbestiary.recognized": "The troll acknowledges your strength. Sneak and right-click to offer friendship.",
   "troll.witchersbestiary.tamed": "The rock troll is now your companion.",
@@ -311,7 +315,7 @@
   "gui.witchersbestiary.board.reward": "Reward",
   "gui.witchersbestiary.board.loading": "No contracts available",
   "gui.witchersbestiary.board.already": "This contract has already been taken.",
-  "gui.witchersbestiary.board.rejected": "Unavailable or not enough inventory space.",
+  "gui.witchersbestiary.board.rejected": "Cannot perform this board action.",
   "gui.witchersbestiary.board.updated": "Contract updated.",
   "gui.witchersbestiary.board.available": "Available",
   "hunt.witchersbestiary.swamp_lord": "Swamp Lord",
