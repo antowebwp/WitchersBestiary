@@ -272,6 +272,7 @@ final class VampireReviewClient implements ClientModInitializer {
                             long age = world.getTime() + 3 * VillageOffers.INTERVAL;
                             while (Math.floorMod(age / VillageOffers.INTERVAL + key.hashCode(), 3) != 0)
                                 age += VillageOffers.INTERVAL;
+                            ((net.minecraft.world.level.ServerWorldProperties)world.getLevelProperties()).setTime(age);
                             VillageOffers.get(server).current(key, age, java.util.List.of(
                                     "witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer", VampireHunt.ID.toString()));
                             hunt.vampireReplayReady = 0;
