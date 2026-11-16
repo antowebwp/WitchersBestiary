@@ -26,6 +26,9 @@ import java.nio.file.*;
 final class VampireReviewClient implements ClientModInitializer {
     private static final boolean STAGE22X = Boolean.getBoolean("witchersbestiary.stage22xReview");
     private boolean windowHidden;
+    private static final boolean MANUAL = Boolean.getBoolean("witchersbestiary.manualVampireSealReview");
+    private final String folder = "Vampire-" + System.currentTimeMillis();
+    private volatile java.util.UUID manualBoss;
     private final Path output = Path.of("..");
     private volatile int phase, ticks;
     private volatile Throwable failure;
@@ -62,7 +65,7 @@ final class VampireReviewClient implements ClientModInitializer {
 
     private void tick(MinecraftClient client) {
         try {
-            if (Boolean.getBoolean("witchersbestiary.stage22xReview") && !windowHidden) {
+            if ((STAGE22X || MANUAL) && !windowHidden) {
             org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
             windowHidden = true;
         }
@@ -74,18 +77,45 @@ final class VampireReviewClient implements ClientModInitializer {
                 client.options.pauseOnLostFocus = false;
                 client.options.getViewDistance().setValue(5);
                 client.options.getSimulationDistance().setValue(5);
-                client.createIntegratedServerLoader().createAndStart("Stage22G-" + System.currentTimeMillis(),
+                client.createIntegratedServerLoader().createAndStart(folder,
                         new LevelInfo("Stage 22G Review", GameMode.SURVIVAL, false, Difficulty.NORMAL,
                                 false, new GameRules(), DataConfiguration.SAFE_MODE),
                         new GeneratorOptions(220719L, true, false),
-                        registries -> registries.get(RegistryKeys.WORLD_PRESET).get(WorldPresets.DEFAULT)
+                        registries -> registries.get(RegistryKeys.WORLD_PRESET).get(MANUAL ? WorldPresets.FLAT : WorldPresets.DEFAULT)
                                 .createDimensionsRegistryHolder(), null);
+                return;
+            }
+            if (phase == 31) {
+                if (ticks > 20 && client.getServer() == null) {
+                    next(32);
+                    client.createIntegratedServerLoader().start(folder,
+                            () -> failure = new IllegalStateException("Manual sealing rejoin cancelled"));
+                }
                 return;
             }
             if (client.player == null || client.world == null) return;
             var handler = client.player.currentScreenHandler;
             switch (phase) {
                 case 1 -> {
+                    if (MANUAL) {
+                        next(98);
+                        server(client, () -> {
+                            var server = client.getServer();
+                            var player = server.getPlayerManager().getPlayerList().getFirst();
+                            var world = player.getServerWorld();
+                            player.setYaw(0);
+                            player.getInventory().setStack(0, new net.minecraft.item.ItemStack(ModItems.CRIMSON_PHYLACTERY));
+                            player.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(
+                                    net.minecraft.entity.effect.StatusEffects.RESISTANCE, 1800, 4));
+                            server.getCommandManager().executeWithPrefix(player.getCommandSource().withLevel(2),
+                                    "summon witchersbestiary:higher_vampire ~ ~ ~4");
+                            var boss = world.getEntitiesByClass(HigherVampireEntity.class,
+                                    player.getBoundingBox().expand(6), entity -> true).getFirst();
+                            manualBoss = boss.getUuid();
+                            next(11);
+                        });
+                        return;
+                    }
                     next(98);
                     server(client, () -> {
                         var world = client.getServer().getOverworld();
@@ -231,27 +261,62 @@ final class VampireReviewClient implements ClientModInitializer {
                     server(client, () -> {
                         var player = client.getServer().getPlayerManager().getPlayerList().getFirst();
                         var world = player.getServerWorld();
-                        var boss = (HigherVampireEntity)world.getEntity(hunt.vampire);
+                        var boss = (HigherVampireEntity)world.getEntity(MANUAL ? manualBoss : hunt.vampire);
                         if (!boss.canBeSealed()) {
-                            if (!boss.isFinalPhase()) return;
+                            if (!MANUAL && !boss.isFinalPhase()) return;
                             boss.damage(world.getDamageSources().playerAttack(player), 1000);
                             return;
                         }
                         player.teleport(world, boss.getX(), boss.getY(), boss.getZ()-2.5, 0, 12);
-                        next(12);
+                        next(MANUAL ? 30 : 12);
                     });
                 }
                 case 12 -> {
                     if (ticks < 10) return;
                     for (int i = 0; i < 9; i++) if (client.player.getInventory().getStack(i).isOf(ModItems.CRIMSON_PHYLACTERY))
                         client.player.getInventory().selectedSlot = i;
-                    for (var entity : client.world.getEntities()) if (entity.getUuid().equals(hunt.vampire))
+                    boolean aimed = false;
+                    for (var entity : client.world.getEntities()) if (entity.getUuid().equals(MANUAL ? manualBoss : hunt.vampire)) {
                         aim(client, entity.getPos().add(0, .5, 0));
+                        aimed = true;
+                    }
+                    if (!aimed || !(client.player.getMainHandStack().isOf(ModItems.CRIMSON_PHYLACTERY))) return;
+                    if (MANUAL && ticks < 16) return;
                     client.options.useKey.setPressed(true);
                     client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
                     next(13);
                 }
                 case 13 -> {
+                    if (MANUAL) {
+                        if (!VampireHunt.isSealed(client.player.getMainHandStack())) {
+                            client.options.useKey.setPressed(true);
+                            if (ticks == 35) {
+                                capture(client, "manual-channel");
+                                server(client, () -> {
+                                    var p = client.getServer().getPlayerManager().getPlayerList().getFirst();
+                                    var boss = p.getServerWorld().getEntity(manualBoss);
+                                    System.out.println("Manual seal channel active=" + p.isUsingItem()
+                                            + ", distance=" + (boss == null ? -1 : p.squaredDistanceTo(boss))
+                                            + ", pitch=" + p.getPitch() + ", yaw=" + p.getYaw()
+                                            + ", stack=" + p.getMainHandStack());
+                                });
+                            }
+                            return;
+                        }
+                        client.options.useKey.setPressed(false);
+                        capture(client, "manual-sealed");
+                        next(98);
+                        server(client, () -> {
+                            var player = client.getServer().getPlayerManager().getPlayerList().getFirst();
+                            if (player.getServerWorld().getEntity(manualBoss) != null
+                                    || !ContractState.get(client.getServer()).ownedBy(player.getUuid()).isEmpty()
+                                    || player.getInventory().count(ModItems.BLOOD_LEGACY) != 0
+                                    || player.getInventory().count(com.witchersbestiary.economy.Currency.CROWN) != 0)
+                                throw new IllegalStateException("Independent capture left the boss or paid a contract reward");
+                            next(33);
+                        });
+                        return;
+                    }
                     if (client.player.getInventory().count(ModItems.BLOOD_LEGACY) != 1) return;
                     int crowns = client.player.getInventory().count(com.witchersbestiary.economy.Currency.CROWN);
                     if (crowns != 600 || hunt.status() != ContractInstance.Status.REWARDED)
@@ -290,6 +355,29 @@ final class VampireReviewClient implements ClientModInitializer {
                         throw new IllegalStateException("Items missing from creative tab");
                     client.setScreen(new net.minecraft.client.gui.screen.ingame.InventoryScreen(client.player));
                     next(15);
+                }
+                case 30 -> {
+                    capture(client, "manual-defeated");
+                    next(31);
+                    client.world.disconnect();
+                    client.disconnect();
+                    return;
+                }
+                case 32 -> {
+                    if (ticks < 30) return;
+                    next(98);
+                    server(client, () -> {
+                        var world = client.getServer().getOverworld();
+                        if (!(world.getEntity(manualBoss) instanceof HigherVampireEntity boss) || !boss.canBeSealed())
+                            throw new IllegalStateException("Fallen vampire did not survive world reload");
+                        next(12);
+                    });
+                }
+                case 33 -> {
+                    Files.writeString(output.resolve("manual-result.txt"),
+                            "PASS /summon, damage and phase gates, final defeat, real world reload, sealing and no contract/reward.");
+                    next(99);
+                    client.scheduleStop();
                 }
                 case 20 -> {
                     if (handler instanceof BoardScreenHandler) {

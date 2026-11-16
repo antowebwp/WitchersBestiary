@@ -929,6 +929,13 @@ loom.runs {
   programArgs '--username', 'BestiaryReview', '--width', '1280', '--height', '900'
   runDir 'build/contracts-reforged/book-client'
  }
+ stage22xManualSealReview {
+  client(); source sourceSets.clientSmoke
+  vmArg '-Dwitchersbestiary.stage22gReview=true'
+  vmArg '-Dwitchersbestiary.manualVampireSealReview=true'
+  programArgs '--username', 'ManualSealReview', '--width', '960', '--height', '540'
+  runDir 'build/22x-manual-seal/client'
+ }
  stage22xVampireReview {
   client(); source sourceSets.clientSmoke
   vmArg '-Dwitchersbestiary.stage22gReview=true'
