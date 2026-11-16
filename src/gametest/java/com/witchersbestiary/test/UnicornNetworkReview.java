@@ -22,6 +22,8 @@ public final class UnicornNetworkReview implements ModInitializer {
     private UnicornEntity unicorn;
     private boolean hotfixHudChecked;
     private Vec3d beforeRide;
+    private long modeAt;
+    private Vec3d beforeFollow;
     private net.minecraft.entity.mob.ZombieEntity front, back;
     private static String name(int index){ return index==0?"WBOne":"WBTwo"; }
     private void command(int index,String action,String shot) throws Exception {
@@ -107,7 +109,38 @@ public final class UnicornNetworkReview implements ModInitializer {
                     case 2->{check(unicorn.isTame()&&a.getUuid().equals(unicorn.getOwnerUuid())&&a.getMainHandStack().isEmpty(),"Native taming and ownership");unicorn.setAiDisabled(false);unicorn.saddle(new ItemStack(Items.SADDLE),null);command(0,"wait","");command(1,"unicornInteract","unicorn-non-owner");phase=3;}
                     case 3->{check(!b.hasVehicle(),"Foreign rider denied");command(0,"unicornInteract","unicorn-owner-mounted");command(1,"unicornInspect","unicorn-saddle");phase=4;}
                     case 4->{check(a.getVehicle()==unicorn&&unicorn.getControllingPassenger()==a&&unicorn.canJump(),"Native rider and saddle controls");beforeRide=unicorn.getPos();command(0,"unicornRide","unicorn-riding");command(1,"unicornInspect","unicorn-mounted-motion");phase=5;}
-                    case 5->{check(unicorn.getPos().squaredDistanceTo(beforeRide)>.1,"Mounted inputs moved unicorn");a.stopRiding();a.setSneaking(true);unicorn.interactMob(a,Hand.MAIN_HAND);a.setSneaking(false);unicorn.damage(world.getDamageSources().genericKill(),1000);check(unicorn.recovering()&&unicorn.isAlive(),"Lethal damage recovery");Files.writeString(output.resolve("unicorn-resume.json"),unicorn.getUuid().toString());Files.writeString(output.resolve("resume.json"),"{}");command(0,"wait","");command(1,"wait","");server.save(false,true,true);server.stop(false);phase=999;}
+                    case 5->{
+                        check(unicorn.getPos().squaredDistanceTo(beforeRide)>.1,"Mounted inputs moved unicorn");
+                        a.stopRiding();
+                        unicorn.refreshPositionAndAngles(.5,120,.5,0,0);
+                        beforeFollow=unicorn.getPos();
+                        camera(a,world,12.5,.5);
+                        camera(b,world,3.5,4.5);
+                        modeAt=world.getTime();
+                        command(0,"unicornInspect","follow-owner");command(1,"unicornInspect","follow-observer");phase=50;
+                    }
+                    case 50->{
+                        if(world.getTime()-modeAt<70)return;
+                        check(unicorn.getX()>beforeFollow.x+3&&unicorn.squaredDistanceTo(a)<95,"FOLLOW moves toward owner for both peers");
+                        a.setSneaking(true);
+                        unicorn.interactMob(a,Hand.MAIN_HAND);
+                        a.setSneaking(false);
+                        check(unicorn.waiting(),"FOLLOW to WAIT");
+                        beforeFollow=unicorn.getPos();
+                        camera(a,world,-14.5,.5);
+                        modeAt=world.getTime();
+                        command(0,"unicornInspect","wait-owner");command(1,"unicornInspect","wait-observer");phase=51;
+                    }
+                    case 51->{
+                        if(world.getTime()-modeAt<65)return;
+                        check(unicorn.waiting()&&unicorn.squaredDistanceTo(beforeFollow)<1,"WAIT remains still after distant owner movement");
+                        a.setSneaking(true);
+                        unicorn.interactMob(a,Hand.MAIN_HAND);
+                        var anchored=unicorn.writeNbt(new net.minecraft.nbt.NbtCompound());
+                        check("GUARD".equals(anchored.getString("UnicornBehavior"))&&anchored.contains("UnicornGuardPoint"),"GUARD stores a post");
+                        unicorn.interactMob(a,Hand.MAIN_HAND);
+                        a.setSneaking(false);
+                        a.setSneaking(true);unicorn.interactMob(a,Hand.MAIN_HAND);a.setSneaking(false);unicorn.damage(world.getDamageSources().genericKill(),1000);check(unicorn.recovering()&&unicorn.isAlive(),"Lethal damage recovery");Files.writeString(output.resolve("unicorn-resume.json"),unicorn.getUuid().toString());Files.writeString(output.resolve("resume.json"),"{}");command(0,"wait","");command(1,"wait","");server.save(false,true,true);server.stop(false);phase=999;}
                     case 899->{hotfixHudChecked=true;phase=900;}
                     case 901->{camera(a,world,.5,4.2);camera(b,world,.5,-3.6);command(0,"unicornInspect","unicorn-final-front");command(1,"unicornInspect","unicorn-final-back");phase=902;}
                     case 902->{unicorn.bondWithPlayer(a);unicorn.saddle(new ItemStack(Items.SADDLE),null);unicorn.setAiDisabled(false);camera(a,world,2.1,2.0);camera(b,world,-4.1,3.4);command(0,"unicornInteract","unicorn-final-mounted");command(1,"unicornInspect","unicorn-final-saddle");phase=903;}

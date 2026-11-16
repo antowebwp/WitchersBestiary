@@ -163,11 +163,14 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
                 if (owner == null || squaredDistanceTo(owner) <= 16 || repath-- > 0) return;
                 repath = 9;
                 double distance = squaredDistanceTo(owner);
-                var path = getNavigation().findPathTo(owner.getBlockPos(), 0);
-                if (path != null) {
-                    double speed = path.reachesTarget() ? (distance > 256 ? 1.42 : 1.18) : 1.28;
-                    getNavigation().startMovingAlong(path, speed);
+                setEatingGrass(false);
+                double speed = distance > 256 ? 1.42 : 1.18;
+                var navigation = getNavigation();
+                var path = navigation.findPathTo(owner, 3);
+                if (path != null && (path.reachesTarget() || path.getLength() > 1)) {
+                    navigation.startMovingAlong(path, speed);
                 }
+
             }
 
             @Override public void stop() {
@@ -199,6 +202,11 @@ public final class UnicornEntity extends HorseEntity implements GeoEntity {
         if (!canUseCommand(Behavior.FOLLOW)) return null;
         var owner = getOwner();
         return owner != null && owner.isAlive() && !owner.isSpectator() && owner.getWorld() == getWorld() ? owner : null;
+    }
+
+    void onWhistleArrival() {
+        stopCommandMovement();
+        if (behavior() == Behavior.GUARD) guardPoint = getBlockPos().toImmutable();
     }
 
     private void stopCommandMovement() {

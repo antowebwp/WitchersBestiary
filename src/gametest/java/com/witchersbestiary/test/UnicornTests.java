@@ -203,4 +203,47 @@ public final class UnicornTests implements FabricGameTest {
             loaded.discard(); horse.discard(); second.discard(); owner.discard(); c.complete();
         });
     }
+    @GameTest(templateName="witchersbestiary:village_board_arena", tickLimit=165)
+    public void followWaitGuardAndWhistleRetainSameUnicorn(TestContext c) {
+        var world=c.getWorld();
+        var at=c.getAbsolutePos(new BlockPos(6,7,6));
+        for (int x=-7;x<=21;x++) for (int z=-5;z<=5;z++) {
+            world.setBlockState(at.add(x,-1,z),Blocks.GRASS_BLOCK.getDefaultState());
+            for (int y=0;y<3;y++) world.setBlockState(at.add(x,y,z),Blocks.AIR.getDefaultState());
+        }
+        var owner=player(c);
+        owner.refreshPositionAndAngles(at.getX()+12.5,at.getY(),at.getZ()+.5,0,0);
+        var horse=Unicorns.TYPE.create(world);
+        horse.refreshPositionAndAngles(at.getX()+.5,at.getY(),at.getZ()+.5,0,0);
+        horse.bondWithPlayer(owner);
+        world.spawnEntity(horse);
+        var id=horse.getUuid();
+        c.runAtTick(65,()->{
+            c.assertTrue(horse.squaredDistanceTo(owner)<95,"FOLLOW closes a twelve-block gap on foot");
+            owner.setSneaking(true);
+            horse.interactMob(owner,Hand.MAIN_HAND);
+            c.assertTrue(horse.waiting(),"FOLLOW toggles to WAIT");
+            owner.refreshPositionAndAngles(at.getX()+19.5,at.getY(),at.getZ()+.5,0,0);
+            var whistle=new ItemStack(Unicorns.WHISTLE);
+            owner.setStackInHand(Hand.MAIN_HAND,whistle);
+            horse.interactMob(owner,Hand.MAIN_HAND);
+            c.assertTrue(horse.waiting(),"Binding preserves WAIT");
+        });
+        c.runAtTick(115,()->{
+            c.assertTrue(horse.waiting() && horse.squaredDistanceTo(owner)>36,
+                "WAIT does not follow or teleport after the owner walks away");
+            owner.setSneaking(false);
+            c.assertTrue(Unicorns.WHISTLE.use(world,owner,Hand.MAIN_HAND).getResult().isAccepted(),"Whistle call");
+            c.assertTrue(horse.waiting() && horse.squaredDistanceTo(owner)<55 && world.getEntity(id)==horse,
+                "Whistle calls the original animal and preserves WAIT");
+            owner.setStackInHand(Hand.MAIN_HAND,ItemStack.EMPTY);
+            owner.setSneaking(true);
+            horse.interactMob(owner,Hand.MAIN_HAND);
+            var nbt=new NbtCompound();
+            horse.writeCustomDataToNbt(nbt);
+            c.assertTrue(nbt.contains("UnicornGuardPoint") && BlockPos.fromLong(nbt.getLong("UnicornGuardPoint")).equals(horse.getBlockPos()),
+                "GUARD anchors to the selected point");
+            horse.discard();owner.discard();c.complete();
+        });
+    }
 }
