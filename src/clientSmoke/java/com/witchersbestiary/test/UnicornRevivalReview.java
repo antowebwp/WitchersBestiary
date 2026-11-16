@@ -38,6 +38,8 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
             ClientTickEvents.END_CLIENT_TICK.register(new NaturalEncounters()::tick);
         else if (Boolean.getBoolean("witchersbestiary.whistleArtReview"))
             ClientTickEvents.END_CLIENT_TICK.register(new WhistleArt()::tick);
+        else if (System.getProperty("witchersbestiary.whistleResumeWorld") != null)
+            ClientTickEvents.END_CLIENT_TICK.register(new SavedWhistle()::tick);
         else ClientTickEvents.END_CLIENT_TICK.register(this::tick);
     }
 
@@ -447,6 +449,59 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
             }));
         }
     }
+    /** Restarts a previously created review world with the owner outside the unicorn's view distance. */
+    private static final class SavedWhistle {
+        private int ticks;
+        private boolean opened;
+        private UUID target;
+        void tick(MinecraftClient client) {
+            try {
+                if (!opened) {
+                    if (client.getOverlay()!=null) return;
+                    opened=true;
+                    org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
+                    client.options.pauseOnLostFocus=false;
+                    client.createIntegratedServerLoader().start(System.getProperty("witchersbestiary.whistleResumeWorld"),
+                            () -> { throw new IllegalStateException("Saved whistle review cancelled"); });
+                    return;
+                }
+                if (client.player==null || client.currentScreen!=null) return;
+                if (++ticks==30) {
+                    var nbt=client.player.getMainHandStack().getOrDefault(net.minecraft.component.DataComponentTypes.CUSTOM_DATA,
+                            net.minecraft.component.type.NbtComponent.DEFAULT).copyNbt();
+                    target=nbt.getUuid("Unicorn");
+                    require(client.getServer().submit(()->client.getServer().getOverworld().getEntity(target)==null).join(),
+                            "Unicorn must be unloaded before starting the whistle");
+                    client.interactionManager.interactItem(client.player,Hand.MAIN_HAND);
+                }
+                if (ticks<30) return;
+                if (ticks%15==0) {
+                    client.getServer().submit(()->{
+                        var server=client.getServer();
+                        var player=server.getPlayerManager().getPlayerList().getFirst();
+                        var horse=server.getOverworld().getEntity(target);
+                        System.out.println("Whistle observed tick "+ticks+", owner="+player.getPos()+", entity="
+                                +(horse==null?"unloaded":horse.getPos())+", cooldown="
+                                +player.getItemCooldownManager().isCoolingDown(Unicorns.WHISTLE));
+                    }).join();
+                    if (ticks<=90) WhistleArt.capture(client,"progress-"+ticks);
+                }
+                for (var e:client.world.getEntities()) if (e instanceof UnicornEntity horse && target.equals(e.getUuid())
+                        && horse.squaredDistanceTo(client.player)<60) {
+                    require(horse.waiting() && horse.isSaddled(),"Original WAIT and saddle retained");
+                    WhistleArt.capture(client,"unloaded-whistle-pass");
+                    Files.writeString(Path.of("../result.txt"),"PASS unloaded-chunk whistle, original UUID, WAIT and saddle.");
+                    client.scheduleStop();
+                    return;
+                }
+                if (ticks>250) throw new IllegalStateException("Resume whistle could not find pet");
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                client.scheduleStop();
+            }
+        }
+    }
+
     private static final class WhistleArt {
         private boolean started;
         private int age;
@@ -465,7 +520,7 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
                             r -> r.get(RegistryKeys.WORLD_PRESET).get(WorldPresets.FLAT).createDimensionsRegistryHolder(),null);
                     return;
                 }
-                if (client.player==null || client.getOverlay()!=null) return;
+                if (client.player==null || client.getOverlay()!=null || age<40 && client.currentScreen!=null) return;
                 switch (++age) {
                     case 15 -> edit(client,player->{
                         player.setStackInHand(Hand.MAIN_HAND,new ItemStack(Unicorns.WHISTLE));
