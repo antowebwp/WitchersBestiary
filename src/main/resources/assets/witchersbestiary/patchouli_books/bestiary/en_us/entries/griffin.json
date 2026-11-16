@@ -18,12 +18,12 @@
     {
       "type": "patchouli:text",
       "title": "Ground combat",
-      "text": "Claws: 11 damage; beak: 13; broad wing strike: 9 with strong knockback. Sidestep after its windup. Below 30 percent health it pursues and dives faster."
+      "text": "Claws hit twice for 7 each, the beak hits for 13, lunges hit for 10, and wing sweeps knock targets back for 9 or 11 damage. Step out of the wing’s reach during the windup."
     },
     {
       "type": "patchouli:text",
       "title": "Air",
-      "text": "Takeoff, a bounded circuit and a warning before its 16-damage dive. The dive commits before launch: dodge late rather than retreating in a straight line. Every aerial cycle ends; grounded cooldowns keep the beast accessible."
+      "text": "After circling, the griffin commits to a dive for 15 damage. Dodge across its path. Aard can interrupt an ongoing dive, and ranged attacks remain effective during ascent."
     },
     {
       "type": "patchouli:text",

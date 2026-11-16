@@ -75,6 +75,13 @@ loom {
    programArgs '--width', '960', '--height', '540'
    runDir 'build/stage22r/client'
   }
+  griffinReview {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.griffinReview=true'
+   programArgs '--width', '960', '--height', '540'
+   runDir 'build/griffin-reforged/client'
+  }
   signAbilitiesReview {
    client()
    source sourceSets.clientSmoke
