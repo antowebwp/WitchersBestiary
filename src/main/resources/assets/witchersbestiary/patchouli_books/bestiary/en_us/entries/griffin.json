@@ -39,6 +39,10 @@
       "type": "patchouli:text",
       "title": "Hunting lures",
       "text": "$(l:hunting_lures)Hunting lures$(/l) can call this creature. Read the placement, waiting and cooldown rules before setting an offering."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Backpedaling invites a lunge. Watch the raised wing, then move out of its sweep. A crouch telegraphs takeoff; melee strikes are deflected during ascent. Move across the dive line and use Aard when the griffin is visibly diving. Strike while it recovers on the ground."
     }
   ]
 }

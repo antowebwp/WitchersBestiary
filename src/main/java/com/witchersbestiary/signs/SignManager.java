@@ -164,6 +164,7 @@ public final class SignManager {
   if(sign==SignType.IGNI){int seconds=3+(duration+effect)/2;target.setOnFireFor(seconds);BURNS.put(target.getUuid(),new Burn(p.getUuid(),p.getWorld().getRegistryKey(),p.getWorld().getTime()+seconds*20));}
   else {
    if(target instanceof com.witchersbestiary.entity.monster.HigherVampireEntity vampire)vampire.interruptCombat(6);
+   if(target instanceof com.witchersbestiary.entity.monster.GriffinEntity griffin)griffin.interruptDive();
    double force=(form==2?1.45:.85)*(large(target)?.3:1)*(1+.1*effect);
    if(form==3){var pull=p.getPos().subtract(target.getPos()).multiply(1,0,1).normalize().multiply(force);target.addVelocity(pull.x,.1,pull.z);}
    else target.takeKnockback(force,p.getX()-target.getX(),p.getZ()-target.getZ());

@@ -110,7 +110,7 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
  @Override public void tick(){super.tick();if(!(getWorld() instanceof ServerWorld)||!isAlive())return;if(attackCooldown>0)attackCooldown--;if(flightCooldown>0)flightCooldown--;if(vulnerableTicks>0)vulnerableTicks--;if(lungeCooldown>0)lungeCooldown--;if(Stun.active(this)){cancelCombatForStun();return;}if(isAiDisabled()){if(action!=Action.NONE||isFlying())cancelCombatForStun();return;}var target=getTarget();motion.sample(this,target);setAttacking(target!=null&&target.isAlive());
   if(!isEnraged()&&getHealth()<getMaxHealth()*.3f){dataTracker.set(RAGE,true);getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED).setBaseValue(ModConfig.speed(.37));if(!isFlying()&&action==Action.NONE)start(Action.ROAR);}
   if(isFlying()){aerialTick(target);return;}
-  if(action!=Action.NONE){actionTick++;getNavigation().stop();setVelocity(0,getVelocity().y,0);if(action==Action.STAGGER){if(actionTick>=30)finish();return;}if(action==Action.ROAR){if(actionTick>=22)finish();return;}if(target==null||!target.isAlive()){finish();return;}
+  if(action!=Action.NONE){actionTick++;getNavigation().stop();setVelocity(0,getVelocity().y,0);if(action==Action.STAGGER){if(!isOnGround())actionTick=0;else if(actionTick>=30)finish();return;}if(action==Action.ROAR){if(actionTick>=22)finish();return;}if(target==null||!target.isAlive()){finish();return;}
    if(action==Action.TAKEOFF_PREPARE){
     direction=CombatMotion.face(this,target.getPos(),10);
     if(actionTick>=14){
@@ -164,6 +164,19 @@ public final class GriffinEntity extends HostileEntity implements GeoEntity,Cate
    if(distance>1.8||!CombatMotion.meleeHeight(this,target)||!canSee(target))getNavigation().startMovingTo(target,isEnraged()?1.2:1.1);
    else getNavigation().stop();
   }
+ }
+ /** Called only after a successful server-side Aard hit with its normal range and line-of-sight checks. */
+ public void interruptDive(){
+  if(getWorld().isClient||action!=Action.DIVE||!isFlying())return;
+  dataTracker.set(AIR,false);
+  dataTracker.set(GLIDE,false);
+  setNoGravity(false);
+  airTicks=0;
+  forcedLanding=true;
+  vulnerableTicks=65;
+  flightCooldown=ModConfig.abilityTicks(220);
+  start(Action.STAGGER);
+  setVelocity(0,-.48,0);
  }
  public boolean hasTakeoffMeleeProtection(){return !getWorld().isClient&&isAlive()&&!isAiDisabled()&&!Stun.active(this)&&isFlying()&&action==Action.TAKEOFF&&actionTick<20;}
  public static boolean ordinaryMelee(DamageSource source){return source.getAttacker() instanceof LivingEntity&&source.getSource()==source.getAttacker()&&!source.isIn(net.minecraft.registry.tag.DamageTypeTags.IS_PROJECTILE)&&!source.isIn(net.minecraft.registry.tag.DamageTypeTags.IS_EXPLOSION)&&!source.isIn(net.minecraft.registry.tag.DamageTypeTags.BYPASSES_INVULNERABILITY)&&source.isIn(net.minecraft.registry.tag.TagKey.of(net.minecraft.registry.RegistryKeys.DAMAGE_TYPE,net.minecraft.util.Identifier.of("witchersbestiary","takeoff_melee")));}
