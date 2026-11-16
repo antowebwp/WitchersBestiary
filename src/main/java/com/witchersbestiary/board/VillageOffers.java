@@ -39,13 +39,16 @@ public final class VillageOffers extends PersistentState {
         if(age-old.created()<24000 || !old.offers().stream().allMatch(claimed))throw new IllegalStateException("Refresh requires five claimed offers and one day cooldown");
         var base=current(village,age,eligible);String prefix=village+"/personal/"+player+"/";
         villages.keySet().removeIf(k->k.startsWith(prefix));
-        return current(prefix+base.id(),age,eligible);
+        return current(prefix+base.id(),age,eligible,old);
     }
 
     public static VillageOffers get(MinecraftServer server) {
         return server.getOverworld().getPersistentStateManager().getOrCreate(TYPE, "witchersbestiary_village_offers");
     }
     public Generation current(String village, long age, List<String> eligible) {
+        return current(village,age,eligible,villages.get(village));
+    }
+    private Generation current(String village, long age, List<String> eligible, Generation previous) {
         if (future != null) throw new IllegalStateException("Future village offer schema preserved read-only");
         var old = villages.get(village);
         if (old != null && (age < old.created() || age - old.created() < INTERVAL)) return old;
@@ -54,7 +57,7 @@ public final class VillageOffers extends PersistentState {
         boolean vampireCycle=legends && pool.size()>2 && Math.floorMod(age/INTERVAL+village.hashCode(),3)==0;
         int slots = legends ? (vampireCycle?3:2) : 5;
         if (pool.size() < slots) throw new IllegalStateException("Five eligible species required");
-        if (slots == 5) Collections.shuffle(pool);
+        if (slots == 5) pool = diverse(pool, previous, village, age);
         else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst()))
             Collections.swap(pool,0,1);
         var offers = new ArrayList<Offer>(5);
@@ -62,6 +65,50 @@ public final class VillageOffers extends PersistentState {
         var next = new Generation(UUID.randomUUID(), age, offers);
         if(!village.contains("/personal/"))villages.keySet().removeIf(k->k.startsWith(village+"/personal/"));
         villages.put(village, next); markDirty(); return next;
+    }
+    private static ArrayList<String> diverse(List<String> candidates, Generation previous, String village, long age) {
+        var last = previous == null ? Set.<String>of() : previous.offers().stream()
+                .map(Offer::definition).collect(java.util.stream.Collectors.toSet());
+        var pool = new ArrayList<>(candidates);
+        var selected = new ArrayList<String>(5);
+        var families = new HashMap<String, Integer>();
+        var random = new Random(((long) village.hashCode() << 32) ^ age);
+        while (selected.size() < 5) {
+            int[] weights = new int[pool.size()];
+            int total = 0;
+            for (int i = 0; i < pool.size(); i++) {
+                String definition = pool.get(i);
+                String family = family(definition);
+                int weight = last.contains(definition) ? 5 : 18;
+                weight /= 1 + 2 * families.getOrDefault(family, 0);
+                if ((village.contains("taiga") && family.equals("forest"))
+                        || (village.contains("swamp") && family.equals("necrophage"))) weight += 2;
+                weights[i] = Math.max(1, weight);
+                total += weights[i];
+            }
+            int roll = random.nextInt(total);
+            int index = 0;
+            while (roll >= weights[index]) roll -= weights[index++];
+            String definition = pool.remove(index);
+            selected.add(definition);
+            families.merge(family(definition), 1, Integer::sum);
+        }
+        return selected;
+    }
+
+    private static String family(String definition) {
+        return switch (definition.substring(definition.lastIndexOf(':') + 1)) {
+            case "procedural_ghoul", "procedural_drowner", "procedural_foglet", "procedural_grave_hag",
+                 "procedural_water_hag" -> "necrophage";
+            case "procedural_specter", "procedural_noonwraith" -> "specter";
+            case "procedural_leshen", "procedural_fiend" -> "forest";
+            case "procedural_katakan" -> "vampire";
+            case "procedural_werewolf" -> "cursed";
+            case "procedural_endrega" -> "insectoid";
+            case "procedural_griffin" -> "hybrid";
+            case "procedural_nekker", "procedural_bonecrusher" -> "ogroid";
+            default -> definition;
+        };
     }
     @Override public NbtCompound writeNbt(NbtCompound n, RegistryWrapper.WrapperLookup lookup) {
         if (future != null) return future.copy();
