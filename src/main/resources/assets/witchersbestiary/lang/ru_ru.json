@@ -1,4 +1,15 @@
 {
+  "contract.witchersbestiary.legacy_vampire_paid": "Награда за первую охоту отмечена как уже выданная. Предметы и кроны не начислены.",
+  "gui.witchersbestiary.board.retry_placement": "Повторить поиск",
+  "gui.witchersbestiary.board.placement_pending": "Контракт принят. Место охоты уточняется.",
+  "item.witchersbestiary.crimson_phylactery.state.captured": "Заполнена · Самостоятельная охота",
+  "item.witchersbestiary.crimson_phylactery.success": "Высший вампир запечатан.",
+  "item.witchersbestiary.crimson_phylactery.interrupted": "Запечатывание прервано.",
+  "item.witchersbestiary.crimson_phylactery.unsuitable": "Филактерия уже заполнена или привязана к другой охоте.",
+  "item.witchersbestiary.crimson_phylactery.range": "Подойдите на пять блоков и держите вампира в поле зрения.",
+  "item.witchersbestiary.crimson_phylactery.not_ready": "Вампир ещё не готов к запечатыванию. Наведитесь на него после финального поражения.",
+  "item.witchersbestiary.crimson_phylactery.ready": "Вампир повержен. Наведите подходящую филактерию и удерживайте ПКМ.",
+
   "hunt.witchersbestiary.proc.offer.water_hag": "Водная баба",
   "hunt.witchersbestiary.proc.name.water_hag.0": "Водная баба",
   "hunt.witchersbestiary.proc.name.water_hag.1": "Тварь",

@@ -118,4 +118,46 @@ public final class ContractFoundationTests implements FabricGameTest {
         c.assertTrue(!expiring.credit(UUID.randomUUID(),expiring.owner(),expiring.definition().target(),1011),"Expired blocks kills");
         rejects(c,()->expiring.transition(ContractInstance.Status.ACCEPTED));c.complete();
     }
+    @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
+    public void pendingRoutePersistsBeforeTerrainSurvey(TestContext c) {
+        var player = c.createMockCreativeServerPlayerInWorld();
+        var board = c.getAbsolutePos(new net.minecraft.util.math.BlockPos(20, 5, 20));
+        var id = com.witchersbestiary.contracts.procedural.ProceduralHunts.id("griffin");
+        var hunt = Contracts.assignPrepared(player, id, 42L, board);
+        var store = ContractState.get(player.getServer());
+        var registry = c.getWorld().getRegistryManager();
+        var snapshot = ContractState.read(store.writeNbt(new NbtCompound(), registry), registry);
+        var saved = snapshot.find(hunt.id());
+        c.assertTrue(com.witchersbestiary.contracts.hunt.SwampLord.pendingPlacement(saved)
+                && saved.owner().equals(player.getUuid()) && saved.hunt.origin.equals(board)
+                && saved.investigation.clues.isEmpty() && saved.procedural.seed()==42L,
+                "Acceptance persists a searchable hunt without premature clues or target");
+        Contracts.cancel(player, hunt.id());
+        player.discard();
+        c.complete();
+    }
+
+    @GameTest(templateName=FabricGameTest.EMPTY_STRUCTURE)
+    public void confirmedLegacyVampireStateIsIdempotent(TestContext c) {
+        var id = com.witchersbestiary.contracts.hunt.VampireHunt.ID;
+        var hunt = new ContractInstance(UUID.randomUUID(), UUID.randomUUID(), Contracts.DEFINITIONS.find(id),
+                System.currentTimeMillis());
+        hunt.transition(ContractInstance.Status.ACCEPTED);
+        hunt.credit(UUID.randomUUID(), hunt.owner(), id, System.currentTimeMillis());
+        hunt.replayGeneration=1;
+        var store = new ContractState();
+        store.add(hunt);
+        store.track(hunt.owner(), hunt.id());
+        var registry = c.getWorld().getRegistryManager();
+        var saved = ContractState.read(store.writeNbt(new NbtCompound(), registry), registry);
+        var old = saved.find(hunt.id());
+        c.assertTrue(old.status()==ContractInstance.Status.COMPLETED, "Unconfirmed reward stays claimable");
+        com.witchersbestiary.contracts.hunt.VampireHunt.confirmLegacyPayment(saved, old);
+        com.witchersbestiary.contracts.hunt.VampireHunt.confirmLegacyPayment(saved, old);
+        var again = ContractState.read(saved.writeNbt(new NbtCompound(), registry), registry);
+        c.assertTrue(again.find(hunt.id()).status()==ContractInstance.Status.REWARDED
+                && again.find(hunt.id()).progress()==1 && again.tracked(hunt.owner())==null,
+                "Confirmed payment survives restart, preserves victory and clears stale tracking");
+        c.complete();
+    }
 }

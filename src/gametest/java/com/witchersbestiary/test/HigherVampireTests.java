@@ -195,6 +195,7 @@ public final class HigherVampireTests implements FabricGameTest {
         owner.setPitch(0);
         item.use(world,owner,hand);
         c.assertTrue(hunt.vampire==null && hunt.vampireReplayReady > world.getTime(), "Cooldown prevents immediate replay");
+        var repeat = com.witchersbestiary.contracts.Contracts.assign(owner, com.witchersbestiary.contracts.hunt.VampireHunt.ID);
         hunt.vampireReplayReady = world.getServer().getOverworld().getTime();
         item.use(world,owner,hand);
         c.assertTrue(hunt.vampire!=null,"Sealed relic summons a replay: "+hunt.status()+"/"+stack);
@@ -207,9 +208,60 @@ public final class HigherVampireTests implements FabricGameTest {
         defeat(replay,world);
         c.assertTrue(item.use(world,owner,hand).getResult().isAccepted(),"Aimed use begins sealing");
         item.usageTick(world,owner,stack,1);
-        c.assertTrue(replay.isRemoved()&&hunt.vampire==null&&owner.getInventory().count(sword)==1,"Replay seals without rewards");
+        c.assertTrue(replay.isRemoved()&&hunt.vampire==null&&owner.getInventory().count(sword)==1,"Replay seals without duplicating Blood Legacy");
+        c.assertTrue(repeat.status() == com.witchersbestiary.contracts.ContractInstance.Status.REWARDED
+                && owner.getInventory().count(com.witchersbestiary.economy.Currency.CROWN) == 780,
+                "The repeat contract pays 180 additional crowns");
 
         c.complete();
+    }
+
+    @GameTest(templateName = FabricGameTest.EMPTY_STRUCTURE)
+    public void commandVampireSealsWithUnboundItemAfterReload(TestContext test) {
+        var world = test.getWorld();
+        var pos = test.getAbsolutePos(new BlockPos(3, 2, 3));
+        var player = new net.minecraft.server.network.ServerPlayerEntity(world.getServer(), world,
+                new com.mojang.authlib.GameProfile(java.util.UUID.randomUUID(), "ManualSealing"),
+                net.minecraft.network.packet.c2s.common.SyncedClientOptions.createDefault());
+        player.networkHandler = new net.minecraft.server.network.ServerPlayNetworkHandler(world.getServer(),
+                new net.minecraft.network.ClientConnection(net.minecraft.network.NetworkSide.SERVERBOUND), player,
+                net.minecraft.server.network.ConnectedClientData.createDefault(player.getGameProfile(), false));
+        player.refreshPositionAndAngles(pos.getX()+.5,pos.getY(),pos.getZ()+.5,0,0);
+        world.getServer().getCommandManager().executeWithPrefix(player.getCommandSource().withLevel(2),
+                "summon witchersbestiary:higher_vampire ~ ~ ~3");
+        var boss = world.getEntitiesByClass(com.witchersbestiary.entity.monster.HigherVampireEntity.class,
+                new net.minecraft.util.math.Box(pos).expand(5), entity -> true).getFirst();
+        var item = com.witchersbestiary.registry.ModItems.CRIMSON_PHYLACTERY;
+        var hand = net.minecraft.util.Hand.MAIN_HAND;
+        var stack = new net.minecraft.item.ItemStack(item);
+        player.setStackInHand(hand, stack);
+
+        boss.setHealth(1);
+        test.assertTrue(!boss.canBeSealed() && !item.use(world, player, hand).getResult().isAccepted(),
+                "One HP alone cannot start sealing");
+        defeat(boss, world);
+        test.assertTrue(boss.canBeSealed(), "Final defeat opens the sealing window");
+        var nbt = boss.writeNbt(new net.minecraft.nbt.NbtCompound());
+        nbt.remove("SealWindowRemaining");
+        nbt.putLong("ReviveAt", world.getTime()-1);
+        boss.discard();
+        var restored = ModEntities.HIGHER_VAMPIRE.create(world);
+        restored.readNbt(nbt);
+        world.spawnEntity(restored);
+        test.assertTrue(restored.canBeSealed() && !restored.hasHuntBinding(),
+                "Reload restores a legacy expired window for the same fallen unbound vampire");
+        test.assertTrue(item.use(world, player, hand).getResult().isAccepted(), "Unbound phylactery starts sealing");
+        item.usageTick(world, player, stack, 2);
+        test.assertTrue(restored.canBeSealed(), "Sealing needs the full five seconds");
+        item.usageTick(world, player, stack, 1);
+        test.assertTrue(restored.isRemoved() && com.witchersbestiary.contracts.hunt.VampireHunt.isSealed(stack),
+                "Successful capture consumes the encounter and fills the same item");
+        var store = com.witchersbestiary.contracts.ContractState.get(world.getServer());
+        test.assertTrue(store.ownedBy(player.getUuid()).isEmpty()
+                && player.getInventory().count(com.witchersbestiary.registry.ModItems.BLOOD_LEGACY) == 0
+                && player.getInventory().count(com.witchersbestiary.economy.Currency.CROWN) == 0,
+                "Independent capture creates no completion or reward");
+        test.complete();
     }
 
     private void defeat(com.witchersbestiary.entity.monster.HigherVampireEntity boss,net.minecraft.server.world.ServerWorld world) {

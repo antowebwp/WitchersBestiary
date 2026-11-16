@@ -1,4 +1,15 @@
 {
+  "contract.witchersbestiary.legacy_vampire_paid": "Original vampire reward recorded as already paid. No items or crowns issued.",
+  "gui.witchersbestiary.board.retry_placement": "Retry survey",
+  "gui.witchersbestiary.board.placement_pending": "Contract accepted. The hunting ground is being surveyed.",
+  "item.witchersbestiary.crimson_phylactery.state.captured": "Filled · Independent capture",
+  "item.witchersbestiary.crimson_phylactery.success": "Higher Vampire sealed.",
+  "item.witchersbestiary.crimson_phylactery.interrupted": "Sealing interrupted.",
+  "item.witchersbestiary.crimson_phylactery.unsuitable": "This phylactery is filled or bound to another hunt.",
+  "item.witchersbestiary.crimson_phylactery.range": "Move within five blocks and keep the vampire in sight.",
+  "item.witchersbestiary.crimson_phylactery.not_ready": "The vampire is not ready to seal. Aim at it after final defeat.",
+  "item.witchersbestiary.crimson_phylactery.ready": "The vampire is down. Hold a suitable phylactery on it to seal it.",
+
   "hunt.witchersbestiary.proc.offer.water_hag": "Water Hag",
   "hunt.witchersbestiary.proc.name.water_hag.0": "Water Hag",
   "hunt.witchersbestiary.proc.name.water_hag.1": "Beast",

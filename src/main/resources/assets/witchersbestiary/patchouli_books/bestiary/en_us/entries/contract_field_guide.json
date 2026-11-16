@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "A village board carries five regular contracts and rotates them every three in-game days. Accepted hunts stay in your journal. Choose a contract and let the board find a safe route."
+      "text": "A village board carries five regular contracts and rotates them every three in-game days. A hunt is accepted while its route is surveyed. If the search stalls, retry it at the board or abandon the hunt."
     },
     {
       "type": "patchouli:text",
@@ -18,6 +18,10 @@
     {
       "type": "patchouli:text",
       "text": "The first Higher Vampire hunt pays 600 crowns and Blood Legacy. Keep your original sealed Crimson Phylactery. If the board offers a repeat hunt, accept it and use the phylactery in a clear area after its cooldown. Seal the vampire again for 180 crowns and two fangs."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "A blank phylactery can seal a Higher Vampire after its final defeat, even outside a contract. Approach, aim, and hold use for five seconds. Only a bound hunt can pay its contract reward."
     }
   ]
 }

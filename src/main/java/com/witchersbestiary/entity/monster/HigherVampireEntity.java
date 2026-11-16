@@ -19,6 +19,7 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.world.World;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -321,6 +322,9 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         if (getWorld().isClient || isDefeated()) return;
         sealable = isFinalPhase();
         reviveAt = getWorld().getTime() + 1800;
+        if (sealable && getWorld() instanceof ServerWorld world)
+            for (var player : world.getPlayers(p -> p.squaredDistanceTo(this) <= 256))
+                player.sendMessage(Text.translatable("item.witchersbestiary.crimson_phylactery.ready"), true);
         dataTracker.set(DEFEATED_HUMAN, !isHybrid());
         dataTracker.set(STAGE, DEFEATED);
         // A living, inert entity keeps its UUID and its persistent defeated pose.
@@ -343,6 +347,7 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         nbt.putBoolean("Sealable", sealable);
         nbt.putBoolean("VampireHuntBound", huntBound);
         nbt.putLong("ReviveAt", reviveAt);
+        if (canBeSealed()) nbt.putLong("SealWindowRemaining", Math.max(0, reviveAt - getWorld().getTime()));
         nbt.putInt("EncounterPlayers", scaledPlayers);
         nbt.putLong("RegenerationAt", regenAt);
         nbt.putBoolean("CocoonUsed", cocoonUsed);
@@ -360,6 +365,12 @@ public final class HigherVampireEntity extends HostileEntity implements GeoEntit
         sealable = nbt.getBoolean("Sealable");
         reviveAt = nbt.getLong("ReviveAt");
         boolean defeated = nbt.getBoolean("Defeated");
+        if (defeated && sealable) {
+            long now = getWorld().getTime();
+            long remaining = nbt.contains("SealWindowRemaining")
+                    ? nbt.getLong("SealWindowRemaining") : reviveAt - now;
+            reviveAt = now + (remaining > 0 ? Math.min(1800, remaining) : 1800);
+        }
         dataTracker.set(DEFEATED_HUMAN, defeated && !hybrid);
         dataTracker.set(STAGE, defeated ? DEFEATED : hybrid ? (nbt.getBoolean("FinalPhase") ? FINAL : HYBRID) : HUMAN);
         int transition = nbt.getInt("TransitionStage");

@@ -94,21 +94,27 @@ public final class BoardScreenHandler extends ScreenHandler {
         try {
             if(Contracts.DEFINITIONS.find(id)==null)throw new IllegalStateException("unavailable");
             var existing=instance(server,index);
-            if(button<32){if(existing!=null)throw new IllegalStateException("already");
-                if(!legendary){
-                    if(com.witchersbestiary.contracts.hunt.HuntTerrain.pending(owner)){send(server,"preparing");return true;}
-                    var expected=generation.id();var offer=generation.offers().get(index);
-                    com.witchersbestiary.contracts.hunt.SwampLord.validateAccept(server,id);
-                    com.witchersbestiary.contracts.hunt.HuntTerrain.request(server,root,()->server.currentScreenHandler==this&&canUse(server)&&!legendary&&generation.id().equals(expected)&&current(server).id().equals(expected),()->{
-                        try{var accepted=Contracts.assignPrepared(server,id,offer.id().getMostSignificantBits(),root);accepted.village=village;accepted.offer=offer.id();accepted.generation=expected;ContractState.get(server.getServer()).markDirty();return true;}catch(IllegalStateException e){if(e.getMessage()!=null&&e.getMessage().startsWith("No safe loaded hunt area"))return false;throw e;}
-                    },success->{if(!success)failures.put(index,"no_safe_route");send(server,success?"updated":"no_safe_route");});
-                    send(server,"preparing");return true;
+            if(button<32){
+                if(existing!=null){
+                    if(!com.witchersbestiary.contracts.hunt.SwampLord.pendingPlacement(existing))
+                        throw new IllegalStateException("already");
+                    com.witchersbestiary.contracts.hunt.SwampLord.survey(server,existing);
+                    send(server,"placement_pending");
+                    return true;
                 }
-                var accepted=Contracts.assignPrepared(server,id,null,root);
+                var offer=generation.offers().get(index);
+                var accepted=Contracts.assignPrepared(server,id,offer.id().getMostSignificantBits(),root);
                 accepted.village=village;
                 accepted.offer=generation.offers().get(index).id();
                 accepted.generation=generation.id();
                 ContractState.get(server.getServer()).markDirty();
+                if(com.witchersbestiary.contracts.hunt.SwampLord.pendingPlacement(accepted)){
+                    status="placement_pending";
+                    if(!VampireHunt.ID.equals(id)){
+                        try {com.witchersbestiary.contracts.hunt.SwampLord.survey(server,accepted);}
+                        catch(IllegalStateException busy){ /* Saved contract can retry from the board. */ }
+                    }
+                }
             }
             else {if(existing==null)throw new IllegalStateException("unavailable");Contracts.claim(server,existing.id());}
         }catch(IllegalArgumentException|IllegalStateException e){status=button<32&&instance(server,index)!=null?"already":e.getMessage()!=null&&e.getMessage().startsWith("No safe loaded hunt area")?"no_safe_route":switch(String.valueOf(e.getMessage())){
@@ -130,6 +136,8 @@ public final class BoardScreenHandler extends ScreenHandler {
             if(current!=null&&current.procedural!=null){row.addProperty("generated_name",current.procedural.nameKey());row.addProperty("generated_epithet",current.procedural.epithetKey());row.addProperty("rarity",current.procedural.tier().name());}else if(LEGENDS.contains(id.toString()))row.addProperty("rarity","LEGENDARY");
             if(current!=null&&current.hunt!=null){row.addProperty("hunt_status",current.hunt.status.name().toLowerCase(java.util.Locale.ROOT));row.addProperty("hunt_dimension",current.hunt.dimension);var i=current.investigation;var destination=i!=null?(i.stage==com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.TRACKING&&i.next()!=null?i.next().position:i.lair):current.hunt.position;if(destination!=null)row.addProperty("hunt_area",(Math.floorDiv(destination.getX(),16)*16+8)+", "+(Math.floorDiv(destination.getZ(),16)*16+8));}
             if(current!=null&&current.investigation!=null){var investigation=current.investigation;row.addProperty("investigation_stage",investigation.stage.name().toLowerCase(java.util.Locale.ROOT));row.addProperty("clues",investigation.current);row.addProperty("clue_total",investigation.clues.size());if(investigation.current>0)row.addProperty("last_finding",com.witchersbestiary.contracts.tracking.Investigations.description(current,investigation.clues.get(investigation.current-1)));}
+            if(current!=null&&com.witchersbestiary.contracts.hunt.SwampLord.pendingPlacement(current))
+                row.addProperty("placement_pending",true);
             if(current!=null)row.addProperty("instance",current.id().toString());
             if(current==null&&failures.containsKey(rowIndex))row.addProperty("unavailable_reason",failures.get(rowIndex));
             if(current!=null&&current.status()==ContractInstance.Status.ACCEPTED&&current.hunt!=null&&current.hunt.status==com.witchersbestiary.contracts.hunt.SwampHunt.Status.WAITING)row.addProperty("recovery_unavailable",true);

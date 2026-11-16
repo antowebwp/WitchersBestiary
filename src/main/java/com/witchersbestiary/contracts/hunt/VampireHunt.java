@@ -25,6 +25,8 @@ public final class VampireHunt extends Item {
     public static final Identifier ID = Identifier.of("witchersbestiary", "higher_vampire");
     private static final int CHANNEL = 100;
     private static final int REPLAY_COOLDOWN = 12000;
+    private record Channel(HigherVampireEntity boss, ContractInstance contract, ItemStack stack) {}
+    private final java.util.Map<ServerPlayerEntity, Channel> channels = new java.util.WeakHashMap<>();
     private static final int EMPTY = 0, SEALED = 1, REPLAY_ACTIVE = 2;
 
     public VampireHunt() { super(new Settings().maxCount(1).rarity(Rarity.EPIC)); }
@@ -48,6 +50,19 @@ public final class VampireHunt extends Item {
         return original;
     }
 
+    public static void confirmLegacyPayment(ContractState store, ContractInstance hunt) {
+        store.writable();
+        if (hunt == null || !ID.equals(hunt.definition().id()) || isRepeat(hunt)
+                || hunt.replayGeneration < 1 || hunt.vampire != null)
+            throw new IllegalStateException("A sealed original vampire contract is required");
+        if (hunt.status() == ContractInstance.Status.REWARDED) return;
+        if (hunt.status() != ContractInstance.Status.COMPLETED)
+            throw new IllegalStateException("The original hunt must be completed");
+        hunt.transition(ContractInstance.Status.REWARDED);
+        if (hunt.id().equals(store.tracked(hunt.owner()))) store.track(hunt.owner(), null);
+        store.markDirty();
+    }
+
     public static ContractInstance claimedOriginal(ServerPlayerEntity player, ContractState store) {
         return store.ownedBy(player.getUuid()).stream()
                 .filter(c -> ID.equals(c.definition().id()) && c.status() == ContractInstance.Status.REWARDED
@@ -65,6 +80,21 @@ public final class VampireHunt extends Item {
                 new ContractDefinition.ItemReward(Identifier.of("witchersbestiary:witcher_crown"), 180),
                 new ContractDefinition.ItemReward(Identifier.of("witchersbestiary:vampire_fang"), 2))),
                 d.minimumLevel(), d.dimension(), d.durationMillis());
+    }
+
+    public static boolean place(ServerPlayerEntity player, ContractInstance contract) {
+        if (contract.hunt == null || contract.vampire != null || !first(contract)
+                || !contract.hunt.dimension.equals(player.getServerWorld().getRegistryKey().getValue().toString())
+                || contract.investigation != null && contract.investigation.next() != null) return false;
+        boolean ready = prepare(player, contract, contract.hunt.origin);
+        if (ready) com.witchersbestiary.contracts.tracking.Investigations.accepted(player, contract);
+        else {
+            contract.hunt.status = SwampHunt.Status.WAITING;
+            if (contract.investigation == null)
+                com.witchersbestiary.contracts.tracking.Investigations.accepted(player, contract);
+        }
+        ContractState.get(player.getServer()).markDirty();
+        return ready;
     }
 
     public static boolean prepare(ServerPlayerEntity player, ContractInstance c, BlockPos board) {
@@ -156,26 +186,66 @@ public final class VampireHunt extends Item {
 
     private static boolean first(ContractInstance c) { return c.status()==ContractInstance.Status.ACCEPTED; }
 
-    private static HigherVampireEntity aimed(ServerPlayerEntity player, ContractInstance c) {
-        if (c.vampire==null || !(player.getServerWorld().getEntity(c.vampire) instanceof HigherVampireEntity boss)
-                || !boss.canBeSealed() || player.squaredDistanceTo(boss)>25 || !player.canSee(boss)) return null;
-        var from=player.getEyePos();
-        var end=from.add(Vec3d.fromPolar(player.getPitch(), player.getYaw()).multiply(5));
-        var box=boss.getBoundingBox().expand(.18);
-        return box.contains(from)||box.raycast(from,end).isPresent() ? boss : null;
+    private static HigherVampireEntity aimed(ServerPlayerEntity player) {
+        var eye = player.getEyePos();
+        var end = eye.add(player.getRotationVec(1).multiply(12));
+        HigherVampireEntity nearest = null;
+        double distance = Double.POSITIVE_INFINITY;
+        for (var boss : player.getServerWorld().getEntitiesByClass(HigherVampireEntity.class,
+                new Box(eye, end).expand(1), HigherVampireEntity::isAlive)) {
+            var box = boss.getBoundingBox().expand(.18);
+            var hit = box.contains(eye) ? eye : box.raycast(eye, end).orElse(null);
+            if (hit != null && eye.squaredDistanceTo(hit) < distance) {
+                distance = eye.squaredDistanceTo(hit);
+                nearest = boss;
+            }
+        }
+        return nearest;
+    }
+
+    private static void feedback(ServerPlayerEntity player, String key) {
+        player.sendMessage(Text.translatable("item.witchersbestiary.crimson_phylactery." + key), true);
     }
 
     @Override public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-        var stack=user.getStackInHand(hand);
+        var stack = user.getStackInHand(hand);
         if (user.isSpectator() || !user.isAlive()) return TypedActionResult.fail(stack);
-        if (data(stack).getInt("State")==SEALED) {
+        var binding = data(stack);
+        if (binding.getInt("State") == SEALED) {
+            if (!binding.containsUuid("Contract")) {
+                if (user instanceof ServerPlayerEntity player) feedback(player, "unsuitable");
+                return TypedActionResult.fail(stack);
+            }
             if (world.isClient) return TypedActionResult.success(stack);
             return user instanceof ServerPlayerEntity player && summon(player,stack)
                     ? TypedActionResult.consume(stack) : TypedActionResult.fail(stack);
         }
         if (user instanceof ServerPlayerEntity player) {
-            var c=contract(player,stack);
-            if (c==null || aimed(player,c)==null || !maySeal(c,stack)) return TypedActionResult.fail(stack);
+            var boss = aimed(player);
+            if (boss == null || !boss.canBeSealed()) {
+                feedback(player, "not_ready");
+                return TypedActionResult.fail(stack);
+            }
+            if (player.squaredDistanceTo(boss) > 25 || !player.canSee(boss)) {
+                feedback(player, "range");
+                return TypedActionResult.fail(stack);
+            }
+            var c = contract(player, stack);
+            if (boss.hasHuntBinding() && c == null && binding.isEmpty()) {
+                var store = ContractState.get(player.getServer());
+                if (!store.readOnly()) {
+                    var linked = store.all().stream().filter(hunt -> boss.getUuid().equals(hunt.vampire)).findFirst().orElse(null);
+                    if (linked != null && linked.owner().equals(player.getUuid()) && first(linked)) c = linked;
+                }
+            }
+            boolean suitable = c != null
+                    ? boss.getUuid().equals(c.vampire) && maySeal(c, stack)
+                    : !boss.hasHuntBinding() && binding.isEmpty();
+            if (!suitable) {
+                feedback(player, "unsuitable");
+                return TypedActionResult.fail(stack);
+            }
+            channels.put(player, new Channel(boss, c, stack));
         }
         user.setCurrentHand(hand);
         return TypedActionResult.consume(stack);
@@ -195,27 +265,53 @@ public final class VampireHunt extends Item {
 
     @Override public void usageTick(World world, LivingEntity user, ItemStack stack, int remaining) {
         if (!(user instanceof ServerPlayerEntity player) || !(world instanceof ServerWorld server)) return;
-        var c=contract(player,stack);
-        var boss=c==null ? null : aimed(player,c);
-        if (!player.isAlive() || !ItemStack.areItemsAndComponentsEqual(player.getStackInHand(player.getActiveHand()),stack) || boss==null || !maySeal(c,stack)) {
+        var channel = channels.get(player);
+        if (channel == null || stack != channel.stack() || player.getStackInHand(player.getActiveHand()) != stack
+                || !player.isAlive() || !channel.boss().isAlive() || !channel.boss().canBeSealed()
+                || channel.boss().getWorld() != world || player.squaredDistanceTo(channel.boss()) > 25
+                || !player.canSee(channel.boss()) || aimed(player) != channel.boss()) {
+            if (channels.remove(player) != null) feedback(player, "interrupted");
             player.stopUsingItem();
             return;
         }
+        var boss = channel.boss();
         int elapsed=CHANNEL+1-remaining;
         if (elapsed%5==0) {
             player.sendMessage(Text.translatable("item.witchersbestiary.crimson_phylactery.progress", elapsed),true);
             server.spawnParticles(ParticleTypes.CRIMSON_SPORE,boss.getX(),boss.getBodyY(.5),boss.getZ(),5,.5,.35,.5,.04);
         }
         if (elapsed>=CHANNEL) {
-            seal(player, player.getStackInHand(player.getActiveHand()), c, boss);
+            channels.remove(player);
+            seal(player, stack, channel.contract(), boss);
             player.stopUsingItem();
         }
     }
 
+    @Override public void onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remaining) {
+        if (user instanceof ServerPlayerEntity player && channels.remove(player) != null)
+            feedback(player, "interrupted");
+    }
+
     private static void seal(ServerPlayerEntity player, ItemStack stack, ContractInstance c, HigherVampireEntity boss) {
+        if (c == null) {
+            var sealed = new NbtCompound();
+            sealed.putInt("State", SEALED);
+            stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(sealed));
+            boss.discard();
+            player.getInventory().markDirty();
+            feedback(player, "success");
+            return;
+        }
+        if (!boss.getUuid().equals(c.vampire) || !maySeal(c, stack)) {
+            feedback(player, "interrupted");
+            return;
+        }
         var store=ContractState.get(player.getServer());
         boolean initial=first(c);
-        if (initial && !c.credit(boss.getUuid(),player.getUuid(),ID,System.currentTimeMillis())) return;
+        if (initial && !c.credit(boss.getUuid(),player.getUuid(),ID,System.currentTimeMillis())) {
+            feedback(player, "interrupted");
+            return;
+        }
         if(initial&&c.hunt!=null){
             c.hunt.status=SwampHunt.Status.DEAD;
             c.investigation.stage=com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.COMPLETED;
@@ -226,6 +322,8 @@ public final class VampireHunt extends Item {
         save(stack,c,SEALED);
         store.markDirty();
         boss.discard();
+        player.getInventory().markDirty();
+        feedback(player, "success");
         var payout = initial ? c : store.ownedBy(player.getUuid()).stream()
                 .filter(hunt -> hunt.status() == ContractInstance.Status.ACCEPTED
                         && ID.equals(hunt.definition().id())
@@ -267,6 +365,9 @@ public final class VampireHunt extends Item {
     }
 
     @Override public void appendTooltip(ItemStack stack, TooltipContext context, List<Text> lines, TooltipType type) {
-        lines.add(Text.translatable("item.witchersbestiary.crimson_phylactery.state."+data(stack).getInt("State")));
+        var binding = data(stack);
+        String state = binding.getInt("State") == SEALED && !binding.containsUuid("Contract")
+                ? "captured" : Integer.toString(binding.getInt("State"));
+        lines.add(Text.translatable("item.witchersbestiary.crimson_phylactery.state." + state));
     }
 }

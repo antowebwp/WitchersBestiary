@@ -72,7 +72,7 @@ public final class Investigations {
       && !nearWater(w,second)||!traversable(w,lair,second,c.procedural!=null,budget))continue;
    for(int distance:new int[]{50,42,58})for(int branch:new int[]{0,1,-1,2,-2,3,-3,4}){
     if(++attempts>256)return List.of();double bearing=preferred+branch*Math.PI/4;
-    var first=clueSurface(w,second.getX()+(int)Math.round(Math.cos(bearing)*distance),second.getZ()+(int)Math.round(Math.sin(bearing)*distance));if(first==null)continue;if(c.procedural!=null&&(horizontal(first,c.hunt.origin)>350*350||horizontal(second,c.hunt.origin)>350*350||horizontal(lair,c.hunt.origin)>350*350))continue;
+    var first=clueSurface(w,second.getX()+(int)Math.round(Math.cos(bearing)*distance),second.getZ()+(int)Math.round(Math.sin(bearing)*distance));if(first==null)continue;if(c.procedural!=null&&(horizontal(first,c.hunt.origin)>512*512||horizontal(second,c.hunt.origin)>512*512||horizontal(lair,c.hunt.origin)>512*512))continue;
     double gap=first.toCenterPos().subtract(second.toCenterPos()).horizontalLength();if(gap>=40&&gap<=60&&traversable(w,first,second,c.procedural!=null,budget))return List.of(first,second);
    }
   }return List.of();
@@ -92,7 +92,7 @@ public final class Investigations {
    return i!=null&&i.stage==ContractInvestigation.Stage.LAIR_FOUND&&com.witchersbestiary.contracts.hunt.VampireHunt.awaken(p,c);if(i==null||i.stage!=ContractInvestigation.Stage.LAIR_FOUND||c.hunt.target!=null||!c.owner().equals(p.getUuid())||!i.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString())||p.squaredDistanceTo(i.lair.toCenterPos())>(i.routeVersion>=2?3*3:32*32))return false;
   if(SwampLord.spawn(p,c,i.lair))return true;
   // Only a bounded loaded neighbourhood, and only after an explicit discovery/retry.
-  for(int radius=3;radius<=24;radius+=3)for(int direction=0;direction<8;direction++){double angle=direction*Math.PI/4;int x=i.lair.getX()+(int)Math.round(Math.cos(angle)*radius),z=i.lair.getZ()+(int)Math.round(Math.sin(angle)*radius);var chunk=p.getServerWorld().getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)continue;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);if((c.procedural==null||horizontal(at,c.hunt.origin)<=350*350)&&Math.abs(at.getY()-i.lair.getY())<=3&&SwampLord.spawn(p,c,at))return true;}
+  for(int radius=3;radius<=24;radius+=3)for(int direction=0;direction<8;direction++){double angle=direction*Math.PI/4;int x=i.lair.getX()+(int)Math.round(Math.cos(angle)*radius),z=i.lair.getZ()+(int)Math.round(Math.sin(angle)*radius);var chunk=p.getServerWorld().getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)continue;var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);if((c.procedural==null||horizontal(at,c.hunt.origin)<=512*512)&&Math.abs(at.getY()-i.lair.getY())<=3&&SwampLord.spawn(p,c,at))return true;}
   c.hunt.status=SwampHunt.Status.WAITING;ContractState.get(p.getServer()).markDirty();
   return false;
  }

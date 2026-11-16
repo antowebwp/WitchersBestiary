@@ -22,7 +22,7 @@ public final class Contracts {
     private Contracts() {}
     public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId) {return assign(player,definitionId,null);}
     public static ContractInstance assign(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {return assign(player,definitionId,offerSeed,false);}
-    /** Player-facing boards only commit a hunt after both clues and its lair are validated. */
+    /** Board assignment preserves the hunt while its route is being placed. */
     public static ContractInstance assignPrepared(ServerPlayerEntity player, Identifier definitionId, Long offerSeed) {return assign(player,definitionId,offerSeed,true);}
     public static ContractInstance assignPrepared(ServerPlayerEntity player, Identifier id, Long seed, net.minecraft.util.math.BlockPos board) {return assign(player,id,seed,true,board);}
     private static ContractInstance assign(ServerPlayerEntity player, Identifier id, Long seed, boolean route) {return assign(player,id,seed,route,player.getBlockPos());}
@@ -45,13 +45,16 @@ public final class Contracts {
         definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;
         c.transition(ContractInstance.Status.ACCEPTED);
-        if(requireRoute&&com.witchersbestiary.contracts.hunt.SwampLord.named(c)&&!com.witchersbestiary.contracts.hunt.SwampLord.prepareAcceptance(player,c,board)){
-            throw new IllegalStateException("No safe loaded hunt area within 350 blocks with two clues; contract not accepted");
+        if (requireRoute && !replay && (com.witchersbestiary.contracts.hunt.SwampLord.named(c)
+                || com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(definitionId))) {
+            c.hunt = new com.witchersbestiary.contracts.hunt.SwampHunt(
+                    player.getServerWorld().getRegistryKey().getValue().toString(), board);
         }
-        if (requireRoute && !replay && com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(definitionId)
-                && !com.witchersbestiary.contracts.hunt.VampireHunt.prepare(player,c,board))
-            throw new IllegalStateException("No reachable vampire tomb was found near this board");
-        store.add(c); if (!replay) com.witchersbestiary.contracts.hunt.VampireHunt.issue(player,c); com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
+        store.add(c); if (!replay) {
+            com.witchersbestiary.contracts.hunt.VampireHunt.issue(player,c);
+            if (requireRoute && com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(definitionId))
+                com.witchersbestiary.contracts.hunt.VampireHunt.place(player,c);
+        } com.witchersbestiary.contracts.hunt.SwampLord.accepted(player,c); return c;
     }
     /** DamageSource resolves projectile owners; no fallback to last attacker for environmental deaths. */
     public static ServerPlayerEntity killer(LivingEntity victim, DamageSource damage) {
@@ -126,6 +129,22 @@ public final class Contracts {
                     if (instance.expire(System.currentTimeMillis())) store.markDirty();
                     c.getSource().sendFeedback(() -> Text.literal(instance.id() + " " + instance.definition().id() + " " + instance.status() + " " + instance.progress() + "/" + instance.definition().required() + (DEFINITIONS.find(instance.definition().id()) == null ? " [definition unavailable]" : "")), false);
                 } return 1; })))
+            .then(literal("legacy-vampire-paid").requires(source -> source.hasPermissionLevel(4))
+                .then(argument("instance", net.minecraft.command.argument.UuidArgumentType.uuid())
+                    .executes(context -> command(context.getSource(), () -> {
+                        var store = ContractState.get(context.getSource().getServer());
+                        var hunt = store.find(net.minecraft.command.argument.UuidArgumentType.getUuid(context, "instance"));
+                        if (hunt == null || !com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(hunt.definition().id()))
+                            throw new IllegalStateException("Vampire contract not found");
+                        context.getSource().sendFeedback(() -> Text.literal("Owner " + hunt.owner() + ", " + hunt.status()
+                                + ", sealing generation " + hunt.replayGeneration + ". If external evidence confirms payout, append confirm."), false);
+                    }))
+                    .then(literal("confirm").executes(context -> command(context.getSource(), () -> {
+                        var store = ContractState.get(context.getSource().getServer());
+                        var hunt = store.find(net.minecraft.command.argument.UuidArgumentType.getUuid(context, "instance"));
+                        com.witchersbestiary.contracts.hunt.VampireHunt.confirmLegacyPayment(store, hunt);
+                        context.getSource().sendFeedback(() -> Text.translatable("contract.witchersbestiary.legacy_vampire_paid"), true);
+                    })))))
             .then(literal("claim").then(argument("instance", StringArgumentType.word()).executes(c -> { var player = c.getSource().getPlayerOrThrow(); return command(c.getSource(), () -> claim(player, UUID.fromString(StringArgumentType.getString(c,"instance")))); })))
             .then(literal("cancel").then(argument("instance", StringArgumentType.word()).executes(c -> { var player = c.getSource().getPlayerOrThrow(); return command(c.getSource(), () -> cancel(player, UUID.fromString(StringArgumentType.getString(c,"instance")))); })))
         ));
