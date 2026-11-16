@@ -29,7 +29,16 @@ public final class ProceduralHunts {
  public static boolean safe(ServerWorld w,ContractInstance c,BlockPos at){
  if(!com.witchersbestiary.contracts.tracking.Investigations.safeClue(w,at)||w.isNearOccupiedPointOfInterest(at))return false;
  for(int dx=-3;dx<=3;dx++)for(int dz=-3;dz<=3;dz++){if(w.getChunkManager().getWorldChunk((at.getX()+dx)>>4,(at.getZ()+dz)>>4)==null)return false;for(int y=0;y<=5;y++){var state=w.getBlockState(at.add(dx,y,dz));if(state.hasBlockEntity()||state.isIn(net.minecraft.registry.tag.BlockTags.PLANKS)||state.isIn(net.minecraft.registry.tag.BlockTags.DOORS)||state.isIn(net.minecraft.registry.tag.BlockTags.STONE_BRICKS))return false;}}
- var type=ContractSpecies.type(c.procedural.species());double half=type.getWidth()/2.0;var box=new net.minecraft.util.math.Box(at.getX()+.5-half,at.getY(),at.getZ()+.5-half,at.getX()+.5+half,at.getY()+type.getHeight(),at.getZ()+.5+half);for(int x=net.minecraft.util.math.MathHelper.floor(box.minX)>>4;x<=net.minecraft.util.math.MathHelper.floor(box.maxX)>>4;x++)for(int z=net.minecraft.util.math.MathHelper.floor(box.minZ)>>4;z<=net.minecraft.util.math.MathHelper.floor(box.maxZ)>>4;z++)if(w.getChunkManager().getWorldChunk(x,z)==null)return false;for(double x:new double[]{box.minX+.01,box.maxX-.01})for(double z:new double[]{box.minZ+.01,box.maxZ-.01})if(!com.witchersbestiary.contracts.tracking.Investigations.safeClue(w,BlockPos.ofFloored(x,at.getY(),z)))return false;return !w.isOutOfHeightLimit(net.minecraft.util.math.BlockPos.ofFloored(box.maxX,box.maxY,box.maxZ))&&w.getWorldBorder().contains(box)&&!w.containsFluid(box)&&w.isSpaceEmpty(box);
+ var type=ContractSpecies.type(c.procedural.species());
+ if (c.procedural.species().equals("griffin")) {
+  var flightSpace = new net.minecraft.util.math.Box(at).expand(5, 0, 5).stretch(0, 11, 0);
+  for (int x = (at.getX() - 5) >> 4; x <= (at.getX() + 5) >> 4; x++)
+   for (int z = (at.getZ() - 5) >> 4; z <= (at.getZ() + 5) >> 4; z++)
+    if (w.getChunkManager().getWorldChunk(x,z) == null) return false;
+  if (w.isOutOfHeightLimit(at.up(12)) || !w.getWorldBorder().contains(flightSpace)
+      || !w.isSpaceEmpty(flightSpace) || w.containsFluid(flightSpace)) return false;
+ }
+ double half=type.getWidth()/2.0;var box=new net.minecraft.util.math.Box(at.getX()+.5-half,at.getY(),at.getZ()+.5-half,at.getX()+.5+half,at.getY()+type.getHeight(),at.getZ()+.5+half);for(int x=net.minecraft.util.math.MathHelper.floor(box.minX)>>4;x<=net.minecraft.util.math.MathHelper.floor(box.maxX)>>4;x++)for(int z=net.minecraft.util.math.MathHelper.floor(box.minZ)>>4;z<=net.minecraft.util.math.MathHelper.floor(box.maxZ)>>4;z++)if(w.getChunkManager().getWorldChunk(x,z)==null)return false;for(double x:new double[]{box.minX+.01,box.maxX-.01})for(double z:new double[]{box.minZ+.01,box.maxZ-.01})if(!com.witchersbestiary.contracts.tracking.Investigations.safeClue(w,BlockPos.ofFloored(x,at.getY(),z)))return false;return !w.isOutOfHeightLimit(net.minecraft.util.math.BlockPos.ofFloored(box.maxX,box.maxY,box.maxZ))&&w.getWorldBorder().contains(box)&&!w.containsFluid(box)&&w.isSpaceEmpty(box);
  }
 
  public static boolean spawn(ServerPlayerEntity p,ContractInstance c,BlockPos at){
