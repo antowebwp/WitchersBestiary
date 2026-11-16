@@ -18,6 +18,19 @@
     {
       "type": "patchouli:text",
       "text": "Riding raises speed over 25 levels. Unicorns start at different speeds and all reach 22 blocks per second on level ground at maximum rank. Sneak-use with an empty hand to see the level and ridden distance in chat."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Equip a saddle and use an empty hand to ride. Sneak-use with an empty hand cycles Follow, Wait, and Guard. Wait keeps the unicorn in place. Guard keeps it near the selected spot."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "witchersbestiary:unicorn_whistle",
+      "text": "Sneak-use this whistle on your own unicorn to bind it. Use it in the same dimension to call the unicorn with a 15-second cooldown. The unicorn keeps its order. A call moves its guard spot with it."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Wild unicorns live alone in grassy forests, plains, and flower meadows, including lavender fields and mystical groves in Biomes O’ Plenty."
     }
   ]
 }

@@ -12,6 +12,10 @@
     {
       "type": "patchouli:text",
       "text": "A neutral mountain ogroid. Retaliates when attacked. Watch the wind-up before heavy punches, thrown rocks and ground stomps. Its frontal guard reduces damage. Interact with empty hands, then sneak-interact to confirm a nonfatal fist fight. Victories award 90 crowns with a personal one-day cooldown for this troll. Rematches remain available for training."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Look for solitary Rock Trolls on rocky mountain slopes, windswept hills and suitable caves. Biomes O’ Plenty also offers crags, highlands, gravel beaches, and jade cliffs."
     }
   ]
 }
