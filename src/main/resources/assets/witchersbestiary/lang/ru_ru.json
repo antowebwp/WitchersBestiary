@@ -1,4 +1,10 @@
 {
+  "item.witchersbestiary.unicorn_whistle.unbound": "Сначала привяжите свисток к своему единорогу через Shift + ПКМ.",
+  "item.witchersbestiary.unicorn_whistle.owner": "Свисток привязан к другому владельцу.",
+  "item.witchersbestiary.unicorn_whistle.dimension": "Единорог находится в другом измерении.",
+  "item.witchersbestiary.unicorn_whistle.pending": "Призыв уже выполняется или сервер занят.",
+  "item.witchersbestiary.unicorn_whistle.busy": "Единорог восстанавливается, занят или ещё действует перезарядка.",
+  "item.witchersbestiary.unicorn_whistle.landing": "Рядом нет безопасного места для призыва.",
   "contract.witchersbestiary.legacy_vampire_paid": "Награда за первую охоту отмечена как уже выданная. Предметы и кроны не начислены.",
   "gui.witchersbestiary.board.retry_placement": "Повторить поиск",
   "gui.witchersbestiary.board.placement_pending": "Контракт принят. Место охоты уточняется.",

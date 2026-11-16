@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.world.chunk.ChunkStatus;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
@@ -26,7 +28,7 @@ import net.minecraft.world.World;
 
 final class UnicornWhistle extends Item {
     private static final ChunkTicketType<UUID> LOAD = ChunkTicketType.create(
-            "witchersbestiary_unicorn_call", Comparator.<UUID>naturalOrder(), 100);
+            "witchersbestiary_unicorn_call", Comparator.<UUID>naturalOrder(), 200);
     private record Request(UUID entity, ServerWorld world, ChunkPos chunk, Hand hand, long end) {}
     private static final Map<MinecraftServer, Map<UUID, Request>> PENDING = new WeakHashMap<>();
 
@@ -42,6 +44,7 @@ final class UnicornWhistle extends Item {
         if (user instanceof ServerPlayerEntity player && player.getServer() != null) {
             var data = new NbtCompound();
             data.putUuid("Unicorn", unicorn.getUuid());
+            data.putUuid("Owner", player.getUuid());
             stack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(data));
             UnicornWhistleState.get(player.getServer()).update(unicorn, true);
             feedback(player, "bound");
@@ -53,21 +56,41 @@ final class UnicornWhistle extends Item {
         var stack = user.getStackInHand(hand);
         if (user.isSneaking() || !user.isAlive() || user.isSpectator()) return TypedActionResult.pass(stack);
         var id = bound(stack);
-        if (id == null) return TypedActionResult.fail(stack);
+        if (id == null) {
+            if (user instanceof ServerPlayerEntity player) feedback(player, "unbound");
+            return TypedActionResult.fail(stack);
+        }
         if (!(user instanceof ServerPlayerEntity player) || !(world instanceof ServerWorld serverWorld))
             return TypedActionResult.success(stack, true);
+        if (player.getItemCooldownManager().isCoolingDown(this)) return TypedActionResult.fail(stack);
+        var binding = stack.getOrDefault(DataComponentTypes.CUSTOM_DATA, NbtComponent.DEFAULT).copyNbt();
+        if (binding.containsUuid("Owner") && !player.getUuid().equals(binding.getUuid("Owner"))) {
+            feedback(player, "owner");
+            return TypedActionResult.fail(stack);
+        }
         var location = UnicornWhistleState.get(serverWorld.getServer()).find(id);
-        if (location == null || !user.getUuid().equals(location.owner())
-                || !world.getRegistryKey().getValue().equals(location.dimension())) {
+        if (location == null || !user.getUuid().equals(location.owner())) {
             feedback(player, "unavailable");
+            return TypedActionResult.fail(stack);
+        }
+        if (!world.getRegistryKey().getValue().equals(location.dimension())) {
+            feedback(player, "dimension");
             return TypedActionResult.fail(stack);
         }
         if (serverWorld.getEntity(id) instanceof UnicornEntity unicorn)
             return call(player, unicorn) ? TypedActionResult.consume(stack) : TypedActionResult.fail(stack);
         var pending = PENDING.computeIfAbsent(serverWorld.getServer(), ignored -> new HashMap<>());
-        if (pending.size() >= 16 || pending.containsKey(player.getUuid())) return TypedActionResult.fail(stack);
-        serverWorld.getChunkManager().addTicket(LOAD, location.chunk(), 2, player.getUuid());
-        pending.put(player.getUuid(), new Request(id, serverWorld, location.chunk(), hand, serverWorld.getTime() + 80));
+        if (pending.size() >= 16 || pending.containsKey(player.getUuid())) {
+            feedback(player, "pending");
+            return TypedActionResult.fail(stack);
+        }
+        var chunks = serverWorld.getChunkManager();
+        chunks.addTicket(LOAD, location.chunk(), 2, player.getUuid());
+        // Queue a FULL request through the off-thread entry point, which hands it
+        // back to the server executor. Do not await a chunk on the item-use path.
+        CompletableFuture.supplyAsync(() -> chunks.getChunkFutureSyncOnMainThread(
+                location.chunk().x, location.chunk().z, ChunkStatus.FULL, true)).thenCompose(future -> future);
+        pending.put(player.getUuid(), new Request(id, serverWorld, location.chunk(), hand, serverWorld.getTime() + 180));
         return TypedActionResult.consume(stack);
     }
 
@@ -116,16 +139,20 @@ final class UnicornWhistle extends Item {
         if (!unicorn.isAlive() || unicorn.recovering() || unicorn.hasPassengers()
                 || !player.getUuid().equals(unicorn.getOwnerUuid())
                 || player.getItemCooldownManager().isCoolingDown(Unicorns.WHISTLE)) {
-            feedback(player, "unavailable");
+            feedback(player, "busy");
             return false;
         }
         var world = player.getServerWorld();
         var destination = UnicornLanding.find(world, unicorn, player.getBlockPos()).orElse(null);
         if (destination == null || !unicorn.teleport(destination.x, destination.y, destination.z, false)) {
-            feedback(player, "unavailable");
+            feedback(player, "landing");
             return false;
         }
-        unicorn.getNavigation().stop();
+        unicorn.onWhistleArrival();
+        world.playSound(null, unicorn.getBlockPos(), net.minecraft.sound.SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME,
+                net.minecraft.sound.SoundCategory.NEUTRAL, .65f, 1.25f);
+        world.spawnParticles(net.minecraft.particle.ParticleTypes.END_ROD, unicorn.getX(), unicorn.getBodyY(.55),
+                unicorn.getZ(), 12, .42, .45, .42, .015);
         UnicornWhistleState.get(world.getServer()).update(unicorn, true);
         player.getItemCooldownManager().set(Unicorns.WHISTLE, 300);
         feedback(player, "summoned");

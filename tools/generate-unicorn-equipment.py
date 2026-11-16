@@ -1,4 +1,4 @@
-"""Generate original armor atlas sections and a voxel whistle texture."""
+"""Generate original unicorn armor atlas sections."""
 from pathlib import Path
 import json
 from PIL import Image, ImageDraw
@@ -39,17 +39,3 @@ for name, (body, rim, shadow) in materials.items():
             draw.point((i,y+depth+1),fill=rim)
             draw.point((i,bottom-2),fill=shadow)
     atlas.save(ROOT / f"textures/entity/unicorn_armor_{name}.png")
-
-icon = Image.new("RGBA",(16,16))
-draw = ImageDraw.Draw(icon)
-draw.polygon(((1,4),(4,1),(11,1),(14,3),(14,7),(11,10),(8,10),(4,14),(1,14),(1,11),(5,7),(2,7)),
-             fill="#382732")
-draw.polygon(((2,4),(5,2),(11,2),(13,4),(13,6),(10,9),(7,9),(3,13),(2,13),(2,11),(6,7),(3,6)),
-             fill="#aa7350")
-draw.line(((3,4),(6,3),(11,3),(12,4)), fill="#f4c98b", width=1)
-draw.line(((3,11),(7,7),(10,7)), fill="#e8ab68", width=1)
-draw.rectangle((8,4,11,5), fill="#2c2531")
-draw.rectangle((2,12,4,13), fill="#526d80")
-draw.point((3,12), fill="#c2e1df")
-(ROOT / "textures/item").mkdir(exist_ok=True)
-icon.save(ROOT / "textures/item/unicorn_whistle.png")

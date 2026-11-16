@@ -1,15 +1,3 @@
 {
-  "parent": "minecraft:item/handheld",
-  "textures": {"finish": "witchersbestiary:item/unicorn_whistle", "particle": "witchersbestiary:item/unicorn_whistle"},
-  "elements": [
-    {"from":[3,6,6],"to":[12,10,10],"faces":{
-      "north":{"uv":[3,2,12,6],"texture":"#finish"},"south":{"uv":[3,2,12,6],"texture":"#finish"},
-      "up":{"uv":[4,2,12,4],"texture":"#finish"},"down":{"uv":[4,6,12,8],"texture":"#finish"},
-      "west":{"uv":[3,2,6,6],"texture":"#finish"},"east":{"uv":[9,2,12,6],"texture":"#finish"}}},
-    {"from":[11,6.6,6.6],"to":[15,9.4,9.4],"faces":{
-      "north":{"uv":[2,10,6,13],"texture":"#finish"},"south":{"uv":[2,10,6,13],"texture":"#finish"},
-      "up":{"uv":[3,11,7,13],"rotation":180,"texture":"#finish"},"down":{"uv":[2,11,6,13],"texture":"#finish"},
-      "west":{"uv":[3,11,5,13],"texture":"#finish"},"east":{"uv":[3,12,4,13],"texture":"#finish"}}}
-  ],
-  "display": {"gui":{"rotation":[25,145,24],"scale":[1.25,1.25,1.25]}}
+  "parent": "witchersbestiary:item/unicorn_whistle_world"
 }

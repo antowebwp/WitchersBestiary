@@ -26,7 +26,8 @@ final class UnicornLanding {
                             || floor.isOf(Blocks.POWDER_SNOW)) continue;
                     var position = Vec3d.ofBottomCenter(at);
                     var box = unicorn.getBoundingBox().offset(position.subtract(unicorn.getPos()));
-                    if (!world.getWorldBorder().contains(box) || !world.isSpaceEmpty(unicorn, box)) continue;
+                    if (!world.getWorldBorder().contains(box) || !world.isSpaceEmpty(unicorn, box)
+                            || !world.getOtherEntities(unicorn, box).isEmpty()) continue;
                     boolean hazardous = BlockPos.stream(box).anyMatch(block ->
                             !world.isChunkLoaded(block) || !world.getFluidState(block).isEmpty()
                             || world.getBlockState(block).isOf(Blocks.FIRE)

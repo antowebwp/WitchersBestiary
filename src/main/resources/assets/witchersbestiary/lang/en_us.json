@@ -1,4 +1,10 @@
 {
+  "item.witchersbestiary.unicorn_whistle.unbound": "Bind this whistle to your unicorn with sneak-use first.",
+  "item.witchersbestiary.unicorn_whistle.owner": "This whistle belongs to another rider.",
+  "item.witchersbestiary.unicorn_whistle.dimension": "The unicorn is in another dimension.",
+  "item.witchersbestiary.unicorn_whistle.pending": "A unicorn call is already pending or the server is busy.",
+  "item.witchersbestiary.unicorn_whistle.busy": "The unicorn is recovering, occupied, or on cooldown.",
+  "item.witchersbestiary.unicorn_whistle.landing": "No safe landing space nearby.",
   "contract.witchersbestiary.legacy_vampire_paid": "Original vampire reward recorded as already paid. No items or crowns issued.",
   "gui.witchersbestiary.board.retry_placement": "Retry survey",
   "gui.witchersbestiary.board.placement_pending": "Contract accepted. The hunting ground is being surveyed.",
