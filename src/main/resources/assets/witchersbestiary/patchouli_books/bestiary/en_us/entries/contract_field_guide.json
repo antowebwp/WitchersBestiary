@@ -5,11 +5,19 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Find a village notice board. Pick an offer and wait for the hunt area to be prepared. Regular offers rotate every three in-game days. An accepted contract stays active. Follow the HUD."
+      "text": "A village board carries five regular contracts and rotates them every three in-game days. Accepted hunts stay in your journal. Choose a contract and let the board find a safe route."
     },
     {
       "type": "patchouli:text",
-      "text": "Toggle Witcher Senses (V by default) near the search area. Inspect two clues in order. The second reveals the lair; approach it to encounter the target. Defeat it to finish the hunt and earn crowns. To cancel: /wbcontract abandon."
+      "text": "Near the approximate search area, toggle Witcher Senses (V by default). Study the two clues in order. Tracks, scratched surfaces, remains and mist tell you what to prepare for. Approach the revealed lair to start the fight. To abandon a hunt, use /wbcontract abandon."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Common contracts pay 35–75 crowns, dangerous ones 80–160, and rare threats 170–300. First legendary hunts pay 420–600 crowns. Bring silver and supplies appropriate to the monster; claim completed contracts at the board."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The first Higher Vampire hunt pays 600 crowns and Blood Legacy. Keep your original sealed Crimson Phylactery. If the board offers a repeat hunt, accept it and use the phylactery in a clear area after its cooldown. Seal the vampire again for 180 crowns and two fangs."
     }
   ]
 }
