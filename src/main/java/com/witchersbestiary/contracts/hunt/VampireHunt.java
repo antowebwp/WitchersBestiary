@@ -35,8 +35,7 @@ public final class VampireHunt extends Item {
         if (hunts.stream().anyMatch(c -> c.status() == ContractInstance.Status.ACCEPTED
                 || c.status() == ContractInstance.Status.COMPLETED))
             throw new IllegalStateException("vampire_active");
-        var original = hunts.stream().filter(c -> c.status() == ContractInstance.Status.REWARDED
-                && !c.definition().description().equals("hunt.witchersbestiary.higher_vampire.repeat")).findFirst().orElse(null);
+        var original = claimedOriginal(player, store);
         if (original == null) {
             if (player.getInventory().getEmptySlot() < 0) throw new IllegalStateException("inventory_full");
             return null;
@@ -47,6 +46,17 @@ public final class VampireHunt extends Item {
                 .noneMatch(stack -> stack.isOf(ModItems.CRIMSON_PHYLACTERY) && isSealed(stack) && contract(player, stack) == original))
             throw new IllegalStateException("vampire_phylactery");
         return original;
+    }
+
+    public static ContractInstance claimedOriginal(ServerPlayerEntity player, ContractState store) {
+        return store.ownedBy(player.getUuid()).stream()
+                .filter(c -> ID.equals(c.definition().id()) && c.status() == ContractInstance.Status.REWARDED
+                        && !isRepeat(c))
+                .findFirst().orElse(null);
+    }
+
+    private static boolean isRepeat(ContractInstance c) {
+        return "hunt.witchersbestiary.higher_vampire.repeat".equals(c.definition().description());
     }
 
     public static ContractDefinition repeat(ContractDefinition d) {
@@ -137,7 +147,7 @@ public final class VampireHunt extends Item {
         if (store.readOnly() || boss.isDefeated() || boss.isHybrid() || boss.getWorld()!=owner.getWorld()) return false;
         var c = store.ownedBy(owner.getUuid()).stream().filter(h -> ID.equals(h.definition().id())
                 && h.status()==ContractInstance.Status.ACCEPTED && h.vampire==null).findFirst().orElse(null);
-        if (c==null || c.vampireArena!=null || boss.hasHuntBinding()) return false;
+        if (c==null || isRepeat(c) || c.vampireArena!=null || boss.hasHuntBinding()) return false;
         c.vampire=boss.getUuid();
         boss.markHuntBinding();
         store.markDirty();
@@ -219,7 +229,7 @@ public final class VampireHunt extends Item {
         var payout = initial ? c : store.ownedBy(player.getUuid()).stream()
                 .filter(hunt -> hunt.status() == ContractInstance.Status.ACCEPTED
                         && ID.equals(hunt.definition().id())
-                        && "hunt.witchersbestiary.higher_vampire.repeat".equals(hunt.definition().description()))
+                        && isRepeat(hunt))
                 .filter(hunt -> hunt.credit(boss.getUuid(), player.getUuid(), ID, System.currentTimeMillis()))
                 .findFirst().orElse(null);
         if (payout != null) {
