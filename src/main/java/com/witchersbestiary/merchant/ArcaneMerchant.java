@@ -25,23 +25,55 @@ public final class ArcaneMerchant extends PathAwareEntity implements GeoEntity {
  long departureAt(){return departureAt==0?getWorld().getTime()+WANDERING_STAY:departureAt;}
  void arrive(){departureAt=getWorld().getTime()+WANDERING_STAY;}
  private void add(String item,long price,int stock){var id=Identifier.of(item.contains(":")?item:"witchersbestiary:"+item);var value=net.minecraft.registry.Registries.ITEM.get(id);if(value!=Items.AIR)offers.add(new Offer(id.toString(),new ItemStack(value),price,stock));}
- private void generateOffers(){generateOffers(getUuid().getMostSignificantBits());}
- private void generateOffers(long seed){add("minecraft:glass_bottle",2,16);add("minecraft:red_mushroom",3,12);add("bone_dust",5,12);add("drowner_essence",12,8);add("ghoul_claw",10,8);add("necrophage_oil",52,4);add("necrophage_elixir",64,3);if(mode==Mode.WANDERING){add("minecraft:bread",6,12);add("minecraft:cooked_beef",12,8);add("minecraft:cooked_porkchop",12,8);add("minecraft:golden_carrot",24,6);add("griffin_feather",180,2);add("gravebound_steel_fragment",260,2);add("nekker_claw",14,5);add("chitin_plate",23,5);add("venom_gland",32,4);add("wraith_remains",34,4);}
+ private void generateOffers(){generateOffers(getUuid().getMostSignificantBits(), Set.of());}
+ private void generateOffers(long seed, Set<String> previous){add("minecraft:glass_bottle",2,16);add("minecraft:red_mushroom",3,12);add("bone_dust",5,12);add("drowner_essence",12,8);add("ghoul_claw",10,8);if(mode==Mode.WANDERING){add("minecraft:bread",6,12);add("minecraft:cooked_beef",12,8);add("minecraft:cooked_porkchop",12,8);add("minecraft:golden_carrot",24,6);add("griffin_feather",180,2);add("gravebound_steel_fragment",260,2);add("nekker_claw",14,5);add("chitin_plate",23,5);add("venom_gland",32,4);add("wraith_remains",34,4);}
  var stockRandom=new Random(mode==Mode.WANDERING?getUuid().getLeastSignificantBits():seed);if(stockRandom.nextInt(4)==0){String[][] swords={{"steel_hunter_sword","2500"},{"silver_witcher_sword","4500"},{"grave_blade","7000"}};var sword=swords[stockRandom.nextInt(swords.length)];add(sword[0],Long.parseLong(sword[1]),1);}
- String[][] rare={{"wraith_essence","24"},{"katakan_essence","30"},{"hybrid_essence","26"},{"ogroid_essence","26"},{"cursed_oil","72"},{"vampire_elixir","90"},{"griffin_claw","145"},{"ogroid_fang","84"},{"fiend_horn","165"},{"fiend_eye","275"},{"volcanic_gland","118"},{"molten_heart","340"},{"wraith_head","230"},{"vampire_fang","84"}};var choices=new ArrayList<>(List.of(rare));Collections.shuffle(choices,new Random(seed));for(int i=0;i<3;i++)add(choices.get(i)[0],Long.parseLong(choices.get(i)[1]),2);
+ var rotation = new Random(seed ^ 0x89F03L);
+ addRotating(rotation, previous, 4, new String[][] {
+     {"necrophage_oil", "52", "4"}, {"cursed_oil", "72", "2"}
+ });
+ if (offers.stream().noneMatch(offer -> offer.id.equals("witchersbestiary:necrophage_oil")))
+     addRotating(rotation, previous, 3, new String[][] {
+     {"necrophage_elixir", "64", "3"}, {"vampire_elixir", "90", "2"}
+ });
+ else add("vampire_elixir", 90, 2);
+ addRotating(rotation, previous, 3, new String[][] {
+     {"wraith_essence", "24", "2"}, {"katakan_essence", "30", "2"},
+     {"hybrid_essence", "26", "2"}, {"ogroid_essence", "26", "2"}
+ });
+ addRotating(rotation, previous, 3, new String[][] {
+     {"griffin_claw", "145", "2"}, {"ogroid_fang", "84", "2"}, {"fiend_horn", "165", "2"},
+     {"volcanic_gland", "118", "2"}, {"vampire_fang", "84", "2"}
+ });
+ if (rotation.nextInt(3) == 0) addRotating(rotation, previous, 3, new String[][] {
+     {"fiend_eye", "275", "2"}, {"molten_heart", "340", "2"}, {"wraith_head", "230", "2"}
+ });
   var templates = new Random(seed ^ 0x493CCL);
   int school = templates.nextInt(3);
   boolean mastercrafted = templates.nextInt(5) == 0;
   add(List.of("cat", "griffin", "bear").get(school)
       + (mastercrafted ? "_mastercrafted_template" : "_enhanced_template"), mastercrafted ? 480 : 180, 1);
  }
+ private void addRotating(Random random, Set<String> previous, int freshWeight, String[][] catalog) {
+  var registered = java.util.Arrays.stream(catalog)
+      .filter(row -> net.minecraft.registry.Registries.ITEM.get(Identifier.of("witchersbestiary", row[0])) != Items.AIR)
+      .toList();
+  int total = registered.stream().mapToInt(row -> previous.contains("witchersbestiary:" + row[0]) ? 1 : freshWeight).sum();
+  if (total == 0) return;
+  int roll = random.nextInt(total);
+  for (var row : registered) {
+   roll -= previous.contains("witchersbestiary:" + row[0]) ? 1 : freshWeight;
+   if (roll < 0) {
+    add(row[0], Long.parseLong(row[1]), Integer.parseInt(row[2]));
+    return;
+   }
+  }
+ }
+
  private void rotateOffers(){
   var previous=offers.stream().map(o->o.id).collect(java.util.stream.Collectors.toSet());
-  for(int attempt=0;attempt<16;attempt++){
-   offers.clear();
-   generateOffers(random.nextLong());
-   if(!previous.equals(offers.stream().map(o->o.id).collect(java.util.stream.Collectors.toSet())))break;
-  }
+  offers.clear();
+  generateOffers(random.nextLong(), previous);
   restockAt=getWorld().getTime()+VILLAGE_ROTATION;
  }
  @Override public void writeCustomDataToNbt(NbtCompound n){super.writeCustomDataToNbt(n);offers();n.putString("MerchantMode",mode.name());n.putString("MerchantVillage",village);if(home!=null)n.putLong("MerchantHome",home.asLong());if(mode==Mode.WANDERING)n.putLong("MerchantDeparture",departureAt());if(mode==Mode.VILLAGE)n.putLong("MerchantRotation",restockAt);var list=new NbtList();for(var o:offers){var row=new NbtCompound();row.putString("Id",o.id);row.put("Item",o.result.encode(getRegistryManager()));row.putLong("Price",o.price);row.putInt("Stock",o.stock);list.add(row);}n.put("MerchantOffers",list);}
