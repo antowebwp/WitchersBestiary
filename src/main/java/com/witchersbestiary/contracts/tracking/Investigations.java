@@ -34,7 +34,7 @@ public final class Investigations {
   if(c.investigation!=null&&c.investigation.stage!=ContractInvestigation.Stage.SEARCHING)return true;
   var w=p.getServerWorld();var positions=routePositions(w,c,lair,budget);if(positions.size()!=2)return false;
   var investigation=new ContractInvestigation(c.id(),c.owner(),c.hunt.dimension);investigation.routeVersion=3;investigation.lair=lair.toImmutable();var clues=new ArrayList<ContractClue>(positions.size());var ids=new UUID[positions.size()];for(int i=0;i<ids.length;i++)ids[i]=UUID.randomUUID();String kind=c.definition().target().getPath();
-  for(int i=0;i<ids.length;i++){ContractClue.Type type=switch(kind){case "higher_vampire"->i==0?ContractClue.Type.BLOOD_TRACE:ContractClue.Type.MIST_RESIDUE;case "drowner"->i==ids.length-1?ContractClue.Type.REMAINS:ContractClue.Type.FOOTPRINTS;case "ghoul","grave_hag","katakan"->i==ids.length-1?ContractClue.Type.REMAINS:i%2==0?ContractClue.Type.CLAW_MARKS:ContractClue.Type.BLOOD_TRACE;case "leshen","fiend","endrega_warrior","werewolf","griffin"->i%2==0?ContractClue.Type.CLAW_MARKS:ContractClue.Type.BLOOD_TRACE;default->i%2==0?ContractClue.Type.MIST_RESIDUE:ContractClue.Type.FOOTPRINTS;};clues.add(new ContractClue(ids[i],c.id(),c.owner(),type,positions.get(i),c.hunt.dimension,i,i+1<ids.length?ids[i+1]:null));}
+  for(int i=0;i<ids.length;i++){ContractClue.Type type=switch(kind){case "higher_vampire"->i==0?ContractClue.Type.BLOOD_TRACE:ContractClue.Type.MIST_RESIDUE;case "drowner"->i==ids.length-1?ContractClue.Type.REMAINS:ContractClue.Type.FOOTPRINTS;case "ghoul","grave_hag","katakan"->i==ids.length-1?ContractClue.Type.REMAINS:i%2==0?ContractClue.Type.CLAW_MARKS:ContractClue.Type.BLOOD_TRACE;case "leshen","fiend","werewolf"->i%2==0?ContractClue.Type.FOOTPRINTS:ContractClue.Type.CLAW_MARKS;case "endrega_warrior","griffin"->i%2==0?ContractClue.Type.REMAINS:ContractClue.Type.CLAW_MARKS;default->i%2==0?ContractClue.Type.MIST_RESIDUE:ContractClue.Type.FOOTPRINTS;};clues.add(new ContractClue(ids[i],c.id(),c.owner(),type,positions.get(i),c.hunt.dimension,i,i+1<ids.length?ids[i+1]:null));}
   investigation.clues=List.copyOf(clues);investigation.stage=ContractInvestigation.Stage.TRACKING;c.investigation=investigation;c.hunt.position=clues.getFirst().position;c.hunt.status=SwampHunt.Status.TRACKING;ContractState.get(w.getServer()).markDirty();return true;
  }
  /** New v3 routes keep two logical clues 40..60 blocks apart; existing saved routes are untouched. */
@@ -70,7 +70,10 @@ public final class Investigations {
  public static boolean inspect(ServerPlayerEntity p,UUID clue){if(p.getHealth()<=0||p.isSpectator())return false;var store=ContractState.get(p.getServer());for(var c:store.ownedBy(p.getUuid())){
   var i=c.investigation;if(c.status()!=ContractInstance.Status.ACCEPTED||i==null||i.stage!=ContractInvestigation.Stage.TRACKING||!i.owner.equals(p.getUuid())||!i.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString()))continue;
   var next=i.next();if(next==null||next.studied||!next.id.equals(clue)||p.squaredDistanceTo(next.position.toCenterPos())>4.5*4.5||p.getServerWorld().getChunkManager().getWorldChunk(next.position.getX()>>4,next.position.getZ()>>4)==null)continue;
-  next.studied=true;i.current++;if(i.current==i.clues.size())i.stage=ContractInvestigation.Stage.LAIR_FOUND;store.markDirty();sync(p);if(i.stage==ContractInvestigation.Stage.LAIR_FOUND&&i.routeVersion<2)trySpawn(p,c);return true;
+  next.studied=true;i.current++;if(i.current==i.clues.size()){
+   i.stage=ContractInvestigation.Stage.LAIR_FOUND;
+   if(c.procedural!=null)p.sendMessage(Text.translatable(dialogue(c,"lair",2)),false);
+  }store.markDirty();sync(p);if(i.stage==ContractInvestigation.Stage.LAIR_FOUND&&i.routeVersion<2)trySpawn(p,c);return true;
  }return false;}
  public static boolean trySpawn(ServerPlayerEntity p,ContractInstance c){var i=c.investigation;
   if(com.witchersbestiary.contracts.hunt.VampireHunt.ID.equals(c.definition().id()))
@@ -97,7 +100,13 @@ public final class Investigations {
   int radius=s.enabled?settings.radius():8;if(distance<=radius*radius&&p.getServerWorld().getChunkManager().getWorldChunk(pos.getX()>>4,pos.getZ()>>4)!=null){var point=new JsonObject();point.addProperty("x",pos.getX());point.addProperty("y",pos.getY());point.addProperty("z",pos.getZ());boolean tracking=i.stage==ContractInvestigation.Stage.TRACKING&&clue!=null;point.addProperty("type",tracking?clue.type.name():c.definition().target().getPath().equals("foglet")?"MIST_RESIDUE":"REMAINS");if(tracking){point.addProperty("id",clue.id.toString());var destination=clue.next==null?i.lair:i.clues.get(clue.order+1).position;var direction=destination.toCenterPos().subtract(pos.toCenterPos());point.addProperty("yaw",Math.toDegrees(Math.atan2(direction.x,direction.z)));}point.addProperty("lair",!tracking);j.add("point",point);j.addProperty("hint",tracking?"near":"lair");}
   if(i.stage==ContractInvestigation.Stage.COMPLETED)j.addProperty("hint","completed");return j;
  }
- public static String description(ContractInstance c,ContractClue clue){return "tracking.witchersbestiary.finding."+c.definition().target().getPath()+"."+clue.type.name().toLowerCase(Locale.ROOT);}
+ private static String dialogue(ContractInstance c, String stage, int count) {
+  long seed = c.procedural.seed() ^ stage.hashCode();
+  return "tracking.witchersbestiary.dialogue." + c.procedural.species() + "." + stage + "." + Math.floorMod(seed,count);
+ }
+ public static String description(ContractInstance c,ContractClue clue){
+  if(c.procedural!=null)return dialogue(c,clue.order==0?"first":"second",3);
+  return "tracking.witchersbestiary.finding."+c.definition().target().getPath()+"."+clue.type.name().toLowerCase(Locale.ROOT);}
  private static void send(ServerPlayerEntity p,Session s){if(!ServerPlayNetworking.canSend(p,TrackingPackets.Snapshot.ID))return;String json=view(p,s).toString();if(!json.equals(s.sent)){s.sent=json;ServerPlayNetworking.send(p,new TrackingPackets.Snapshot(json));}}
  public static void initialize(){settings=InvestigationSettings.load();PayloadTypeRegistry.playC2S().register(TrackingPackets.Toggle.ID,TrackingPackets.Toggle.CODEC);PayloadTypeRegistry.playC2S().register(TrackingPackets.Inspect.ID,TrackingPackets.Inspect.CODEC);PayloadTypeRegistry.playS2C().register(TrackingPackets.Snapshot.ID,TrackingPackets.Snapshot.CODEC);
   ServerPlayNetworking.registerGlobalReceiver(TrackingPackets.Toggle.ID,(packet,ctx)->ctx.server().execute(()->{if(!ctx.player().isRemoved()&&ctx.player().getHealth()>0)requestToggle(ctx.player(),packet.enabled());}));
