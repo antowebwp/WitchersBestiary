@@ -65,6 +65,11 @@ public final class SwampLord {
   var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
   var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
   if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
+  var species=c.procedural.species();
+  if(com.witchersbestiary.contracts.procedural.ContractSpecies.aquatic(species)){
+   if(!com.witchersbestiary.contracts.tracking.Investigations.nearWater(w,at))return false;
+  }else if(probe<32 && com.witchersbestiary.contracts.procedural.ContractSpecies.prefers(species,w.getBiome(origin))
+           && !com.witchersbestiary.contracts.procedural.ContractSpecies.prefers(species,w.getBiome(at)))return false;
   for(var other:ContractState.get(w.getServer()).all()){if(other.id().equals(c.id())||other.status()!=ContractInstance.Status.ACCEPTED||other.hunt==null||!other.hunt.dimension.equals(c.hunt.dimension))continue;var reserved=other.investigation!=null?other.investigation.lair:other.hunt.target!=null?other.hunt.position:null;if(reserved!=null){long dx=(long)reserved.getX()-at.getX(),dz=(long)reserved.getZ()-at.getZ();if(dx*dx+dz*dz<16*16)return false;}}
   return com.witchersbestiary.contracts.tracking.Investigations.prepare(p,c,at,budget);
  }

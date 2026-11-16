@@ -54,11 +54,22 @@ public final class Investigations {
   }return false;
  }
  private static boolean traversable(ServerWorld w,BlockPos first,BlockPos second,boolean strict,RouteBudget budget){if(!strict&&Math.abs(first.getY()-second.getY())>12)return false;if(strict&&(!headroom(w,first)||!headroom(w,second)))return false;var previous=first;boolean direct=true;int samples=strict?Math.max(1,(int)Math.ceil(Math.sqrt(horizontal(first,second)))):8;for(int step=1;step<=samples;step++){int x=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getX(),second.getX())),z=(int)Math.round(MathHelper.lerp(step/(double)samples,first.getZ(),second.getZ()));var at=clueSurface(w,x,z);if(at==null||strict&&!headroom(w,at)||(strict?Math.abs(footing(w,at)-footing(w,previous))>1.25:Math.abs(at.getY()-previous.getY())>4)){direct=false;break;}previous=at;}return direct||strict&&detour(w,first,second,budget);}
+ public static boolean nearWater(ServerWorld world, BlockPos at) {
+  for (int dx = -6; dx <= 6; dx += 2) for (int dz = -6; dz <= 6; dz += 2) {
+   var sample = at.add(dx, 0, dz);
+   if (world.getChunkManager().getWorldChunk(sample.getX() >> 4, sample.getZ() >> 4) == null) continue;
+   for (int dy = -3; dy <= 1; dy++)
+    if (world.getFluidState(sample.up(dy)).isIn(net.minecraft.registry.tag.FluidTags.WATER)) return true;
+  }
+  return false;
+ }
  private static List<BlockPos> routePositions(ServerWorld w,ContractInstance c,BlockPos lair,RouteBudget budget){
   double preferred=Math.atan2(c.hunt.origin.getZ()-lair.getZ(),c.hunt.origin.getX()-lair.getX());int attempts=0;
   for(int near:new int[]{18,6})for(int turn:new int[]{0,1,-1,2,-2,3,-3,4}){
    double angle=preferred+turn*Math.PI/4;var second=clueSurface(w,lair.getX()+(int)Math.round(Math.cos(angle)*near),lair.getZ()+(int)Math.round(Math.sin(angle)*near));
-   if(second==null||!traversable(w,lair,second,c.procedural!=null,budget))continue;
+   if(second==null||c.procedural!=null
+      && com.witchersbestiary.contracts.procedural.ContractSpecies.aquatic(c.procedural.species())
+      && !nearWater(w,second)||!traversable(w,lair,second,c.procedural!=null,budget))continue;
    for(int distance:new int[]{50,42,58})for(int branch:new int[]{0,1,-1,2,-2,3,-3,4}){
     if(++attempts>256)return List.of();double bearing=preferred+branch*Math.PI/4;
     var first=clueSurface(w,second.getX()+(int)Math.round(Math.cos(bearing)*distance),second.getZ()+(int)Math.round(Math.sin(bearing)*distance));if(first==null)continue;if(c.procedural!=null&&(horizontal(first,c.hunt.origin)>350*350||horizontal(second,c.hunt.origin)>350*350||horizontal(lair,c.hunt.origin)>350*350))continue;

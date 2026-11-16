@@ -29,7 +29,15 @@ public final class BoardScreenHandler extends ScreenHandler {
     private static final List<String> LEGENDS = List.of("witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer", "witchersbestiary:higher_vampire");
     private String rotationKey() { return legendary ? village + "/legends" : village; }
     private List<String> eligible(){return legendary ? LEGENDS : Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.ProceduralHunts::isDefinition).map(Object::toString).sorted().toList();}
-    private VillageOffers.Generation current(ServerPlayerEntity p){return VillageOffers.get(p.getServer()).personal(rotationKey(),p.getUuid(),p.getServer().getOverworld().getTime(),eligible());}
+    private Set<String> preferred(ServerPlayerEntity player) {
+        if (legendary) return Set.of();
+        var biome = player.getServerWorld().getBiome(root);
+        return com.witchersbestiary.contracts.procedural.ContractSpecies.ENTITIES.keySet().stream()
+                .filter(species -> com.witchersbestiary.contracts.procedural.ContractSpecies.prefers(species, biome))
+                .map(species -> com.witchersbestiary.contracts.procedural.ProceduralHunts.id(species).toString())
+                .collect(java.util.stream.Collectors.toSet());
+    }
+    private VillageOffers.Generation current(ServerPlayerEntity p){return VillageOffers.get(p.getServer()).personal(rotationKey(),p.getUuid(),p.getServer().getOverworld().getTime(),eligible(),preferred(p));}
     private ContractInstance instance(ServerPlayerEntity p,int index){
         var state=ContractState.get(p.getServer());
         if(archived.containsKey(index))return state.find(archived.get(index));
@@ -75,7 +83,7 @@ public final class BoardScreenHandler extends ScreenHandler {
         if(!(player instanceof ServerPlayerEntity server)||server.currentScreenHandler!=this||!canUse(server))return false;
         if(button==65){legendary=!legendary;reloadOffers(server);send(server,"");return true;}
         if(button==64){
-            try{VillageOffers.get(server.getServer()).refresh(rotationKey(),owner,server.getServer().getOverworld().getTime(),eligible(),o->ContractState.get(server.getServer()).ownedBy(owner).stream().anyMatch(c->o.id().equals(c.offer)&&c.status()==ContractInstance.Status.REWARDED));reloadOffers(server);send(server,"updated");}
+            try{VillageOffers.get(server.getServer()).refresh(rotationKey(),owner,server.getServer().getOverworld().getTime(),eligible(),o->ContractState.get(server.getServer()).ownedBy(owner).stream().anyMatch(c->o.id().equals(c.offer)&&c.status()==ContractInstance.Status.REWARDED),preferred(server));reloadOffers(server);send(server,"updated");}
             catch(IllegalStateException e){send(server,"rejected");}
             return true;
         }

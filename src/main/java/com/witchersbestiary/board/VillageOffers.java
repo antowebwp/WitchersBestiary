@@ -31,24 +31,31 @@ public final class VillageOffers extends PersistentState {
     }
     public boolean live(UUID offer) {return offer!=null&&villages.values().stream().anyMatch(g->g.offers().stream().anyMatch(o->o.id().equals(offer)));}
     public Generation personal(String village, UUID player, long age, List<String> eligible) {
-        var base=current(village,age,eligible);var key=village+"/personal/"+player+"/"+base.id();
+        return personal(village, player, age, eligible, Set.of());
+    }
+    public Generation personal(String village, UUID player, long age, List<String> eligible, Set<String> preferred) {
+        var base=current(village,age,eligible,villages.get(village),preferred);var key=village+"/personal/"+player+"/"+base.id();
         return villages.getOrDefault(key,base);
     }
     public Generation refresh(String village, UUID player, long age, List<String> eligible, java.util.function.Predicate<Offer> claimed) {
-        var old=personal(village,player,age,eligible);
+        return refresh(village, player, age, eligible, claimed, Set.of());
+    }
+    public Generation refresh(String village, UUID player, long age, List<String> eligible,
+                              java.util.function.Predicate<Offer> claimed, Set<String> preferred) {
+        var old=personal(village,player,age,eligible,preferred);
         if(age-old.created()<24000 || !old.offers().stream().allMatch(claimed))throw new IllegalStateException("Refresh requires five claimed offers and one day cooldown");
-        var base=current(village,age,eligible);String prefix=village+"/personal/"+player+"/";
+        var base=current(village,age,eligible,villages.get(village),preferred);String prefix=village+"/personal/"+player+"/";
         villages.keySet().removeIf(k->k.startsWith(prefix));
-        return current(prefix+base.id(),age,eligible,old);
+        return current(prefix+base.id(),age,eligible,old,preferred);
     }
 
     public static VillageOffers get(MinecraftServer server) {
         return server.getOverworld().getPersistentStateManager().getOrCreate(TYPE, "witchersbestiary_village_offers");
     }
     public Generation current(String village, long age, List<String> eligible) {
-        return current(village,age,eligible,villages.get(village));
+        return current(village,age,eligible,villages.get(village),Set.of());
     }
-    private Generation current(String village, long age, List<String> eligible, Generation previous) {
+    private Generation current(String village, long age, List<String> eligible, Generation previous, Set<String> preferred) {
         if (future != null) throw new IllegalStateException("Future village offer schema preserved read-only");
         var old = villages.get(village);
         if (old != null && (age < old.created() || age - old.created() < INTERVAL)) return old;
@@ -57,7 +64,7 @@ public final class VillageOffers extends PersistentState {
         boolean vampireCycle=legends && pool.size()>2 && Math.floorMod(age/INTERVAL+village.hashCode(),3)==0;
         int slots = legends ? (vampireCycle?3:2) : 5;
         if (pool.size() < slots) throw new IllegalStateException("Five eligible species required");
-        if (slots == 5) pool = diverse(pool, previous, village, age);
+        if (slots == 5) pool = diverse(pool, previous, village, age, preferred);
         else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst()))
             Collections.swap(pool,0,1);
         var offers = new ArrayList<Offer>(5);
@@ -66,7 +73,7 @@ public final class VillageOffers extends PersistentState {
         if(!village.contains("/personal/"))villages.keySet().removeIf(k->k.startsWith(village+"/personal/"));
         villages.put(village, next); markDirty(); return next;
     }
-    private static ArrayList<String> diverse(List<String> candidates, Generation previous, String village, long age) {
+    private static ArrayList<String> diverse(List<String> candidates, Generation previous, String village, long age, Set<String> preferred) {
         var last = previous == null ? Set.<String>of() : previous.offers().stream()
                 .map(Offer::definition).collect(java.util.stream.Collectors.toSet());
         var pool = new ArrayList<>(candidates);
@@ -80,9 +87,8 @@ public final class VillageOffers extends PersistentState {
                 String definition = pool.get(i);
                 String family = family(definition);
                 int weight = last.contains(definition) ? 5 : 18;
+                if (preferred.contains(definition)) weight += 5;
                 weight /= 1 + 2 * families.getOrDefault(family, 0);
-                if ((village.contains("taiga") && family.equals("forest"))
-                        || (village.contains("swamp") && family.equals("necrophage"))) weight += 2;
                 weights[i] = Math.max(1, weight);
                 total += weights[i];
             }
