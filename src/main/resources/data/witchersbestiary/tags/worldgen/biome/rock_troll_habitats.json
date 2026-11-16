@@ -17,6 +17,17 @@
     {
       "id": "biomesoplenty:jade_cliffs",
       "required": false
+    },
+    "minecraft:windswept_forest",
+    "minecraft:jagged_peaks",
+    "minecraft:stony_peaks",
+    {
+      "id": "biomesoplenty:gravel_beach",
+      "required": false
+    },
+    {
+      "id": "biomesoplenty:crystalline_chasm",
+      "required": false
     }
   ]
 }

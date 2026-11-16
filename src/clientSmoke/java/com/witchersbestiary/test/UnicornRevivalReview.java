@@ -31,15 +31,20 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
     private NbtCompound before;
     private String worldName;
     private int phase, age, total;
-    private boolean requested, finished;
+    private boolean requested, finished, called;
 
     @Override public void onInitializeClient() {
-        ClientTickEvents.END_CLIENT_TICK.register(this::tick);
+        if (Boolean.getBoolean("witchersbestiary.naturalEncounterReview"))
+            ClientTickEvents.END_CLIENT_TICK.register(new NaturalEncounters()::tick);
+        else if (Boolean.getBoolean("witchersbestiary.whistleArtReview"))
+            ClientTickEvents.END_CLIENT_TICK.register(new WhistleArt()::tick);
+        else ClientTickEvents.END_CLIENT_TICK.register(this::tick);
     }
 
     private void tick(MinecraftClient client) {
         if (finished) return;
         try {
+            if (total == 0) org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
             if (++total > 2800) throw new IllegalStateException("Revival review timed out at phase " + phase);
             if (!requested && client.getOverlay() == null) {
                 requested = true;
@@ -62,6 +67,7 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
                     var player = client.getServer().getPlayerManager().getPlayerList().getFirst();
                     var world = player.getServerWorld();
                     world.setTimeOfDay(6000);
+                    world.getGameRules().get(GameRules.SPAWN_CHUNK_RADIUS).set(0,world.getServer());
                     var horse = Unicorns.TYPE.create(world);
                     horse.refreshPositionAndAngles(.5, -60, .5, 0, 0);
                     world.spawnEntity(horse);
@@ -80,7 +86,7 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
                     break;
                 }
             }
-            if (horse == null) {
+            if (horse == null && phase != 13) {
                 age--;
                 return;
             }
@@ -107,6 +113,9 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
                     if (age == 12) click(client, horse);
                     if (age == 23) {
                         require(client.player.getMainHandStack().contains(net.minecraft.component.DataComponentTypes.CUSTOM_DATA), "Whistle did not bind");
+                        try (var frame=net.minecraft.client.util.ScreenshotRecorder.takeScreenshot(client.getFramebuffer())) {
+                            frame.writeTo(Path.of("../whistle-in-hand.png"));
+                        }
                         hand(client, ItemStack.EMPTY);
                         advance();
                     }
@@ -219,16 +228,37 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
                         require(client.player.getVehicle() == horse, "Mount after rejoin failed");
                         server(client, (player, actual) -> {
                             player.stopRiding();
-                            player.teleport(player.getServerWorld(), actual.getX(), actual.getY(), actual.getZ() - 16, 0, 0);
+                            player.setSneaking(true);
+                            actual.interactMob(player, Hand.MAIN_HAND);
+                            player.setSneaking(false);
+                            require(actual.waiting(), "Whistle fixture requires WAIT before leaving the chunk");
+                            player.teleport(player.getServerWorld(), actual.getX(), actual.getY(), actual.getZ() - 384, 0, 0);
                             player.setStackInHand(Hand.MAIN_HAND, player.getInventory().getStack(1).copy());
                         });
                         advance();
+                        client.world.disconnect();
+                        client.disconnect(new TitleScreen());
+                        client.createIntegratedServerLoader().start(worldName, () -> {
+                            throw new IllegalStateException("Unable to reload with owner away from unicorn");
+                        });
                     }
                 }
                 case 13 -> {
-                    if (age == 16) client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
-                    if (age == 30) {
-                        require(horse.squaredDistanceTo(client.player) < 30, "Whistle did not summon recovered unicorn");
+                    if (age < 40) return;
+                    if (age < 160 && !called) {
+                        boolean unloaded = client.getServer().submit(() ->
+                                client.getServer().getOverworld().getEntity(unicornId) == null).join();
+                        if (!unloaded) return;
+                        require(client.player.getMainHandStack().isOf(Unicorns.WHISTLE), "Whistle was not restored on rejoin");
+                        called = true;
+                        client.interactionManager.interactItem(client.player, Hand.MAIN_HAND);
+                    }
+                    if (age > 250) throw new IllegalStateException("Unloaded-chunk whistle did not complete; requested=" + called);
+                    if (called && horse != null && horse.squaredDistanceTo(client.player) < 60) {
+                        require(horse.waiting(), "Whistle changed WAIT");
+                        try (var frame=net.minecraft.client.util.ScreenshotRecorder.takeScreenshot(client.getFramebuffer())) {
+                            frame.writeTo(Path.of("../whistle-recovered.png"));
+                        }
                         server(client, (player, actual) -> {
                             verifyState(player, actual);
                             player.teleport(player.getServerWorld(), actual.getX(), actual.getY(), actual.getZ() - 2, 0, 0);
@@ -242,7 +272,7 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
                     if (age == 48) {
                         require(client.player.getVehicle() == horse, "Mount after whistle failed");
                         Files.writeString(Path.of("../result.txt"),
-                                "PASS tame, saddle, mounted movement, recovery, same UUID/owner/gear/health/XP, WAIT/GUARD/FOLLOW, mount after recovery, rejoin and whistle.");
+                                "PASS tame, saddle, mounted movement, recovery, same UUID/owner/gear/health/XP, WAIT/GUARD/FOLLOW, mount after recovery, rejoin and whistle from an unloaded chunk.");
                         finished = true;
                         client.scheduleStop();
                     }
@@ -291,5 +321,223 @@ public final class UnicornRevivalReview implements net.fabricmc.api.ClientModIni
 
     private static void require(boolean value, String reason) {
         if (!value) throw new IllegalStateException(reason);
+    }
+    /** Observes unmodified chunk generation and normal passive spawning on a fresh default world. */
+    private static final class NaturalEncounters {
+        private final String[] cases = {"vanilla-unicorn", "vanilla-troll", "bop-unicorn", "bop-troll"};
+        private boolean started, done, busy;
+        private int scene, region, ticks;
+        private volatile java.util.UUID visible;
+        private final java.util.Map<String,String> observations = new java.util.LinkedHashMap<>();
+
+        void tick(MinecraftClient client) {
+            if (done) return;
+            try {
+                if (!started) {
+                    if (client.getOverlay()!=null) return;
+                    started=true;
+                    org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
+                    client.options.pauseOnLostFocus=false;
+                    client.options.getViewDistance().setValue(4);
+                    client.options.getSimulationDistance().setValue(4);
+                    client.createIntegratedServerLoader().createAndStart("Natural-" + System.currentTimeMillis(),
+                            new LevelInfo("Natural encounter survey", GameMode.CREATIVE,false,Difficulty.NORMAL,
+                                    true,new GameRules(),DataConfiguration.SAFE_MODE),new GeneratorOptions(22,true,false),
+                            r -> r.get(RegistryKeys.WORLD_PRESET).get(WorldPresets.DEFAULT).createDimensionsRegistryHolder(),null);
+                    return;
+                }
+                if (client.player==null || busy) return;
+                if (scene==cases.length) {
+                    Files.writeString(Path.of("../natural-results.txt"), observations.toString());
+                    done=true;
+                    client.scheduleStop();
+                    return;
+                }
+                if (visible!=null) {
+                    if (++ticks<20) return;
+                    UUID id=visible;
+                    if (java.util.stream.StreamSupport.stream(client.world.getEntities().spliterator(),false)
+                            .anyMatch(entity -> entity.getUuid().equals(id))) {
+                        try (var frame=net.minecraft.client.util.ScreenshotRecorder.takeScreenshot(client.getFramebuffer())) {
+                            frame.writeTo(Path.of("../"+cases[scene]+".png"));
+                        }
+                    }
+                    advance();
+                    return;
+                }
+                if (++ticks==1) searchRegion(client);
+                if (ticks>240 && region<2) {
+                    ticks=0;
+                    region++;
+                    return;
+                }
+                if (ticks>240) {
+                    observations.put(cases[scene],"not observed during the bounded survey");
+                    advance();
+                    return;
+                }
+                if (ticks%20==0) lookForSpawn(client);
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                done=true;
+                client.scheduleStop();
+            }
+        }
+
+        private void advance() {
+            visible=null;
+            scene++;
+            ticks=0;
+            region=0;
+        }
+
+        private void searchRegion(MinecraftClient client) {
+            boolean unicorn=scene%2==0;
+            String namespace=scene<2?"minecraft":"biomesoplenty";
+            int current=scene, attempt=region;
+            busy=true;
+            client.getServer().submit(() -> {
+                var server=client.getServer();
+                var world=server.getOverworld();
+                world.getGameRules().get(GameRules.SPAWN_CHUNK_RADIUS).set(0,server);
+                var habitat=unicorn?Unicorns.HABITAT:com.witchersbestiary.fist.RockTrollSpawns.HABITATS;
+                var anchor=world.locateBiome(biome -> biome.isIn(habitat)
+                                && biome.getKey().orElseThrow().getValue().getNamespace().equals(namespace)
+                                && !biome.matchesKey(net.minecraft.world.biome.BiomeKeys.DRIPSTONE_CAVES),
+                        new net.minecraft.util.math.BlockPos((current*3+attempt+1)*1700,110,0),3600,48,40);
+                if (anchor==null) return;
+                var at=anchor.getFirst();
+                world.getChunk(at);
+                int y=world.getTopY(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,at.getX(),at.getZ());
+                var player=server.getPlayerManager().getPlayerList().getFirst();
+                player.teleport(world,at.getX()+.5,y+3,at.getZ()+.5,0,0);
+                player.getAbilities().flying=true;
+                player.sendAbilitiesUpdate();
+            }).whenComplete((unused,error) -> client.execute(() -> {
+                if(error!=null) error.printStackTrace();
+                busy=false;
+            }));
+        }
+
+        private void lookForSpawn(MinecraftClient client) {
+            boolean unicorn=scene%2==0;
+            String namespace=scene<2?"minecraft":"biomesoplenty";
+            String label=cases[scene];
+            busy=true;
+            client.getServer().submit(() -> {
+                var player=client.getServer().getPlayerManager().getPlayerList().getFirst();
+                var world=player.getServerWorld();
+                var found=world.getEntitiesByClass(net.minecraft.entity.mob.MobEntity.class,
+                        player.getBoundingBox().expand(115), entity ->
+                            entity.getType()==(unicorn?Unicorns.TYPE:com.witchersbestiary.fist.FistRegistry.ROCK_TROLL)
+                            && world.getBiome(entity.getBlockPos()).getKey().orElseThrow().getValue().getNamespace().equals(namespace));
+                if (found.isEmpty()) return;
+                var mob=found.getFirst();
+                player.teleport(world,mob.getX()-4,mob.getY()+1.2,mob.getZ(),-90,10);
+                var id=mob.getUuid();
+                var note=world.getBiome(mob.getBlockPos()).getKey().orElseThrow().getValue()+" at "+mob.getBlockPos()+" count="+found.size();
+                client.execute(() -> {
+                    observations.put(label,note);
+                    visible=id;
+                    ticks=0;
+                });
+            }).whenComplete((unused,error) -> client.execute(() -> {
+                if(error!=null) error.printStackTrace();
+                busy=false;
+            }));
+        }
+    }
+    private static final class WhistleArt {
+        private boolean started;
+        private int age;
+        void tick(MinecraftClient client) {
+            try {
+                if (!started) {
+                    if (client.getOverlay()!=null) return;
+                    started=true;
+                    org.lwjgl.glfw.GLFW.glfwHideWindow(client.getWindow().getHandle());
+                    client.options.pauseOnLostFocus=false;
+                    client.options.getViewDistance().setValue(3);
+                    client.options.getSimulationDistance().setValue(3);
+                    client.createIntegratedServerLoader().createAndStart("WhistleArt",
+                            new LevelInfo("Whistle art review", GameMode.SURVIVAL,false,Difficulty.PEACEFUL,
+                                    true,new GameRules(),DataConfiguration.SAFE_MODE),new GeneratorOptions(22,false,false),
+                            r -> r.get(RegistryKeys.WORLD_PRESET).get(WorldPresets.FLAT).createDimensionsRegistryHolder(),null);
+                    return;
+                }
+                if (client.player==null || client.getOverlay()!=null) return;
+                switch (++age) {
+                    case 15 -> edit(client,player->{
+                        player.setStackInHand(Hand.MAIN_HAND,new ItemStack(Unicorns.WHISTLE));
+                        player.getServerWorld().setTimeOfDay(6000);
+                    });
+                    case 35 -> capture(client,"first-right");
+                    case 41 -> client.setScreen(new net.minecraft.client.gui.screen.ingame.InventoryScreen(client.player));
+                    case 56 -> filterJei();
+                    case 63 -> {
+                        var manager=client.getBakedModelManager();
+                        var icon=manager.getModel(net.minecraft.util.Identifier.of("witchersbestiary","item/unicorn_whistle_icon"));
+                        var worldModel=client.getItemRenderer().getModel(new ItemStack(Unicorns.WHISTLE),client.world,client.player,0);
+                        require(icon!=manager.getMissingModel() && !icon.hasDepth(), "Independent flat inventory icon");
+                        require(worldModel!=manager.getMissingModel() && worldModel.hasDepth(), "Volumetric model baked");
+                        capture(client,"inventory-jei");
+                    }
+                    case 70 -> {
+                        client.setScreen(null);
+                        client.options.setPerspective(net.minecraft.client.option.Perspective.THIRD_PERSON_FRONT);
+                    }
+                    case 93 -> capture(client,"third-right");
+                    case 98 -> edit(client,player->{
+                        player.setStackInHand(Hand.MAIN_HAND,ItemStack.EMPTY);
+                        player.setStackInHand(Hand.OFF_HAND,new ItemStack(Unicorns.WHISTLE));
+                    });
+                    case 122 -> capture(client,"third-left");
+                    case 129 -> client.options.setPerspective(net.minecraft.client.option.Perspective.FIRST_PERSON);
+                    case 149 -> capture(client,"first-left");
+                    case 156 -> edit(client,player->{
+                        player.setStackInHand(Hand.OFF_HAND,ItemStack.EMPTY);
+                        var item=new net.minecraft.entity.ItemEntity(player.getWorld(),player.getX(),player.getY()+.04,
+                                player.getZ()+2.2,new ItemStack(Unicorns.WHISTLE),0,0,0);
+                        item.setPickupDelay(200);
+                        player.getWorld().spawnEntity(item);
+                        player.teleport(player.getServerWorld(),player.getX(),player.getY(),player.getZ(),0,31);
+                    });
+                    case 180 -> capture(client,"ground");
+                    case 194 -> {
+                        Files.writeString(Path.of("../result.txt"),"Inventory, right and left hands in first and third person, ground. JEI loaded="
+                                +FabricLoader.getInstance().isModLoaded("jei"));
+                        client.scheduleStop();
+                    }
+                    default -> {}
+                }
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                client.scheduleStop();
+            }
+        }
+
+        private static void filterJei() throws ReflectiveOperationException {
+            if (!FabricLoader.getInstance().isModLoaded("jei")) return;
+            var internal=Class.forName("mezz.jei.common.Internal");
+            var runtime=internal.getMethod("getJeiRuntime").invoke(null);
+            var api=Class.forName("mezz.jei.api.runtime.IJeiRuntime");
+            var filter=api.getMethod("getIngredientFilter").invoke(runtime);
+            var filterApi=Class.forName("mezz.jei.api.runtime.IIngredientFilter");
+            filterApi.getMethod("setFilterText",String.class).invoke(filter,"unicorn whistle");
+            var items=(java.util.List<?>)filterApi.getMethod("getFilteredItemStacks").invoke(filter);
+            require(items.stream().anyMatch(item -> item instanceof ItemStack stack && stack.isOf(Unicorns.WHISTLE)),
+                    "JEI includes the whistle");
+        }
+
+        private static void edit(MinecraftClient client,java.util.function.Consumer<ServerPlayerEntity> action) {
+            var server=client.getServer();
+            server.execute(()->action.accept(server.getPlayerManager().getPlayerList().getFirst()));
+        }
+
+        private static void capture(MinecraftClient client,String name) throws java.io.IOException {
+            try (var frame=net.minecraft.client.util.ScreenshotRecorder.takeScreenshot(client.getFramebuffer())) {
+                frame.writeTo(Path.of("../"+name+".png"));
+            }
+        }
     }
 }
