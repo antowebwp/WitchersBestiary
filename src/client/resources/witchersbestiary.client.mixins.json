@@ -9,7 +9,8 @@
     "FistFirstPersonMixin",
     "PhylacteryUseMixin",
     "JadeUnicornSpeedMixin",
-    "WhistleItemRendererMixin"
+    "WhistleItemRendererMixin",
+    "BloodLegacyItemRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

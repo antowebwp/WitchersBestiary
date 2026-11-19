@@ -60,6 +60,20 @@ final class CascadeBursts {
         spawn(world, position.add(0, .39, 0), FIRE_SMOKE, seed + 1, coarse);
     }
 
+    private static final EmitterSpec BLOOD_MIST = Vfx.emitter().shape(ShapeSpec.ring(.8f)).count(45).lifetime(19)
+            .sprite(SpriteId.SMOKE).blend(BlendMode.ALPHA).speed(.25f).gravity(0,.008f,0).drag(.065f)
+            .size(.19f,.68f,Easings.EASE_OUT_QUAD).gradient(Easings.LINEAR,0xa3283e,0x381020)
+            .alpha(.56f,0,Easings.EASE_OUT_QUAD).spec();
+    private static final EmitterSpec BLOOD_SPARKS = Vfx.emitter().shape(ShapeSpec.hemisphere(.49f)).count(33).lifetime(15)
+            .sprite(SpriteId.SPARK).trail(3).stretch(2.1f).speed(.34f).gravity(0,-.025f,0)
+            .size(.062f,.013f,Easings.LINEAR).gradient(Easings.LINEAR,0xff9b90,0xcc1833,0x551228)
+            .alpha(.94f,0,Easings.EASE_IN_QUAD).spec();
+
+    static void bloodWave(ClientWorld world, Vec3d center, long seed, boolean coarse) {
+        spawn(world, center.add(0,.13,0), BLOOD_MIST, seed, coarse);
+        spawn(world, center.add(0,.41,0), BLOOD_SPARKS, seed + 1, coarse);
+    }
+
     private static void spawn(ClientWorld world, Vec3d position, EmitterSpec spec, long seed, boolean coarse) {
         if (ACTIVE.size() >= MAX_EMITTERS) return;
         var simulation = spec.build(new Random(seed), null, coarse ? .55f : 1);

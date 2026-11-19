@@ -127,6 +127,13 @@ loom {
    programArgs '--width', '960', '--height', '540'
    runDir 'build/stage22g-review/client'
   }
+  bloodLegacyHotfix {
+   client()
+   source sourceSets.clientSmoke
+   vmArg '-Dwitchersbestiary.bloodLegacyHotfix=true'
+   programArgs '--width', '1280', '--height', '720'
+   runDir 'build/blood-legacy-hotfix/client'
+  }
   arcaneFxCapture {
    client()
    source sourceSets.clientSmoke

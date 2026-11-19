@@ -3,6 +3,7 @@ package com.witchersbestiary.client.vfx;
 import com.witchersbestiary.signs.SignPackets;
 import com.witchersbestiary.signs.SignType;
 import com.witchersbestiary.alchemy.BombVfx;
+import com.witchersbestiary.equipment.armory.BloodLegacyPulse;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.render.RenderLayer;
@@ -99,6 +100,8 @@ public final class VfxManager {
             var world = context.client().world;
             if (world != null) acceptBomb(cue, world.getTime());
         });
+        ClientPlayNetworking.registerGlobalReceiver(BloodLegacyPulse.Cue.ID,
+                (cue, context) -> BloodLegacyFx.accept(context.client().world, cue));
         WorldRenderEvents.AFTER_ENTITIES.register(context -> {
             if (context.matrixStack() == null || context.consumers() == null) return;
             double time = context.world().getTime() + context.tickCounter().getTickDelta(false);
@@ -107,6 +110,7 @@ public final class VfxManager {
             if (preview != null) render(context, preview, time, null);
             for (var entry : RITUALS.entrySet()) renderRitual(context, entry.getKey(), entry.getValue(), time);
             for (var fx : BOMBS.values()) renderBomb(context, fx, time);
+            BloodLegacyFx.renderWaves(context, time);
         });
     }
 
@@ -115,6 +119,7 @@ public final class VfxManager {
         RITUALS.clear();
         BOMBS.clear();
         CascadeBursts.clear();
+        BloodLegacyFx.clear();
         preview = null;
     }
 

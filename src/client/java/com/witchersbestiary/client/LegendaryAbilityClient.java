@@ -5,6 +5,7 @@ import com.witchersbestiary.equipment.armory.LegendaryAbilities.Activate;
 import com.witchersbestiary.equipment.armory.LegendaryAbilities.View;
 import com.witchersbestiary.registry.ModItems;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -21,14 +22,15 @@ public final class LegendaryAbilityClient {
 
     public static void initialize() {
         var binding = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.witchersbestiary.legendary_ability",
-                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "key.categories.gameplay"));
+                InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.witchersbestiary"));
         ClientPlayNetworking.registerGlobalReceiver(View.ID, (packet, context) ->
                 context.client().execute(() -> view = packet));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> view = null);
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> view = null);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             boolean pressed = false;
             while (binding.wasPressed()) pressed = true;
-            if (pressed && client.isWindowFocused() && client.currentScreen == null && client.player != null
+            if (pressed && !binding.isUnbound() && client.isWindowFocused() && client.currentScreen == null && client.player != null
                     && ClientPlayNetworking.canSend(Activate.ID)) {
                 var stack = client.player.getMainHandStack();
                 if (stack.isOf(ModItems.BLOOD_LEGACY) || stack.isOf(ModItems.GRAVE_BLADE))
@@ -68,7 +70,7 @@ public final class LegendaryAbilityClient {
             label = Text.translatable("ability.witchersbestiary.ready", title, binding.getBoundKeyLocalizedText());
             fraction = 1;
         }
-        int x = draw.getScaledWindowWidth() / 2, y = draw.getScaledWindowHeight() - 67;
+        int x = draw.getScaledWindowWidth() / 2, y = draw.getScaledWindowHeight() - (blood ? 80 : 67);
         draw.drawCenteredTextWithShadow(client.textRenderer, label, x, y, color);
         draw.fill(x - 41, y + 11, x + 41, y + 16, 0xe0201c1d);
         draw.fill(x - 40, y + 12, x - 40 + Math.round(80 * fraction), y + 15, color);

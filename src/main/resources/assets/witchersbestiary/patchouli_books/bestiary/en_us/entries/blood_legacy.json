@@ -20,7 +20,15 @@
     },
     {
       "type": "patchouli:text",
+      "text": "The cast releases a 5-block blood wave. Visible enemies take 2% of their max health as base damage and are knocked back. Large enemies and bosses resist most of the push."
+    },
+    {
+      "type": "patchouli:text",
       "text": "During Bloodlust (10 seconds), Blood Legacy heals 20% of health damage dealt, up to 2 HP per hit and 8 HP in total. The cooldown lasts 90 seconds."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Crimson mist coils around the drawn blade during Bloodlust. Death, changing dimensions or leaving the server ends the effect."
     },
     {
       "type": "patchouli:text",

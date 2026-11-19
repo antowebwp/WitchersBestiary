@@ -16,21 +16,21 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.particle.DustParticleEffect;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.PersistentState;
-import org.joml.Vector3f;
 
 public final class LegendaryAbilities extends PersistentState {
     public static final int FULL_CHARGE = 8;
     public static final int BLOOD_DURATION = 200, GRAVE_DURATION = 600, COOLDOWN = 1800;
     private static final Type<LegendaryAbilities> TYPE =
             new Type<>(LegendaryAbilities::new, LegendaryAbilities::read, null);
-    private static final DustParticleEffect BLOOD = new DustParticleEffect(new Vector3f(.8f, .04f, .08f), .8f);
     private final Map<UUID, Progress> players = new HashMap<>();
 
     private static final class Progress {
@@ -58,15 +58,32 @@ public final class LegendaryAbilities extends PersistentState {
     public static void initialize() {
         PayloadTypeRegistry.playC2S().register(Activate.ID, Activate.CODEC);
         PayloadTypeRegistry.playS2C().register(View.ID, View.CODEC);
+        BloodLegacyPulse.initialize();
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> endBlood(handler.player));
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, from, to) -> endBlood(player));
+        ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            if (entity instanceof ServerPlayerEntity player) endBlood(player);
+        });
         ServerPlayNetworking.registerGlobalReceiver(Activate.ID, (packet, context) -> activate(context.player()));
         ServerTickEvents.END_SERVER_TICK.register(server -> {
-            if (server.getTicks() % 10 != 0) return;
+            boolean sync = server.getTicks() % 10 == 0;
             var ledger = server.getOverworld().getPersistentStateManager()
                     .getOrCreate(TYPE, "witchersbestiary_legendary_abilities");
-            ledger.players.values().forEach(progress -> ledger.updateGrave(progress, server.getOverworld().getTime()));
+            if (sync) ledger.players.values().forEach(progress -> ledger.updateGrave(progress, server.getOverworld().getTime()));
             for (var player : server.getPlayerManager().getPlayerList()) {
-                var stack = player.getMainHandStack();
-                if (stack.isOf(ModItems.BLOOD_LEGACY) || stack.isOf(ModItems.GRAVE_BLADE)) ledger.sync(player);
+                var aura = (BloodAuraState) player;
+                if (aura.bestiary$bloodAura()) {
+                    var progress = ledger.players.get(player.getUuid());
+                    if (progress.bloodEnd <= player.getServerWorld().getTime()) {
+                        aura.bestiary$setBloodAura(false);
+                        ledger.sync(player);
+                        continue;
+                    }
+                }
+                if (sync) {
+                    var stack = player.getMainHandStack();
+                    if (stack.isOf(ModItems.BLOOD_LEGACY) || stack.isOf(ModItems.GRAVE_BLADE)) ledger.sync(player);
+                }
             }
         });
     }
@@ -88,7 +105,10 @@ public final class LegendaryAbilities extends PersistentState {
             progress.charge = 0;
             progress.healed = 0;
             progress.bloodEnd = now + BLOOD_DURATION;
-            bloodParticles(player);
+            ledger.markDirty();
+            BloodLegacyPulse.fire(player);
+            if (SignManager.allowed(player) && progress.bloodEnd > player.getServerWorld().getTime())
+                ((BloodAuraState) player).bestiary$setBloodAura(true);
         } else {
             ledger.updateGrave(progress, now);
             if (remaining(progress.graveEnd, now) > 0) return false;
@@ -126,13 +146,12 @@ public final class LegendaryAbilities extends PersistentState {
         var ledger = get(player);
         var progress = ledger.players.computeIfAbsent(player.getUuid(), id -> new Progress());
         long now = player.getServerWorld().getTime();
-        if (progress.bloodEnd > now) {
+        if (progress.bloodEnd > now && ((BloodAuraState) player).bestiary$bloodAura()) {
             float healing = Math.min(8 - progress.healed, Math.min(2, actualDamage * .2f));
             float before = player.getHealth();
             if (healing <= 0 || before >= player.getMaxHealth()) return;
             player.heal(healing);
             progress.healed += Math.max(0, player.getHealth() - before);
-            bloodParticles(player);
         } else if (remaining(progress.bloodEnd, now) == 0 && progress.charge < FULL_CHARGE) {
             ++progress.charge;
             ledger.sync(player);
@@ -142,9 +161,15 @@ public final class LegendaryAbilities extends PersistentState {
         ledger.markDirty();
     }
 
-    private static void bloodParticles(ServerPlayerEntity player) {
-        player.getServerWorld().spawnParticles(BLOOD, player.getX(), player.getBodyY(.65),
-                player.getZ(), 7, .3, .25, .3, .01);
+    private static void endBlood(ServerPlayerEntity player) {
+        ((BloodAuraState) player).bestiary$setBloodAura(false);
+        var ledger = get(player);
+        var progress = ledger.players.get(player.getUuid());
+        long now = player.getServerWorld().getTime();
+        if (progress != null && progress.bloodEnd > now) {
+            progress.bloodEnd = now;
+            ledger.markDirty();
+        }
     }
 
     private static int remaining(long end, long now) {
@@ -167,7 +192,8 @@ public final class LegendaryAbilities extends PersistentState {
         if (progress != null) updateGrave(progress, now);
         if (!ServerPlayNetworking.canSend(player, View.ID)) return;
         ServerPlayNetworking.send(player, progress == null ? new View(0, 0, 0)
-                : new View(progress.charge, remaining(progress.bloodEnd, now),
+                : new View(progress.charge, ((BloodAuraState) player).bestiary$bloodAura()
+                                ? remaining(progress.bloodEnd, now) : Math.min(COOLDOWN, remaining(progress.bloodEnd, now)),
                         (progress.ghost == null ? -1 : 1) * remaining(progress.graveEnd, now)));
     }
 
