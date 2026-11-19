@@ -1,7 +1,14 @@
 package com.witchersbestiary.entity.monster;
 
 import com.witchersbestiary.combat.*;
+import com.witchersbestiary.signs.SignManager;
+import java.util.Comparator;
+import java.util.UUID;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Ownable;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.entity.attribute.*;
 import net.minecraft.entity.effect.*;
 import net.minecraft.entity.mob.HostileEntity;
@@ -14,9 +21,76 @@ import net.minecraft.world.World;
 import software.bernie.geckolib.animation.*;
 
 /** Ordinary specter shares the bounded pursuit/copy lifecycle, but has its own warned abilities. */
-public final class WraithEntity extends NoonwraithEntity {
+public final class WraithEntity extends NoonwraithEntity implements Ownable {
     private int stepCooldown=240, stepWindup, whisperCooldown=80, whisperWindup, reactionTicks;
     private Vec3d idlePoint;
+    private UUID summoner;
+    private long summonExpiry;
+
+    public void bindSummon(ServerPlayerEntity owner, long expiry) {
+        summoner = owner.getUuid();
+        summonExpiry = expiry;
+        experiencePoints = 0;
+        targetSelector.clear(goal -> true);
+        getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(30);
+        getAttributeInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE).setBaseValue(7);
+        setHealth(30);
+        setPersistent();
+    }
+
+    public UUID getOwnerUuid() { return summoner; }
+    public boolean isSummoned() { return summoner != null; }
+
+    @Override public ServerPlayerEntity getOwner() {
+        return summoner != null && getWorld() instanceof ServerWorld world
+                ? world.getServer().getPlayerManager().getPlayer(summoner) : null;
+    }
+
+    @Override public boolean shouldSave() { return summoner == null && super.shouldSave(); }
+    @Override protected boolean isDisallowedInPeaceful() { return summoner == null && super.isDisallowedInPeaceful(); }
+
+    public boolean permitsAttack(LivingEntity target) {
+        if (summoner == null) return true;
+        var owner = getOwner();
+        return owner != null && owner.getWorld() == getWorld() && SignManager.allowed(owner)
+                && getWorld().getTime() < summonExpiry && !(target instanceof net.minecraft.entity.player.PlayerEntity)
+                && !(target instanceof WraithEntity wraith && wraith.summoner != null)
+                && SignManager.enemy(owner, target);
+    }
+
+    @Override public void setTarget(LivingEntity target) {
+        if (target == null || permitsAttack(target)) super.setTarget(target);
+    }
+
+    @Override public int summonIllusions() { return summoner == null ? super.summonIllusions() : 0; }
+    @Override protected void dropLoot(DamageSource source, boolean player) {
+        if (summoner == null) super.dropLoot(source, player);
+    }
+
+    @Override protected void idleFlight() {
+        var owner = getOwner();
+        if (owner == null || squaredDistanceTo(owner) <= 9) super.idleFlight();
+        else if (age % 10 == 0) pursueFlight(owner);
+    }
+
+    private boolean prepareSummonTick(ServerWorld world) {
+        var owner = getOwner();
+        if (owner == null || owner.getWorld() != world || !SignManager.allowed(owner)
+                || world.getTime() >= summonExpiry || squaredDistanceTo(owner) > 48 * 48) {
+            discard();
+            return false;
+        }
+        var target = getTarget();
+        if (target != null && (!permitsAttack(target) || target.squaredDistanceTo(owner) > 18 * 18)) {
+            setTarget(null);
+        }
+        if (isAlive() && age % 10 == 0 && getTarget() == null) {
+            var nearby = world.getEntitiesByClass(HostileEntity.class, getBoundingBox().expand(12),
+                    mob -> permitsAttack(mob) && mob.squaredDistanceTo(owner) <= 18 * 18 && canSee(mob));
+            nearby.stream().min(Comparator.comparingDouble(this::squaredDistanceTo)).ifPresent(this::setTarget);
+        }
+        return true;
+    }
     public WraithEntity(EntityType<? extends HostileEntity> type,World world){super(type,world);experiencePoints=8;stepCooldown=200+random.nextInt(121);}
     @Override protected boolean healingRetreatEnabled(){return false;}
     @Override protected boolean ambientSparkles(){return false;}
@@ -33,18 +107,24 @@ public final class WraithEntity extends NoonwraithEntity {
     public int getStepCooldown(){return stepCooldown;}
     public boolean isStepping(){return isRetreating();}
     public boolean beginSpectralStep(){
-        if(getWorld().isClient||isIllusion()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||!isAlive()||stepCooldown>0||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
+        if(summoner!=null||getWorld().isClient||isIllusion()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||!isAlive()||stepCooldown>0||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
         if(!beginPhase(false))return false;
         stepCooldown=280+random.nextInt(121);return true;
     }
     @Override public boolean scream(){
-        if(getWorld().isClient||isIllusion()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||whisperCooldown>0||isRetreating()||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
+        if(summoner!=null||getWorld().isClient||isIllusion()||com.witchersbestiary.alchemy.MoonDust.active(this)||Stun.active(this)||whisperCooldown>0||isRetreating()||combatPaused()||getTarget()==null||!getTarget().isAlive())return false;
         whisperCooldown=400+random.nextInt(101);whisperWindup=12;suspendAttack(18);
         playSound(SoundEvents.ENTITY_ELDER_GUARDIAN_CURSE,.45f,.7f);triggerAnim("action","scream");cue(8);return true;
     }
     private void cue(int count){if(getWorld() instanceof ServerWorld w)w.spawnParticles(ParticleTypes.SMOKE,getX(),getY()+1,getZ(),count,.35,.5,.35,.015);}
     @Override public void tick(){
+        if (summoner != null && getWorld() instanceof ServerWorld serverWorld && !prepareSummonTick(serverWorld)) return;
         super.tick();if(!(getWorld() instanceof ServerWorld world))return;
+        if (summoner != null) {
+            if (isAlive() && age % 10 == 0)
+                world.spawnParticles(ParticleTypes.SOUL, getX(), getBodyY(.5), getZ(), 2, .2, .35, .2, .01);
+            return;
+        }
         if(!isAlive()){stepWindup=whisperWindup=0;setInvisible(false);return;}
         if(isIllusion())return;
         if(stepCooldown>0)stepCooldown--;if(whisperCooldown>0)whisperCooldown--;if(reactionTicks>0)reactionTicks--;

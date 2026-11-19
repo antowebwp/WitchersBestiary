@@ -54,6 +54,10 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
     @com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod(method="damage")
     private boolean witchersbestiary$damage(DamageSource source,float amount,com.llamalad7.mixinextras.injector.wrapoperation.Operation<Boolean> original){
         var victim=(LivingEntity)(Object)this;
+        var summon = source.getAttacker() instanceof com.witchersbestiary.entity.monster.WraithEntity wraith
+                && wraith.isSummoned() ? wraith : null;
+        if (summon != null && !summon.permitsAttack(victim)) return false;
+        var primary = com.witchersbestiary.equipment.armory.ArmoryCombat.takePrimary(victim, source);
         var resolved = com.witchersbestiary.signs.SignManager.resolveBurn(victim,source);
         if (resolved == null) return false;
         if (resolved != source && resolved.getAttacker() instanceof net.minecraft.server.network.ServerPlayerEntity owner)
@@ -62,10 +66,10 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
         if(source.getAttacker() instanceof LivingEntity attacker&&(com.witchersbestiary.signs.SignManager.calmed(attacker)||!com.witchersbestiary.signs.SignManager.permitsRedirectedAttack(attacker,victim)))return false;
         if(com.witchersbestiary.fist.FistFights.intercept(victim,source))return false;
         if(source.isOf(net.minecraft.entity.damage.DamageTypes.LAVA)&&com.witchersbestiary.combat.BasiliskRideProtection.active(victim))return original.call(source,0f);
-        if(source.getAttacker() instanceof com.witchersbestiary.combat.CategorizedMonster&&!source.isIn(net.minecraft.registry.tag.DamageTypeTags.IS_PROJECTILE))amount=com.witchersbestiary.config.ModConfig.damage(amount);
+        if(summon==null&&source.getAttacker() instanceof com.witchersbestiary.combat.CategorizedMonster&&!source.isIn(net.minecraft.registry.tag.DamageTypeTags.IS_PROJECTILE))amount=com.witchersbestiary.config.ModConfig.damage(amount);
         amount=com.witchersbestiary.combat.ProgressiveDifficulty.damage(source,amount);
         amount=com.witchersbestiary.accessory.HunterAccessories.protect(victim,source,com.witchersbestiary.artifact.Artifacts.protection(victim,source,amount));
-        amount=com.witchersbestiary.equipment.armory.ArmoryCombat.apply(victim,source,amount);
+        if(primary!=null&&Float.isFinite(amount)&&amount>0)amount+=primary.amount();
         float armorAdjusted=com.witchersbestiary.equipment.armory.SchoolArmor.damage(victim,source,amount);
         if(amount>0&&armorAdjusted==0)return false;
         amount=armorAdjusted;
@@ -78,7 +82,10 @@ public abstract class LivingEntityMixin implements com.witchersbestiary.alchemy.
         if(result&&actual>0){com.witchersbestiary.alchemy.InventoryOils.commit(oil);
             if(oil!=null&&victim instanceof com.witchersbestiary.entity.monster.HigherVampireEntity vampire)
                 vampire.suppressRegeneration(85);
-            com.witchersbestiary.accessory.HunterAccessories.afterDamage(victim,source,actual);}
+            com.witchersbestiary.accessory.HunterAccessories.afterDamage(victim,source,actual);
+            if(primary!=null&&primary.bloodLegacy()&&source.getAttacker() instanceof net.minecraft.server.network.ServerPlayerEntity player)
+                com.witchersbestiary.equipment.armory.LegendaryAbilities.bloodHit(player,victim,actual);
+        }
         if(result)com.witchersbestiary.enchantment.SwordEnchantments.after(victim,enchantmentHit,actual+Math.max(0,absorption-victim.getAbsorptionAmount()));
         return result;
     }

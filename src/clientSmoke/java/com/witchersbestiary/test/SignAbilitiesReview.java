@@ -2,11 +2,9 @@ package com.witchersbestiary.test;
 
 import com.witchersbestiary.client.signs.SignsClient;
 import com.witchersbestiary.client.vfx.VfxManager;
-import com.witchersbestiary.registry.ModItems;
 import com.witchersbestiary.signs.SignManager;
 import com.witchersbestiary.signs.SignPlayerState;
 import com.witchersbestiary.signs.SignType;
-import com.witchersbestiary.sorcery.Sorcery;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,7 +19,6 @@ import net.minecraft.client.util.ScreenshotRecorder;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.ArmorStandEntity;
 import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.resource.DataConfiguration;
 import net.minecraft.util.math.BlockPos;
@@ -79,10 +76,10 @@ final class SignAbilitiesReview {
                 return;
             }
             if (client.player == null || client.world == null || client.currentScreen != null) return;
-            if (index == 63) {
+            if (index == 60) {
                 if (VfxManager.counts().signs() != 0 || !writes.stream().allMatch(CompletableFuture::isDone)) return;
                 writes.forEach(CompletableFuture::join);
-                Files.writeString(Path.of("../capture-result.txt"), "63 casts, 3 camera angles, peak sign instances "
+                Files.writeString(Path.of("../capture-result.txt"), "60 casts, 3 camera angles, peak sign instances "
                         + peakSigns + ", no sign instances remaining.");
                 stop(client);
                 return;
@@ -109,7 +106,7 @@ final class SignAbilitiesReview {
             if (elapsed == 18 && sign() == SignType.QUEN) client.getServer().submit(() -> strike(client, false)).join();
             if (elapsed == 34 && sign() == SignType.QUEN) client.getServer().submit(() -> strike(client, true)).join();
             peakSigns = Math.max(peakSigns, VfxManager.counts().signs());
-            int duration = sign() == null ? 75 : sign() == SignType.QUEN || breath() || sign() == SignType.YRDEN ? 42 : 26;
+            int duration = sign() == SignType.QUEN || breath() || sign() == SignType.YRDEN ? 42 : 26;
             if (elapsed >= duration) {
                 if (captured < 0) throw new IllegalStateException("Missing framebuffer " + index);
                 if (breath() && client.world.getTime() - startTime > 26
@@ -164,15 +161,9 @@ final class SignAbilitiesReview {
         }
         var state = SignManager.state(player);
         for (int i = 0; i < 250; i++) state.tick();
-        if (type != null) {
-            state.select(type);
-            state.equip(type, 0, form());
-            state.equip(type, 1, form());
-        } else {
-            player.getInventory().setStack(35, new ItemStack(ModItems.GRIMOIRE));
-            Sorcery.learn(player);
-            Sorcery.state(player).cooldown = 0;
-        }
+        state.select(type);
+        state.equip(type, 0, form());
+        state.equip(type, 1, form());
     }
 
     private void cast(MinecraftClient client) {
@@ -180,11 +171,11 @@ final class SignAbilitiesReview {
         var player = server.getPlayerManager().getPlayerList().getFirst();
         player.setYaw(0);
         player.setPitch(0);
-        if (sign() == null || sign() == SignType.AXII) {
+        if (sign() == SignType.AXII) {
             var eyes = targets.getFirst().getEyePos();
             player.lookAt(net.minecraft.command.argument.EntityAnchorArgumentType.EntityAnchor.EYES, eyes);
         }
-        boolean accepted = sign() == null ? Sorcery.cast(player) : SignManager.cast(player, server.getTicks());
+        boolean accepted = SignManager.cast(player, server.getTicks());
         if (!accepted) {
             var target = targets.getFirst();
             throw new IllegalStateException("Cast rejected: " + sign() + "/" + form() + "/" + angle()
@@ -228,7 +219,7 @@ final class SignAbilitiesReview {
     }
 
     private void capture() {
-        if (finished || index >= 63 || prep == null || elapsed < 10) return;
+        if (finished || index >= 60 || prep == null || elapsed < 10) return;
         var client = MinecraftClient.getInstance();
         var type = sign();
         long time = client.world.getTime();
@@ -240,7 +231,7 @@ final class SignAbilitiesReview {
         boolean animated = angle() == 2 && (type == null || type == SignType.IGNI && form() == 1
                 || type == SignType.YRDEN && form() == 3 || type == SignType.QUEN && form() == 2
                 || type == SignType.AXII && form() == 3);
-        String name = (type == null ? "icy-grasp" : type.name().toLowerCase(Locale.ROOT)) + "-" + form();
+        String name = type.name().toLowerCase(Locale.ROOT) + "-" + form();
         if (captured < 0 && age >= still) {
             captured = age;
             save(client, name + "-" + ANGLES[angle()] + ".png");

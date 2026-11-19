@@ -83,7 +83,7 @@ public class NoonwraithEntity extends HostileEntity implements GeoEntity, Catego
     private Vec3d detourTarget;
     private int flightRetry;
     /** Vanilla routes remain primary; a bounded lateral waypoint escapes a finished partial route. */
-    private void pursueFlight(LivingEntity target){
+    protected final void pursueFlight(LivingEntity target){
         if(age<flightRetry)return;
         if(flightDetour!=null&&!getNavigation().isIdle()&&detourTarget.squaredDistanceTo(target.getPos())<16)return;
         flightDetour=null;
@@ -125,6 +125,7 @@ public class NoonwraithEntity extends HostileEntity implements GeoEntity, Catego
     protected boolean ambientSparkles(){return false;}
     protected boolean combatHopEnabled(){return true;}
     protected boolean combatPaused(){return false;}
+    protected void idleFlight(){getNavigation().stop();}
     protected int illusionLimit(){return 4;}
     protected float illusionDamage(){return 6;}
     protected double chaseSpeed(){return .35;}
@@ -171,7 +172,7 @@ public class NoonwraithEntity extends HostileEntity implements GeoEntity, Catego
             if (!illusion && followup==0 && attackWindup==0 && distance < 7) scream();
             if (!illusion && followup==0 && !combatPaused() && attackWindup==0 && distance < 12) summonIllusions();
             if(!illusion&&combatHopEnabled()&&--hopCooldown<=0){hopCooldown=100+random.nextInt(61);tryGhostDodge();}
-        }else{attackWindup=followup=0;getNavigation().stop();}
+        }else{attackWindup=followup=0;idleFlight();}
         if(target==null||!target.isAlive()||target.squaredDistanceTo(this)<2.2)hover();
         if (!illusion && ambientSparkles() && age % 8 == 0) world.spawnParticles(ParticleTypes.END_ROD, getX(), getY() + .4, getZ(), 1, .3, .2, .3, .005);
     }

@@ -31,7 +31,7 @@ public final class WitcherSwordItem extends SwordItem {
   double full=player.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
   float bonus=ArmoryCombat.bonus(new ItemStack(this),living)*(float)Math.clamp(full>0?baseDamage/full:0,0,1);
   bonus += com.witchersbestiary.combat.MonsterHealthScaling.bonus(living,balance.percent / 100,8);
-  ArmoryCombat.prepare(living,source,bonus);return 0;
+  ArmoryCombat.prepare(living,source,bonus,this==com.witchersbestiary.registry.ModItems.BLOOD_LEGACY);return 0;
  }
  @Override public boolean postHit(ItemStack stack,LivingEntity target,LivingEntity attacker){boolean result=super.postHit(stack,target,attacker);ArmoryCombat.afterHit(this,target,attacker);
   if(this==com.witchersbestiary.registry.ModItems.BLOOD_LEGACY&&!target.getWorld().isClient
@@ -39,5 +39,6 @@ public final class WitcherSwordItem extends SwordItem {
    com.witchersbestiary.alchemy.BleedingEffect.inflict(target,1);
   return result;}
  @Override public void appendTooltip(ItemStack stack,TooltipContext context,List<Text> tooltip,TooltipType type){super.appendTooltip(stack,context,tooltip,type);if(this==com.witchersbestiary.registry.ModItems.BLOOD_LEGACY)
-  tooltip.add(Text.translatable("tooltip.witchersbestiary.blood_legacy").formatted(Formatting.RED));if(kind!=Kind.STEEL)tooltip.add(Text.translatable("tooltip.witchersbestiary."+(kind==Kind.SILVER?"silver_witcher_sword":"grave_blade")).formatted(Formatting.AQUA));}
+  {tooltip.add(Text.translatable("tooltip.witchersbestiary.blood_legacy").formatted(Formatting.RED));tooltip.add(abilityTip("bloodlust").formatted(Formatting.RED));}if(kind==Kind.GRAVE)tooltip.add(abilityTip("spectral_summon").formatted(Formatting.AQUA));if(kind!=Kind.STEEL)tooltip.add(Text.translatable("tooltip.witchersbestiary."+(kind==Kind.SILVER?"silver_witcher_sword":"grave_blade")).formatted(Formatting.AQUA));}
+ private static net.minecraft.text.MutableText abilityTip(String ability){return Text.translatable("tooltip.witchersbestiary."+ability,Text.keybind("key.witchersbestiary.legendary_ability"));}
 }

@@ -9,12 +9,10 @@ LABELS = {
     "quen": ("Shield", "Shield Burst", "Reflection", "Protection Aura"),
     "yrden": ("Trap", "Binding Trap", "Three Traps", "Pulsing Trap"),
     "axii": ("Calm", "Mass Confusion", "Domination", "Redirect Aggression"),
-    "icy-grasp": ("Icy Grasp",),
 }
 ANGLES = (("front", "Front"), ("side", "Side"), ("45", "45 degrees"))
 ANIMATIONS = {
     "fireburst": "igni-1",
-    "icy-grasp": "icy-grasp-0",
     "yrden-pulse": "yrden-3",
     "quen-reflection": "quen-2",
     "axii-redirect": "axii-3",

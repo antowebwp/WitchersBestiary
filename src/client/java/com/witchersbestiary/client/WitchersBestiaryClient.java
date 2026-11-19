@@ -21,7 +21,7 @@ public final class WitchersBestiaryClient implements ClientModInitializer {
                         com.witchersbestiary.contracts.hunt.VampireHunt.isSealed(stack) ? 1 : 0);
         SchoolArmorTooltip.initialize();
         com.witchersbestiary.client.signs.SignsClient.initialize();
-        com.witchersbestiary.client.sorcery.SorceryClient.initialize();
+        com.witchersbestiary.client.LegendaryAbilityClient.initialize();
         com.witchersbestiary.client.tracking.WitcherSensesClient.initialize();
         com.witchersbestiary.client.config.ProgressiveConfigClient.initialize();
         net.minecraft.client.gui.screen.ingame.HandledScreens.register(com.witchersbestiary.nekker.NekkerHandler.TYPE,NekkerScreen::new);

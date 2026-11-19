@@ -15,6 +15,14 @@
       "bomb": false
     },
     {
+      "type": "patchouli:text",
+      "text": "Hold Grave Blade in your main hand and press $(k:key.witchersbestiary.legendary_ability). An allied Wraith fights nearby hostile creatures for up to 30 seconds. It has 30 HP and 7 base attack damage."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The Wraith avoids players and protected allies. After the summon, allow 90 seconds before calling another."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "witchersbestiary:grave_blade"
     },

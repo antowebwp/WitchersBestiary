@@ -18,6 +18,12 @@ public final class Stage22QBalanceTests implements FabricGameTest {
                 new net.minecraft.entity.attribute.EntityAttributeModifier(
                         com.witchersbestiary.combat.ProgressiveDifficulty.HEALTH, 0,
                         net.minecraft.entity.attribute.EntityAttributeModifier.Operation.ADD_VALUE));
+        double[] expectedRates = {.3, .4, .45, .6};
+        int[] expectedBases = {8, 9, 11, 14};
+        for (var sword : StageCombatBalance.Sword.values()) {
+            context.assertTrue(sword.base == expectedBases[sword.ordinal()]
+                    && sword.percent == expectedRates[sword.ordinal()], "Rebalanced profile " + sword.name());
+        }
         for (int health : new int[]{100, 500, 1000, 2000}) {
             monster.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH).setBaseValue(health);
             for (var sword : StageCombatBalance.Sword.values()) {

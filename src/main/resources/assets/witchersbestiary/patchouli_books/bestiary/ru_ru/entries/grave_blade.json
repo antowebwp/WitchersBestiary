@@ -15,6 +15,14 @@
       "bomb": false
     },
     {
+      "type": "patchouli:text",
+      "text": "Возьмите «Могильный клинок» в основную руку и нажмите $(k:key.witchersbestiary.legendary_ability). Союзный Призрак сражается с ближайшими врагами до 30 секунд. У него 30 ОЗ и 7 базового урона."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Призрак обходит игроков и защищённых союзников. После призыва до следующего применения проходит 90 секунд."
+    },
+    {
       "type": "patchouli:crafting",
       "recipe": "witchersbestiary:grave_blade"
     },

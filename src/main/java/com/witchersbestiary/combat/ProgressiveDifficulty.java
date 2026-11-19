@@ -27,7 +27,7 @@ public final class ProgressiveDifficulty {
         if(e instanceof Tameable pet && pet.getOwnerUuid()!=null)return false;
         if(e instanceof WerewolfEntity w && w.isHumanForm())return false;
         if(e instanceof FogletEntity f && f.isIllusion())return false;
-        if(e instanceof NoonwraithEntity w && w.isIllusion())return false;
+        if(e instanceof NoonwraithEntity w && w.isIllusion() || e instanceof WraithEntity wraith && wraith.isSummoned())return false;
         return !ModConfig.progressive().excluded().contains(Registries.ENTITY_TYPE.getId(e.getType()).toString());
     }
     public static long steps(LivingEntity e){

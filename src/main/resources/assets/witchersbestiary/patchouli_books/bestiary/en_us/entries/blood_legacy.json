@@ -16,6 +16,14 @@
     },
     {
       "type": "patchouli:text",
+      "text": "Land 8 damaging Blood Legacy strikes, then press $(k:key.witchersbestiary.legendary_ability) with it in your main hand. The charge is yours and is spent on activation."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "During Bloodlust (10 seconds), Blood Legacy heals 20% of health damage dealt, up to 2 HP per hit and 8 HP in total. The cooldown lasts 90 seconds."
+    },
+    {
+      "type": "patchouli:text",
       "text": "Place the Witcher sword first in an anvil and a diamond or netherite sword second. Preview the compatible enchantments. Taking the result consumes the donor. Enchanted books still work."
     }
   ]

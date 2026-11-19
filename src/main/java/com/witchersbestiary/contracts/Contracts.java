@@ -62,6 +62,7 @@ public final class Contracts {
                 && player.getServer() == world.getServer() ? player : null;
     }
     public static void onDeath(LivingEntity victim, DamageSource source) {
+        if (victim instanceof com.witchersbestiary.entity.monster.WraithEntity wraith && wraith.isSummoned()) return;
         if(com.witchersbestiary.contracts.hunt.SwampLord.death(victim)){com.witchersbestiary.contracts.tracking.Investigations.afterDeath(victim);return;}
         var player = killer(victim, source);
         if (player == null || victim.isAlive()) return;

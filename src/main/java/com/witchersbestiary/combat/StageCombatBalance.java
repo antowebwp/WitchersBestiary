@@ -5,7 +5,7 @@ import net.minecraft.entity.LivingEntity;
 
 public final class StageCombatBalance {
     public enum Sword {
-        STEEL(8, .35), SILVER(9, .5), GRAVE(12, .6), BLOOD_LEGACY(16, .8);
+        STEEL(8, .3), SILVER(9, .4), GRAVE(11, .45), BLOOD_LEGACY(14, .6);
 
         public final int base;
         public final double percent;

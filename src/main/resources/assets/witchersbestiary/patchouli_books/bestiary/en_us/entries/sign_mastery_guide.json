@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Open a learned sign in the Bestiary and click its Mastery button. Eligible sign hits and contracts award points. Repeated hits on the same target are limited."
+      "text": "Hold R (default) to open the sign wheel and choose Sign Mastery next to HUD Settings. Eligible sign hits and contracts award points. Repeated hits on the same target are limited."
     },
     {
       "type": "patchouli:text",

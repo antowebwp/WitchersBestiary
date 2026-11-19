@@ -12,11 +12,11 @@ import java.util.*;
 /** Target rules for the vanilla item bonus hook; no second damage call. */
 public final class ArmoryCombat {
  private ArmoryCombat(){}
- private record Primary(LivingEntity target,float amount){}
+ public record Primary(LivingEntity target,float amount,boolean bloodLegacy){}
  private static final Map<DamageSource,Primary> PRIMARY=new WeakHashMap<>();
- public static void prepare(LivingEntity target,DamageSource source,float amount){if(!target.getWorld().isClient&&amount>0)PRIMARY.put(source,new Primary(target,amount));}
+ public static void prepare(LivingEntity target,DamageSource source,float amount,boolean bloodLegacy){if(!target.getWorld().isClient&&(amount>0||bloodLegacy))PRIMARY.put(source,new Primary(target,amount,bloodLegacy));}
  /** Consume only on the originally selected victim. Sweep reuses this source, but not its bonus. */
- public static float apply(LivingEntity target,DamageSource source,float amount){if(target.getWorld().isClient)return amount;var hit=PRIMARY.get(source);if(hit==null||hit.target!=target)return amount;PRIMARY.remove(source);return Float.isFinite(amount)&&amount>0?amount+hit.amount:amount;}
+ public static Primary takePrimary(LivingEntity target,DamageSource source){if(target.getWorld().isClient)return null;var hit=PRIMARY.get(source);return hit!=null&&hit.target==target?PRIMARY.remove(source):null;}
  private static final Map<PlayerEntity,Long> CHILL_ATTEMPTS=new WeakHashMap<>();
  public static boolean monster(LivingEntity target){return target instanceof CategorizedMonster&&Registries.ENTITY_TYPE.getId(target.getType()).getNamespace().equals("witchersbestiary");}
  public static boolean graveTarget(LivingEntity target){return monster(target)&&target instanceof CategorizedMonster category&&(category.getMonsterCategory()==MonsterCategory.SPECTER||category.getMonsterCategory()==MonsterCategory.NECROPHAGE);}
