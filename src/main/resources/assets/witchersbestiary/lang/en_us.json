@@ -363,7 +363,7 @@
   "item.witchersbestiary.griffin_claw": "Griffin Claw",
   "item.witchersbestiary.hybrid_oil": "Hybrid Oil",
   "category.witchersbestiary.hybrid": "Hybrids",
-  "tooltip.witchersbestiary.ogroid_slam": "Crushing Blow: hold Use for 0.5 s while grounded.",
+  "tooltip.witchersbestiary.ogroid_slam": "Crushing Blow: hold %s for at least 0.5 s while grounded, then release.",
   "tooltip.witchersbestiary.ogroid_slam_limits": "Two hands; 3-block radius, 9 damage, 12 s cooldown. Weight: −8% speed.",
   "death.attack.witchersbestiary.ogroid_slam": "%1$s was crushed by %2$s’s ogroid hammer",
   "death.attack.witchersbestiary.ogroid_slam.player": "%1$s was crushed by %2$s’s ogroid hammer",

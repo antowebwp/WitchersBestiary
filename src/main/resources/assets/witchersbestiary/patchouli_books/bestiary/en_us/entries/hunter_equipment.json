@@ -6,7 +6,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "witchersbestiary:bonecrusher_club",
-      "text": "The Ogroid Hammer is a slow, heavy two-handed weapon. Hold Use for half a second with an empty offhand: 9 damage and knockback within 3 blocks. The 12-second cooldown is saved on the item. Walls block the wave; oils and fangs apply to ordinary hits only."
+      "text": "The Ogroid Hammer is a slow, heavy two-handed weapon. Stand on the ground with an empty offhand. Hold $(k:key.witchersbestiary.legendary_ability) for at least half a second, then release to deal 9 damage and knock targets back within 3 blocks. The 12-second cooldown is saved on the item. Walls block the wave; oils and fangs apply to ordinary hits only."
     },
     {
       "type": "patchouli:crafting",

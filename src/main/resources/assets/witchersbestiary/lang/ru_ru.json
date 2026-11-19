@@ -363,7 +363,7 @@
   "item.witchersbestiary.griffin_claw": "Коготь грифона",
   "item.witchersbestiary.hybrid_oil": "Масло против гибридов",
   "category.witchersbestiary.hybrid": "Гибриды",
-  "tooltip.witchersbestiary.ogroid_slam": "Сокрушение: удерживайте ПКМ 0,5 с, стоя на земле.",
+  "tooltip.witchersbestiary.ogroid_slam": "Сокрушение: стоя на земле, удерживайте %s не менее 0,5 с, затем отпустите.",
   "tooltip.witchersbestiary.ogroid_slam_limits": "Две руки; радиус 3 блока, 9 урона, откат 12 с. Вес: −8% скорости.",
   "death.attack.witchersbestiary.ogroid_slam": "%1$s был сокрушён молотом %2$s",
   "death.attack.witchersbestiary.ogroid_slam.player": "%1$s был сокрушён молотом %2$s",

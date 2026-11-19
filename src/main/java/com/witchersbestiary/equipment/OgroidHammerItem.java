@@ -33,25 +33,21 @@ public final class OgroidHammerItem extends SwordItem {
    .add(EntityAttributes.GENERIC_MOVEMENT_SPEED,new EntityAttributeModifier(Identifier.of("witchersbestiary","hammer_weight"),-.08,EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),AttributeModifierSlot.MAINHAND).build()));}
  // Better Combat masks getOffHandStack for two-handed weapons; enforce the physical slot.
  private static boolean offhandOccupied(PlayerEntity player){return !player.getInventory().offHand.get(0).isEmpty();}
- @Override public TypedActionResult<ItemStack> use(World world,PlayerEntity player,Hand hand){
-  var stack=player.getStackInHand(hand);
-  if(hand!=Hand.MAIN_HAND||offhandOccupied(player)||!player.isOnGround()||player.hasVehicle()||player.isTouchingWater()||player.isInLava()||player.getItemCooldownManager().isCoolingDown(this))return TypedActionResult.fail(stack);
+ public boolean canWindUp(ServerWorld world,PlayerEntity player,ItemStack stack){
+  if(!stack.isOf(this)||player.getMainHandStack()!=stack||!player.isOnGround()||player.hasVehicle()
+      ||player.isTouchingWater()||player.isInLava()||offhandOccupied(player)||player.isUsingItem()
+      ||player.getItemCooldownManager().isCoolingDown(this))return false;
   long remaining=stack.getOrDefault(ModDataComponents.HAMMER_READY_AT,0L)-world.getTime();
-  if(remaining>0&&remaining<=COOLDOWN){if(!world.isClient)player.getItemCooldownManager().set(this,(int)remaining);return TypedActionResult.fail(stack);}
-  player.setCurrentHand(hand);return TypedActionResult.consume(stack);
+  if(remaining>0&&remaining<=COOLDOWN){player.getItemCooldownManager().set(this,(int)remaining);return false;}
+  return true;
  }
- @Override public int getMaxUseTime(ItemStack stack,LivingEntity user){return WINDUP+2;}
- @Override public UseAction getUseAction(ItemStack stack){return UseAction.NONE;}
- @Override public void usageTick(World world,LivingEntity user,ItemStack stack,int remainingUseTicks){
-  if(!(world instanceof ServerWorld server)||!(user instanceof PlayerEntity player))return;
-  if(!player.isOnGround()||player.hasVehicle()||player.isTouchingWater()||player.isInLava()||offhandOccupied(player)){player.stopUsingItem();return;}
-  int elapsed=getMaxUseTime(stack,user)-remainingUseTicks;
-  if(elapsed>0&&elapsed<WINDUP&&elapsed%3==0){server.spawnParticles(ParticleTypes.CRIT,player.getX(),player.getY()+.12,player.getZ(),5,.65,.08,.65,.02);server.playSound(null,player.getBlockPos(),SoundEvents.BLOCK_STONE_HIT,SoundCategory.PLAYERS,.3f,.7f);}
-  if(elapsed==WINDUP){slam(server,player,stack);player.stopUsingItem();}
+ public void windupEffect(ServerWorld world,PlayerEntity player){
+  world.spawnParticles(ParticleTypes.CRIT,player.getX(),player.getY()+.12,player.getZ(),5,.65,.08,.65,.02);
+  world.playSound(null,player.getBlockPos(),SoundEvents.BLOCK_STONE_HIT,SoundCategory.PLAYERS,.3f,.7f);
  }
  public boolean slam(ServerWorld world,PlayerEntity player,ItemStack stack){
-  if(!stack.isOf(this)||player.getMainHandStack()!=stack||!player.isOnGround()||player.hasVehicle()||player.isTouchingWater()||player.isInLava()||offhandOccupied(player)||player.getItemCooldownManager().isCoolingDown(this))return false;
-  long now=world.getTime(),ready=stack.getOrDefault(ModDataComponents.HAMMER_READY_AT,0L);if(ready>now&&ready-now<=COOLDOWN)return false;
+  if(!canWindUp(world,player,stack))return false;
+  long now=world.getTime();
   player.getItemCooldownManager().set(this,COOLDOWN);stack.set(ModDataComponents.HAMMER_READY_AT,now+COOLDOWN);
   var source=new DamageSource(world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE).entryOf(SLAM),player);
   for(var target:world.getEntitiesByClass(LivingEntity.class,player.getBoundingBox().expand(3,1.2,3),e->e.isAlive()&&(e instanceof HostileEntity||e instanceof com.witchersbestiary.entity.monster.InfernalBasiliskEntity basilisk&&!basilisk.isTamed())&&!(e instanceof PlayerEntity)&&!(e instanceof com.witchersbestiary.entity.monster.WerewolfEntity wolf&&wolf.isHumanForm()))){
@@ -64,6 +60,6 @@ public final class OgroidHammerItem extends SwordItem {
   world.playSound(null,player.getBlockPos(),SoundEvents.BLOCK_ANVIL_LAND,SoundCategory.PLAYERS,.8f,.6f);player.swingHand(Hand.MAIN_HAND,true);stack.damage(3,player,EquipmentSlot.MAINHAND);return true;
  }
  @Override public void appendTooltip(ItemStack stack,TooltipContext context,List<Text> lines,TooltipType type){
-  super.appendTooltip(stack,context,lines,type);lines.add(Text.translatable("tooltip.witchersbestiary.ogroid_slam").formatted(Formatting.GOLD));lines.add(Text.translatable("tooltip.witchersbestiary.ogroid_slam_limits").formatted(Formatting.DARK_GRAY));
+  super.appendTooltip(stack,context,lines,type);lines.add(Text.translatable("tooltip.witchersbestiary.ogroid_slam",Text.keybind("key.witchersbestiary.legendary_ability")).formatted(Formatting.GOLD));lines.add(Text.translatable("tooltip.witchersbestiary.ogroid_slam_limits").formatted(Formatting.DARK_GRAY));
  }
 }

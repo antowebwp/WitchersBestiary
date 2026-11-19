@@ -1,6 +1,7 @@
 package com.witchersbestiary.equipment.armory;
 
 import com.witchersbestiary.entity.ModEntities;
+import com.witchersbestiary.equipment.OgroidHammerItem;
 import com.witchersbestiary.entity.monster.WraithEntity;
 import com.witchersbestiary.registry.ModItems;
 import com.witchersbestiary.signs.SignManager;
@@ -11,6 +12,8 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
@@ -33,6 +36,15 @@ public final class LegendaryAbilities extends PersistentState {
     private static final Type<LegendaryAbilities> TYPE =
             new Type<>(LegendaryAbilities::new, LegendaryAbilities::read, null);
     private final Map<UUID, Progress> players = new HashMap<>();
+    private static final Map<ServerPlayerEntity, HammerWindup> HAMMER_WINDUPS = new HashMap<>();
+
+    private record HammerWindup(ServerWorld world, ItemStack stack, int slot, long start) {
+        boolean valid(ServerPlayerEntity player) {
+            return player.getServerWorld() == world && player.getInventory().selectedSlot == slot
+                    && SignManager.allowed(player)
+                    && stack.getItem() instanceof OgroidHammerItem hammer && hammer.canWindUp(world, player, stack);
+        }
+    }
 
     private static final class Progress {
         int charge;
@@ -47,6 +59,15 @@ public final class LegendaryAbilities extends PersistentState {
         @Override public Id<Activate> getId() { return ID; }
     }
 
+    public enum HammerInput implements CustomPayload {
+        START, RELEASE, CANCEL;
+
+        public static final Id<HammerInput> ID = new Id<>(Identifier.of("witchersbestiary", "legendary_hammer_input"));
+        public static final PacketCodec<RegistryByteBuf, HammerInput> CODEC =
+                PacketCodec.of((action, buf) -> buf.writeEnumConstant(action), buf -> buf.readEnumConstant(HammerInput.class));
+        @Override public Id<HammerInput> getId() { return ID; }
+    }
+
     public record View(int charge, int blood, int grave) implements CustomPayload {
         public static final Id<View> ID = new Id<>(Identifier.of("witchersbestiary", "legendary_view"));
         public static final PacketCodec<RegistryByteBuf, View> CODEC = PacketCodec.tuple(
@@ -57,20 +78,23 @@ public final class LegendaryAbilities extends PersistentState {
 
     public static void initialize() {
         PayloadTypeRegistry.playC2S().register(Activate.ID, Activate.CODEC);
+        PayloadTypeRegistry.playC2S().register(HammerInput.ID, HammerInput.CODEC);
         PayloadTypeRegistry.playS2C().register(View.ID, View.CODEC);
         BloodLegacyPulse.initialize();
-        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> endBlood(handler.player));
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, from, to) -> endBlood(player));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> endAbilities(handler.player));
+        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, from, to) -> endAbilities(player));
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
-            if (entity instanceof ServerPlayerEntity player) endBlood(player);
+            if (entity instanceof ServerPlayerEntity player) endAbilities(player);
         });
         ServerPlayNetworking.registerGlobalReceiver(Activate.ID, (packet, context) -> activate(context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(HammerInput.ID, (packet, context) -> hammerInput(context.player(), packet));
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             boolean sync = server.getTicks() % 10 == 0;
             var ledger = server.getOverworld().getPersistentStateManager()
                     .getOrCreate(TYPE, "witchersbestiary_legendary_abilities");
             if (sync) ledger.players.values().forEach(progress -> ledger.updateGrave(progress, server.getOverworld().getTime()));
             for (var player : server.getPlayerManager().getPlayerList()) {
+                tickHammerWindup(player);
                 var aura = (BloodAuraState) player;
                 if (aura.bestiary$bloodAura()) {
                     var progress = ledger.players.get(player.getUuid());
@@ -97,6 +121,7 @@ public final class LegendaryAbilities extends PersistentState {
         if (!SignManager.allowed(player)) return false;
         var stack = player.getMainHandStack();
         if (!stack.isOf(ModItems.BLOOD_LEGACY) && !stack.isOf(ModItems.GRAVE_BLADE)) return false;
+        HAMMER_WINDUPS.remove(player);
         var ledger = get(player);
         var progress = ledger.players.computeIfAbsent(player.getUuid(), id -> new Progress());
         long now = player.getServerWorld().getTime();
@@ -118,6 +143,34 @@ public final class LegendaryAbilities extends PersistentState {
         ledger.markDirty();
         ledger.sync(player);
         return true;
+    }
+
+    public static boolean hammerInput(ServerPlayerEntity player, HammerInput input) {
+        var world = player.getServerWorld();
+        if (input == HammerInput.START) {
+            if (HAMMER_WINDUPS.containsKey(player)) return false;
+            var windup = new HammerWindup(world, player.getMainHandStack(),
+                    player.getInventory().selectedSlot, world.getTime());
+            if (!windup.valid(player)) return false;
+            HAMMER_WINDUPS.put(player, windup);
+            return true;
+        }
+        var windup = HAMMER_WINDUPS.remove(player);
+        if (input != HammerInput.RELEASE || windup == null || !windup.valid(player)
+                || world.getTime() - windup.start() < OgroidHammerItem.WINDUP) return false;
+        return ((OgroidHammerItem) windup.stack().getItem()).slam(world, player, windup.stack());
+    }
+
+    private static void tickHammerWindup(ServerPlayerEntity player) {
+        var windup = HAMMER_WINDUPS.get(player);
+        if (windup == null) return;
+        if (!windup.valid(player)) {
+            HAMMER_WINDUPS.remove(player);
+            return;
+        }
+        long elapsed = windup.world().getTime() - windup.start();
+        if (elapsed > 0 && elapsed < OgroidHammerItem.WINDUP && elapsed % 3 == 0)
+            ((OgroidHammerItem) windup.stack().getItem()).windupEffect(windup.world(), player);
     }
 
     private static WraithEntity summon(ServerPlayerEntity player, long expiry) {
@@ -157,7 +210,8 @@ public final class LegendaryAbilities extends PersistentState {
         ledger.markDirty();
     }
 
-    private static void endBlood(ServerPlayerEntity player) {
+    private static void endAbilities(ServerPlayerEntity player) {
+        HAMMER_WINDUPS.remove(player);
         ((BloodAuraState) player).bestiary$setBloodAura(false);
         var ledger = get(player);
         var progress = ledger.players.get(player.getUuid());

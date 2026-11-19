@@ -1,7 +1,7 @@
 # 0.22.0 — Legends Reforged
 
 - **Contracts:** Rotating named Legends, two-clue investigations with route recovery, and saved vanilla bonus rewards alongside crowns. Existing contracts and claim states carry forward.
-- **Legendary swords:** Blood Legacy builds charge in eight hits. Bloodlust releases a blood wave, then restores 20% of health damage dealt for 10 seconds, up to the wielder’s maximum health. The cooldown is 30 seconds after Bloodlust ends. Grave Blade summons an allied wraith. Both use the same rebindable key, B by default.
+- **Legendary swords:** Blood Legacy builds charge in eight hits. Bloodlust releases a blood wave, then restores 20% of health damage dealt for 10 seconds, up to the wielder’s maximum health. The cooldown is 30 seconds after Bloodlust ends. Grave Blade summons an allied wraith. Both activate on a tap of the rebindable Legendary Weapon Ability key (B by default). The Ogroid Hammer shares that key and slams on release after at least half a second of windup.
 - **Higher Vampire:** Combat phases, blood cocoon and Crimson Phylactery sealing. The first hunt awards Blood Legacy, and repeat hunts have their own payout.
 - **Griffin:** Refined anatomy, wing animations and flight combat, with telegraphed dives that Aard can interrupt.
 - **Unicorn:** Wild spawning, riding progression, follow and guard behavior, a whistle, and ownership and riding progression preserved through revival.

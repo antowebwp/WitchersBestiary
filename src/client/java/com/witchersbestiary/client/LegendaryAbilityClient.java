@@ -3,6 +3,7 @@ package com.witchersbestiary.client;
 import com.witchersbestiary.equipment.armory.LegendaryAbilities;
 import com.witchersbestiary.equipment.armory.LegendaryAbilities.Activate;
 import com.witchersbestiary.equipment.armory.LegendaryAbilities.View;
+import com.witchersbestiary.equipment.armory.LegendaryAbilities.HammerInput;
 import com.witchersbestiary.registry.ModItems;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
@@ -13,31 +14,59 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 public final class LegendaryAbilityClient {
     private static View view;
+    private static HammerHold hammerHold;
+
+    private record HammerHold(ClientPlayerEntity player, ItemStack stack, int slot) {}
 
     public static void initialize() {
         var binding = KeyBindingHelper.registerKeyBinding(new KeyBinding("key.witchersbestiary.legendary_ability",
                 InputUtil.Type.KEYSYM, GLFW.GLFW_KEY_B, "category.witchersbestiary"));
         ClientPlayNetworking.registerGlobalReceiver(View.ID, (packet, context) ->
                 context.client().execute(() -> view = packet));
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> view = null);
-        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> view = null);
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> clear());
+        ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> clear());
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             boolean pressed = false;
             while (binding.wasPressed()) pressed = true;
-            if (pressed && !binding.isUnbound() && client.isWindowFocused() && client.currentScreen == null && client.player != null
+            var player = client.player;
+            boolean usable = !binding.isUnbound() && client.isWindowFocused() && client.currentScreen == null
+                    && player != null && player.isAlive() && !player.isSpectator();
+            if (hammerHold != null) {
+                boolean valid = usable && hammerHold.player() == player && hammerHold.stack() == player.getMainHandStack()
+                        && hammerHold.slot() == player.getInventory().selectedSlot;
+                if (!valid || !binding.isPressed()) {
+                    hammerHold = null;
+                    if (ClientPlayNetworking.canSend(HammerInput.ID))
+                        ClientPlayNetworking.send(valid ? HammerInput.RELEASE : HammerInput.CANCEL);
+                }
+                return;
+            }
+            if (!pressed || !usable) return;
+            var stack = player.getMainHandStack();
+            if (stack.isOf(ModItems.BONECRUSHER_CLUB)) {
+                if (binding.isPressed() && ClientPlayNetworking.canSend(HammerInput.ID)) {
+                    hammerHold = new HammerHold(player, stack, player.getInventory().selectedSlot);
+                    ClientPlayNetworking.send(HammerInput.START);
+                }
+            } else if ((stack.isOf(ModItems.BLOOD_LEGACY) || stack.isOf(ModItems.GRAVE_BLADE))
                     && ClientPlayNetworking.canSend(Activate.ID)) {
-                var stack = client.player.getMainHandStack();
-                if (stack.isOf(ModItems.BLOOD_LEGACY) || stack.isOf(ModItems.GRAVE_BLADE))
-                    ClientPlayNetworking.send(Activate.INSTANCE);
+                ClientPlayNetworking.send(Activate.INSTANCE);
             }
         });
         HudRenderCallback.EVENT.register((draw, tick) -> render(draw, MinecraftClient.getInstance(), binding));
+    }
+
+    private static void clear() {
+        view = null;
+        hammerHold = null;
     }
 
     private static void render(DrawContext draw, MinecraftClient client, KeyBinding binding) {
