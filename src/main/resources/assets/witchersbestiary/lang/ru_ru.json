@@ -1099,7 +1099,7 @@
   "ability.witchersbestiary.ready": "%s: %s",
   "ability.witchersbestiary.active": "%s: %s с",
   "ability.witchersbestiary.cooldown": "%s · перезарядка: %s с",
-  "tooltip.witchersbestiary.bloodlust": "Кровавая жажда: нанесите 8 ударов с уроном и нажмите %s. Волна в радиусе 5 блоков наносит 2% макс. ОЗ и отбрасывает врагов. 10 с удары лечат до 2 ОЗ за удар и 8 ОЗ суммарно. Перезарядка 90 с.",
+  "tooltip.witchersbestiary.bloodlust": "Кровавая жажда: нанесите 8 ударов с уроном и нажмите %s. Волна в радиусе 5 блоков наносит 2% макс. ОЗ и отбрасывает врагов. 10 с удары восстанавливают 20% от урона по здоровью цели. Перезарядка 30 с.",
   "death.attack.witchersbestiary.blood_wave": "%1$s попал под кровавую волну игрока %2$s",
   "death.attack.witchersbestiary.blood_wave.player": "%1$s попал под кровавую волну игрока %2$s",
   "tooltip.witchersbestiary.spectral_summon": "Призыв призрака: нажмите %s, чтобы призвать союзного Призрака на срок до 30 с (30 ОЗ, 7 урона). Перезарядка 90 с.",

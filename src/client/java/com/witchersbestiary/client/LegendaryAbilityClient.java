@@ -49,19 +49,20 @@ public final class LegendaryAbilityClient {
 
         int remaining = blood ? view.blood() : view.grave();
         int duration = blood ? LegendaryAbilities.BLOOD_DURATION : LegendaryAbilities.GRAVE_DURATION;
+        int cooldown = blood ? LegendaryAbilities.BLOOD_COOLDOWN : LegendaryAbilities.GRAVE_COOLDOWN;
         String ability = blood ? "bloodlust" : "spectral_summon";
         int color = blood ? 0xffea5258 : 0xff65dff2;
         Text title = Text.translatable("ability.witchersbestiary." + ability);
         Text label;
         float fraction;
-        if (remaining > LegendaryAbilities.COOLDOWN) {
-            int active = remaining - LegendaryAbilities.COOLDOWN;
+        if (remaining > cooldown) {
+            int active = remaining - cooldown;
             label = Text.translatable("ability.witchersbestiary.active", title, (active + 19) / 20);
             fraction = active / (float) duration;
         } else if (remaining != 0) {
             remaining = Math.abs(remaining);
             label = Text.translatable("ability.witchersbestiary.cooldown", title, (remaining + 19) / 20);
-            fraction = Math.max(0, 1 - remaining / (float) LegendaryAbilities.COOLDOWN);
+            fraction = Math.max(0, 1 - remaining / (float) cooldown);
             color = 0xffa9a7a4;
         } else if (blood && view.charge() < LegendaryAbilities.FULL_CHARGE) {
             label = Text.translatable("ability.witchersbestiary.charge", title, view.charge(), LegendaryAbilities.FULL_CHARGE);

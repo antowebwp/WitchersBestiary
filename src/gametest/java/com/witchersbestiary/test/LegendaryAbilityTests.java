@@ -25,7 +25,7 @@ import net.minecraft.world.GameMode;
 
 public final class LegendaryAbilityTests implements FabricGameTest {
     @GameTest(templateName = "witchersbestiary:village_board_arena")
-    public void bloodlustRequiresConfirmedPrimaryHitsAndCapsHealing(TestContext context) {
+    public void bloodlustRequiresConfirmedPrimaryHitsAndRespectsMaxHealth(TestContext context) {
         var player = player(context, "BloodTest");
         player.setHealth(5);
         var stack = ModItems.BLOOD_LEGACY.getDefaultStack();
@@ -50,7 +50,7 @@ public final class LegendaryAbilityTests implements FabricGameTest {
             stack.getItem().getBonusAttackDamage(target, 14, source);
             target.damage(source, 14);
         }
-        context.assertTrue(player.getHealth() == 13, "Healing is capped at two per hit and eight per use");
+        context.assertTrue(player.getHealth() == player.getMaxHealth(), "Healing stops at maximum health");
         target.discard();
         player.discard();
         context.complete();
@@ -95,7 +95,7 @@ public final class LegendaryAbilityTests implements FabricGameTest {
         context.complete();
     }
 
-    private static ServerPlayerEntity player(TestContext context, String name) {
+    static ServerPlayerEntity player(TestContext context, String name) {
         var world = context.getWorld();
         var server = world.getServer();
         var data = ConnectedClientData.createDefault(new GameProfile(UUID.randomUUID(), name), false);

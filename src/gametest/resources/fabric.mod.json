@@ -32,6 +32,7 @@
       "com.witchersbestiary.test.SignSkillPointTests",
       "com.witchersbestiary.test.SignFormsTests",
       "com.witchersbestiary.test.IgniBreathTests","com.witchersbestiary.test.GriffinReforgedTests",
+      "com.witchersbestiary.test.BloodLegacyReleaseTests",
       "com.witchersbestiary.test.LegendaryAbilityTests",
       "com.witchersbestiary.test.Stage22QBalanceTests",
       "com.witchersbestiary.test.Stage22RCombatTests",

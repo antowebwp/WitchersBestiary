@@ -24,7 +24,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "During Bloodlust (10 seconds), Blood Legacy heals 20% of health damage dealt, up to 2 HP per hit and 8 HP in total. The cooldown lasts 90 seconds."
+      "text": "During Bloodlust (10 seconds), Blood Legacy heals 20% of health damage dealt, up to the wielder’s maximum health. The cooldown lasts 30 seconds after Bloodlust ends."
     },
     {
       "type": "patchouli:text",

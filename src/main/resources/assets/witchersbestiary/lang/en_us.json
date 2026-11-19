@@ -1099,7 +1099,7 @@
   "ability.witchersbestiary.ready": "%s: %s",
   "ability.witchersbestiary.active": "%s: %s s",
   "ability.witchersbestiary.cooldown": "%s cooldown: %s s",
-  "tooltip.witchersbestiary.bloodlust": "Bloodlust: Land 8 damaging hits, then press %s. A 5-block wave deals 2% max health and knocks enemies back. For 10 s, hits heal up to 2 HP each and 8 HP total. Cooldown: 90 s.",
+  "tooltip.witchersbestiary.bloodlust": "Bloodlust: Land 8 damaging hits, then press %s. A 5-block wave deals 2% max health and knocks enemies back. For 10 s, hits restore 20% of health damage dealt. Cooldown: 30 s.",
   "death.attack.witchersbestiary.blood_wave": "%1$s was caught in %2$s’s blood wave",
   "death.attack.witchersbestiary.blood_wave.player": "%1$s was caught in %2$s’s blood wave",
   "tooltip.witchersbestiary.spectral_summon": "Spectral Summon: Press %s to call an allied Wraith for up to 30 s (30 HP, 7 damage). Cooldown: 90 s.",

@@ -1,3 +1,13 @@
+# 0.22.0 — Legends Reforged
+
+- **Contracts:** Rotating named Legends, two-clue investigations with route recovery, and saved vanilla bonus rewards alongside crowns. Existing contracts and claim states carry forward.
+- **Legendary swords:** Blood Legacy builds charge in eight hits. Bloodlust releases a blood wave, then restores 20% of health damage dealt for 10 seconds, up to the wielder’s maximum health. The cooldown is 30 seconds after Bloodlust ends. Grave Blade summons an allied wraith. Both use the same rebindable key, B by default.
+- **Higher Vampire:** Combat phases, blood cocoon and Crimson Phylactery sealing. The first hunt awards Blood Legacy, and repeat hunts have their own payout.
+- **Griffin:** Refined anatomy, wing animations and flight combat, with telegraphed dives that Aard can interrupt.
+- **Unicorn:** Wild spawning, riding progression, follow and guard behavior, a whistle, and ownership and riding progression preserved through revival.
+- **Signs and effects:** Sign Mastery is available from the R radial menu. Arcane FX and Cascade power updated Signs, bomb effects and Blood Legacy’s blood wave. The retired Grimoire still loads as an inert item in old inventories.
+- **Compatibility:** Minecraft 1.21.1 on Fabric and Java 21. Requires Fabric API, GeckoLib 4.8.4 or later in the 4.x series, Patchouli 1.21.1-93-FABRIC and Cascade 1.0.0+1.21.1. Use the same build on server and clients.
+
 # 0.21.0 - Witcher Signs and Tournaments
 
 Adds crowns and wallets, nonfatal fist fights, the Rock Troll, PvP duels, alchemy and merchants, sword enchantments, five signs, the Grimoire and three tournament tiers. Contract hunts work outside natural biomes, legendary offers rotate independently, and new payouts scale by monster danger. See [release notes](docs/RELEASE_NOTES_0.21.0.md).

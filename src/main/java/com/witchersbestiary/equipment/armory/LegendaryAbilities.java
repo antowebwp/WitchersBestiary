@@ -28,7 +28,8 @@ import net.minecraft.world.PersistentState;
 
 public final class LegendaryAbilities extends PersistentState {
     public static final int FULL_CHARGE = 8;
-    public static final int BLOOD_DURATION = 200, GRAVE_DURATION = 600, COOLDOWN = 1800;
+    public static final int BLOOD_DURATION = 200, GRAVE_DURATION = 600;
+    public static final int BLOOD_COOLDOWN = 600, GRAVE_COOLDOWN = 1800;
     private static final Type<LegendaryAbilities> TYPE =
             new Type<>(LegendaryAbilities::new, LegendaryAbilities::read, null);
     private final Map<UUID, Progress> players = new HashMap<>();
@@ -36,7 +37,6 @@ public final class LegendaryAbilities extends PersistentState {
     private static final class Progress {
         int charge;
         long bloodEnd, graveEnd;
-        float healed;
         WraithEntity ghost;
     }
 
@@ -101,9 +101,8 @@ public final class LegendaryAbilities extends PersistentState {
         var progress = ledger.players.computeIfAbsent(player.getUuid(), id -> new Progress());
         long now = player.getServerWorld().getTime();
         if (stack.isOf(ModItems.BLOOD_LEGACY)) {
-            if (progress.charge < FULL_CHARGE || remaining(progress.bloodEnd, now) > 0) return false;
+            if (progress.charge < FULL_CHARGE || remaining(progress.bloodEnd, now, BLOOD_COOLDOWN, BLOOD_DURATION) > 0) return false;
             progress.charge = 0;
-            progress.healed = 0;
             progress.bloodEnd = now + BLOOD_DURATION;
             ledger.markDirty();
             BloodLegacyPulse.fire(player);
@@ -111,7 +110,7 @@ public final class LegendaryAbilities extends PersistentState {
                 ((BloodAuraState) player).bestiary$setBloodAura(true);
         } else {
             ledger.updateGrave(progress, now);
-            if (remaining(progress.graveEnd, now) > 0) return false;
+            if (remaining(progress.graveEnd, now, GRAVE_COOLDOWN, GRAVE_DURATION) > 0) return false;
             progress.ghost = summon(player, now + GRAVE_DURATION);
             if (progress.ghost == null) return false;
             progress.graveEnd = now + GRAVE_DURATION;
@@ -147,12 +146,9 @@ public final class LegendaryAbilities extends PersistentState {
         var progress = ledger.players.computeIfAbsent(player.getUuid(), id -> new Progress());
         long now = player.getServerWorld().getTime();
         if (progress.bloodEnd > now && ((BloodAuraState) player).bestiary$bloodAura()) {
-            float healing = Math.min(8 - progress.healed, Math.min(2, actualDamage * .2f));
-            float before = player.getHealth();
-            if (healing <= 0 || before >= player.getMaxHealth()) return;
-            player.heal(healing);
-            progress.healed += Math.max(0, player.getHealth() - before);
-        } else if (remaining(progress.bloodEnd, now) == 0 && progress.charge < FULL_CHARGE) {
+            player.heal(actualDamage * .2f);
+            return;
+        } else if (remaining(progress.bloodEnd, now, BLOOD_COOLDOWN, BLOOD_DURATION) == 0 && progress.charge < FULL_CHARGE) {
             ++progress.charge;
             ledger.sync(player);
         } else {
@@ -172,8 +168,8 @@ public final class LegendaryAbilities extends PersistentState {
         }
     }
 
-    private static int remaining(long end, long now) {
-        return end == 0 ? 0 : (int) Math.clamp(end + COOLDOWN - now, 0, GRAVE_DURATION + COOLDOWN);
+    private static int remaining(long end, long now, int cooldown, int duration) {
+        return end == 0 ? 0 : (int) Math.clamp(end + cooldown - now, 0, duration + cooldown);
     }
 
     private void updateGrave(Progress progress, long now) {
@@ -191,10 +187,14 @@ public final class LegendaryAbilities extends PersistentState {
         long now = player.getServerWorld().getTime();
         if (progress != null) updateGrave(progress, now);
         if (!ServerPlayNetworking.canSend(player, View.ID)) return;
-        ServerPlayNetworking.send(player, progress == null ? new View(0, 0, 0)
-                : new View(progress.charge, ((BloodAuraState) player).bestiary$bloodAura()
-                                ? remaining(progress.bloodEnd, now) : Math.min(COOLDOWN, remaining(progress.bloodEnd, now)),
-                        (progress.ghost == null ? -1 : 1) * remaining(progress.graveEnd, now)));
+        if (progress == null) {
+            ServerPlayNetworking.send(player, new View(0, 0, 0));
+            return;
+        }
+        int blood = remaining(progress.bloodEnd, now, BLOOD_COOLDOWN, BLOOD_DURATION);
+        if (!((BloodAuraState) player).bestiary$bloodAura()) blood = Math.min(BLOOD_COOLDOWN, blood);
+        int grave = remaining(progress.graveEnd, now, GRAVE_COOLDOWN, GRAVE_DURATION);
+        ServerPlayNetworking.send(player, new View(progress.charge, blood, progress.ghost == null ? -grave : grave));
     }
 
     @Override public NbtCompound writeNbt(NbtCompound data, RegistryWrapper.WrapperLookup registries) {
@@ -203,7 +203,6 @@ public final class LegendaryAbilities extends PersistentState {
             entry.putInt("Charge", progress.charge);
             entry.putLong("BloodEnd", progress.bloodEnd);
             entry.putLong("GraveEnd", progress.graveEnd);
-            entry.putFloat("Healed", progress.healed);
             data.put(id.toString(), entry);
         });
         return data;
@@ -220,7 +219,6 @@ public final class LegendaryAbilities extends PersistentState {
             progress.charge = Math.clamp(entry.getInt("Charge"), 0, FULL_CHARGE);
             progress.bloodEnd = entry.getLong("BloodEnd");
             progress.graveEnd = entry.getLong("GraveEnd");
-            progress.healed = Math.clamp(entry.getFloat("Healed"), 0, 8);
             ledger.players.put(id, progress);
         }
         return ledger;

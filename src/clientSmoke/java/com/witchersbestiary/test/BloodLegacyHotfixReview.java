@@ -115,7 +115,7 @@ final class BloodLegacyHotfixReview {
                 server(client, player -> {
                     require(near.getHealth() == 98, "Repeat key does not fire another wave");
                     for (int i = 0; i < 6; i++) hit(player);
-                    require(player.getHealth() == 13, "Confirmed melee damage heals at most 2 per hit and 8 total");
+                    require(player.getHealth() == player.getMaxHealth(), "Confirmed melee damage heals up to maximum health");
                 });
                 client.options.setPerspective(Perspective.FIRST_PERSON);
             }
