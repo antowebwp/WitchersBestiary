@@ -21,6 +21,7 @@ public final class ContractDefinitions implements SimpleSynchronousResourceReloa
             try (var reader = entry.getValue().getReader()) { next.put(id, ContractDefinition.parse(id, JsonParser.parseReader(reader).getAsJsonObject())); }
             catch (Exception e) { WitchersBestiary.LOGGER.error("Invalid contract definition {} from {}: {}", id, entry.getValue().getPackId(), e.getMessage()); }
         }
+        com.witchersbestiary.contracts.procedural.LegendaryHunts.addDefinitions(next);
         definitions = Map.copyOf(next);
         WitchersBestiary.LOGGER.info("Loaded {} Witcher contract definitions", next.size());
     }

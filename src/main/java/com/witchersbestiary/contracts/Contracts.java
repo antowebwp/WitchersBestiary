@@ -32,15 +32,15 @@ public final class Contracts {
         if (definition == null) throw new IllegalArgumentException("Missing/invalid contract definition: " + definitionId);
         if (player.experienceLevel < definition.minimumLevel() || (!definition.dimension().isEmpty()
                 && !player.getServerWorld().getRegistryKey().getValue().toString().equals(definition.dimension())))
-            throw new IllegalStateException("Player does not meet contract eligibility");
+            throw new IllegalStateException("requirements");
         var store = ContractState.get(player.getServer()); store.writable();
         for (var existing : store.ownedBy(player.getUuid())) if (existing.expire(System.currentTimeMillis())) store.markDirty();
         if (store.ownedBy(player.getUuid()).stream().filter(c -> c.status() == ContractInstance.Status.ACCEPTED || c.status() == ContractInstance.Status.COMPLETED).count() >= 16)
-            throw new IllegalStateException("At most 16 active/unclaimed contracts per player");
+            throw new IllegalStateException("contract_limit");
         boolean replay = com.witchersbestiary.contracts.hunt.VampireHunt.validate(player, definitionId, store) != null;
         if (replay) definition = com.witchersbestiary.contracts.hunt.VampireHunt.repeat(definition);
         var instanceId=UUID.randomUUID();
-        var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(offerSeed==null?instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits():offerSeed,com.witchersbestiary.contracts.procedural.ContractSpecies.species(definition.target().getPath())):null;
+        var profile=com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(definitionId)?com.witchersbestiary.contracts.procedural.ProceduralHunts.profile(definition,offerSeed==null?instanceId.getMostSignificantBits()^instanceId.getLeastSignificantBits():offerSeed):null;
         if(profile!=null)definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(definition,profile);
         definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
         var c = new ContractInstance(instanceId, player.getUuid(), definition, System.currentTimeMillis());c.procedural=profile;

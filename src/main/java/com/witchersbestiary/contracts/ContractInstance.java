@@ -14,6 +14,9 @@ public final class ContractInstance {
     public int replayGeneration;
     public long vampireReplayReady;
     public net.minecraft.util.math.BlockPos vampireArena;
+    private NbtCompound bonus;
+    public NbtCompound bonus() { return bonus == null ? null : bonus.copy(); }
+    public void setBonus(NbtCompound bonus) { this.bonus = bonus == null ? null : bonus.copy(); }
     private final UUID id, owner;
     private final ContractDefinition definition;
     private final long created, expires;
@@ -53,13 +56,14 @@ public final class ContractInstance {
     }
     public NbtCompound toNbt() {
         var n = new NbtCompound(); if(offer!=null){n.putString("Village",village);n.putUuid("Offer",offer);n.putUuid("Generation",generation);} n.putUuid("Id", id); n.putUuid("Owner", owner);
-        n.putString("Definition", definition.toJson().toString()); n.putString("Status", status.name()); n.putLong("Created", created);
+        if(bonus!=null)n.put("Bonus",bonus.copy()); n.putString("Definition", definition.toJson().toString()); n.putString("Status", status.name()); n.putLong("Created", created);
         var list = new NbtList(); kills.stream().sorted().forEach(k -> list.add(NbtString.of(k.toString()))); n.put("Kills", list); if(hunt!=null)n.put("Hunt",hunt.write());if(procedural!=null)n.put("Procedural",procedural.write());if(investigation!=null)n.put("Investigation",investigation.write()); if(vampire!=null)n.putUuid("Vampire",vampire); n.putInt("ReplayGeneration",replayGeneration); n.putLong("VampireReplayReady",vampireReplayReady); if(vampireArena!=null)n.putLong("VampireArena",vampireArena.asLong()); return n;
     }
     public static ContractInstance fromNbt(NbtCompound n) {
         var j = com.google.gson.JsonParser.parseString(n.getString("Definition")).getAsJsonObject();
         var d = ContractDefinition.parse(net.minecraft.util.Identifier.of(j.get("id").getAsString()), j);
         var c = new ContractInstance(n.getUuid("Id"), n.getUuid("Owner"), d, n.getLong("Created"));
+        if(n.contains("Bonus",NbtElement.COMPOUND_TYPE))c.setBonus(n.getCompound("Bonus"));
         if(n.containsUuid("Offer")){c.offer=n.getUuid("Offer");c.generation=n.getUuid("Generation");c.village=n.getString("Village");}
         var list = n.getList("Kills", NbtElement.STRING_TYPE);
         for (int i = 0; i < list.size(); i++) if (!c.kills.add(UUID.fromString(list.getString(i)))) throw new IllegalArgumentException("Duplicate persisted kill");
@@ -69,7 +73,7 @@ public final class ContractInstance {
                 || ((c.status == Status.AVAILABLE || c.status == Status.ACCEPTED) && c.progress() == d.required()))
             throw new IllegalArgumentException("Inconsistent contract progress/state");
         if(n.contains("Hunt"))c.hunt=com.witchersbestiary.contracts.hunt.SwampHunt.read(n.getCompound("Hunt"));
-        if(n.contains("Procedural")){c.procedural=com.witchersbestiary.contracts.procedural.ProceduralProfile.read(n.getCompound("Procedural"));if(!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(c.definition.id())||!c.definition.target().getPath().equals(com.witchersbestiary.contracts.procedural.ContractSpecies.ENTITIES.get(c.procedural.species())))throw new IllegalArgumentException("Procedural species mismatch");}
+        if(n.contains("Procedural")){c.procedural=com.witchersbestiary.contracts.procedural.ProceduralProfile.read(n.getCompound("Procedural"));if(!com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(c.definition.id())||!c.definition.target().getPath().equals(com.witchersbestiary.contracts.procedural.ContractSpecies.ENTITIES.get(c.procedural.species())))throw new IllegalArgumentException("Procedural species mismatch");if(com.witchersbestiary.contracts.procedural.LegendaryHunts.variant(d.id())!=(c.procedural.tier()==com.witchersbestiary.contracts.procedural.ProceduralProfile.Tier.LEGENDARY))throw new IllegalArgumentException("Procedural tier mismatch");}
         if(com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(d.id())&&c.procedural==null)throw new IllegalArgumentException("Missing saved procedural profile; refusing reroll");
         if(n.contains("Investigation")){c.investigation=com.witchersbestiary.contracts.tracking.ContractInvestigation.read(n.getCompound("Investigation"));if(!c.id.equals(c.investigation.contract)||!c.owner.equals(c.investigation.owner)||c.hunt==null||!c.hunt.dimension.equals(c.investigation.dimension))throw new IllegalArgumentException("Investigation owner mismatch");}
         if(n.containsUuid("Vampire"))c.vampire=n.getUuid("Vampire");

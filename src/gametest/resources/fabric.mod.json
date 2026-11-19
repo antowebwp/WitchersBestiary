@@ -16,6 +16,7 @@
       "com.witchersbestiary.test.Stage20EStabilityTests",
       "com.witchersbestiary.test.Stage20GTests",
       "com.witchersbestiary.test.BlackDyeRecipeTests",
+      "com.witchersbestiary.test.ContractsReforgedTests",
       "com.witchersbestiary.test.VillageOfferTests",
       "com.witchersbestiary.test.WalletTests",
       "com.witchersbestiary.test.FistFightTests",

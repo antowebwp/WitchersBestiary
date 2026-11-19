@@ -5,7 +5,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "A village board carries five regular contracts and rotates them every three in-game days. A hunt is accepted while its route is surveyed. If the search stalls, retry it at the board or abandon the hunt."
+      "text": "Village boards rotate five regular contracts and up to three distinct Legends every three in-game days. Named Legends are tougher variants of existing monsters. A blocked trail or lair can be surveyed again from a board."
     },
     {
       "type": "patchouli:text",
@@ -13,7 +13,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Common contracts pay 35–75 crowns, dangerous ones 80–160, and rare threats 170–300. First legendary hunts pay 420–600 crowns. Bring silver and supplies appropriate to the monster; claim completed contracts at the board."
+      "text": "Hunts pay crowns and the random vanilla bonus shown on the board. Named Legends pay 240–360 crowns. A full bag leaves the entire payout ready to claim later. The first Higher Vampire hunt has its own unique rewards."
     },
     {
       "type": "patchouli:text",

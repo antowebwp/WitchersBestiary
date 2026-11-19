@@ -28,7 +28,8 @@ public final class Stage22XTests implements FabricGameTest {
         var tiers = new TreeMap<String, Integer>();
         int repeats = 0;
         int vampire = 0;
-        var legends = List.of("witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer", "witchersbestiary:higher_vampire");
+        var legends = Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.LegendaryHunts::offered)
+                .map(Object::toString).sorted().toList();
         Set<String> previous = Set.of();
         for (int rotation = 0; rotation < 1000; rotation++) {
             long age = rotation * VillageOffers.INTERVAL;
@@ -43,7 +44,7 @@ public final class Stage22XTests implements FabricGameTest {
                 if (previous.contains(offer.definition())) repeats++;
             }
             previous = ids;
-            if (state.current("minecraft:overworld/test/legends", age, legends).offers().size() == 3) vampire++;
+            if (state.current("minecraft:overworld/test/legends", age, legends).offers().stream().anyMatch(o -> o.definition().equals("witchersbestiary:higher_vampire"))) vampire++;
         }
         test.assertTrue(counts.keySet().equals(ContractSpecies.ENTITIES.keySet()), "Every species appears");
         test.assertTrue(repeats < 1400, "Rotations avoid recently offered species");

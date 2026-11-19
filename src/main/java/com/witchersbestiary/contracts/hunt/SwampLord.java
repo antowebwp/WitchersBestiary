@@ -1,5 +1,6 @@
 package com.witchersbestiary.contracts.hunt;
 
+import com.witchersbestiary.contracts.procedural.LegendaryHunts;
 import com.witchersbestiary.contracts.*;
 import com.witchersbestiary.entity.ModEntities;
 import com.witchersbestiary.entity.monster.DrownerEntity;
@@ -34,9 +35,11 @@ public final class SwampLord {
   if(!named(c))return;
   if(c.hunt==null)c.hunt=new SwampHunt(p.getServerWorld().getRegistryKey().getValue().toString(),p.getBlockPos());
   com.witchersbestiary.contracts.tracking.Investigations.accepted(p,c);
-  ContractState.get(p.getServer()).markDirty();enqueue(p,c);p.sendMessage(Text.translatable(c.procedural!=null?"hunt.witchersbestiary.proc.started":c.definition().id().equals(GraveDevourer.ID)?"hunt.witchersbestiary.grave_started":"hunt.witchersbestiary.started"),false);
+  ContractState.get(p.getServer()).markDirty();
+  if(!LegendaryHunts.variant(c.definition().id()))enqueue(p,c);
+  p.sendMessage(Text.translatable(c.procedural!=null?"hunt.witchersbestiary.proc.started":c.definition().id().equals(GraveDevourer.ID)?"hunt.witchersbestiary.grave_started":"hunt.witchersbestiary.started"),false);
  }
- public static void validateAccept(ServerPlayerEntity p,Identifier id){if((id.equals(ID)||id.equals(GraveDevourer.ID)||com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(id))&&ContractState.get(p.getServer()).ownedBy(p.getUuid()).stream().anyMatch(c->c.hunt!=null&&c.status()==ContractInstance.Status.ACCEPTED))throw new IllegalStateException("One active hunt per player");}
+ public static void validateAccept(ServerPlayerEntity p,Identifier id){if((id.equals(ID)||id.equals(GraveDevourer.ID)||com.witchersbestiary.contracts.procedural.ProceduralHunts.isDefinition(id))&&ContractState.get(p.getServer()).ownedBy(p.getUuid()).stream().anyMatch(c->c.hunt!=null&&c.status()==ContractInstance.Status.ACCEPTED))throw new IllegalStateException("hunt_active");}
  /** No world generation or chunk tickets: validate a complete route before a board acceptance is stored. */
  public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c){return prepareAcceptance(p,c,p.getBlockPos());}
  public static boolean pendingPlacement(ContractInstance c){
@@ -44,10 +47,23 @@ public final class SwampLord {
       && (c.investigation==null || c.investigation.stage==com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.SEARCHING)
       && (named(c) || VampireHunt.ID.equals(c.definition().id()));
  }
- public static void survey(ServerPlayerEntity p,ContractInstance c){
-  if(!pendingPlacement(c)||!c.hunt.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString()))return;
+ public static boolean relocatable(ContractInstance c) {
+  return LegendaryHunts.variant(c.definition().id()) && c.status()==ContractInstance.Status.ACCEPTED
+      && c.hunt!=null && c.hunt.target==null && c.hunt.status==SwampHunt.Status.WAITING
+      && c.investigation!=null && c.investigation.stage==com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.LAIR_FOUND;
+ }
+ public static void survey(ServerPlayerEntity p,ContractInstance c){survey(p,c,c.hunt.origin);}
+ public static void survey(ServerPlayerEntity p,ContractInstance c,BlockPos board){
+  if(!pendingPlacement(c)&&!relocatable(c))return;
+  if(!c.hunt.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString()))throw new IllegalStateException("wrong_dimension");
+  if(p.getServerWorld().getDifficulty()==net.minecraft.world.Difficulty.PEACEFUL)throw new IllegalStateException("peaceful");
+  if(HuntTerrain.pending(p.getUuid()))throw new IllegalStateException("survey_busy");
   if(VampireHunt.ID.equals(c.definition().id())){VampireHunt.place(p,c);return;}
-  HuntTerrain.request(p,c.hunt.origin,
+  boolean legendary=LegendaryHunts.variant(c.definition().id());
+  boolean relocate=relocatable(c) || legendary && !board.equals(c.hunt.origin);
+  BlockPos origin=relocate?board:c.hunt.origin;
+  int pass=legendary&&!relocate?Math.floorMod(c.hunt.attempts,4):0;
+  HuntTerrain.request(p,origin,pass*8,
     ()->pendingPlacement(c)&&c.hunt.dimension.equals(p.getServerWorld().getRegistryKey().getValue().toString()),
     ()->!pendingPlacement(c)||prepareAcceptance(p,c,c.hunt.origin),
     success->{if(pendingPlacement(c)&&!success){
@@ -56,6 +72,16 @@ public final class SwampLord {
     }else if(success&&c.status()==ContractInstance.Status.ACCEPTED){
       com.witchersbestiary.contracts.tracking.Investigations.refresh(p);
     }});
+  if(legendary){
+    if(relocate){
+      c.hunt=new SwampHunt(c.hunt.dimension,origin);
+      c.investigation=null;
+      com.witchersbestiary.contracts.tracking.Investigations.accepted(p,c);
+    }
+    c.hunt.status=SwampHunt.Status.SEARCHING;
+    c.hunt.attempts=(pass+1)%4;
+    ContractState.get(p.getServer()).markDirty();
+  }
  }
  public static boolean prepareAcceptance(ServerPlayerEntity p,ContractInstance c,BlockPos origin){
   if(p.getServerWorld().getDifficulty()==net.minecraft.world.Difficulty.PEACEFUL)return false;
@@ -82,7 +108,7 @@ public final class SwampLord {
   if((long)(x-origin.getX())*(x-origin.getX())+(long)(z-origin.getZ())*(z-origin.getZ())>512*512)return false;
   var w=p.getServerWorld();var chunk=w.getChunkManager().getWorldChunk(x>>4,z>>4);if(chunk==null)return false;
   var at=new BlockPos(x,chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,x&15,z&15)+1,z);
-  if(p.squaredDistanceTo(at.toCenterPos())<48*48||!(c.procedural!=null?com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at):c.definition().id().equals(GraveDevourer.ID)?GraveDevourer.safe(w,at,true):safe(w,at,true)))return false;
+  if(p.squaredDistanceTo(at.toCenterPos())<48*48||!com.witchersbestiary.contracts.procedural.ProceduralHunts.safe(w,c,at))return false;
   var species=c.procedural.species();
   if(com.witchersbestiary.contracts.procedural.ContractSpecies.aquatic(species)){
    if(!com.witchersbestiary.contracts.tracking.Investigations.nearWater(w,at))return false;
@@ -204,7 +230,7 @@ public final class SwampLord {
   ServerTickEvents.END_SERVER_TICK.register(s->{var q=QUEUES.get(s);if(q!=null&&q.pending()>0)q.tick();if(s.getTicks()%20==0)for(var p:s.getPlayerManager().getPlayerList()){
    long chunk=p.getChunkPos().toLong();var previous=LAST_CHUNK.put(p.getUuid(),chunk);
    if(previous!=null&&previous==chunk)continue;
-   for(var c:ContractState.get(s).ownedBy(p.getUuid()))if(c.hunt!=null&&c.hunt.target==null&&c.status()==ContractInstance.Status.ACCEPTED)enqueue(p,c);
+   for(var c:ContractState.get(s).ownedBy(p.getUuid()))if(c.hunt!=null&&c.hunt.target==null&&c.status()==ContractInstance.Status.ACCEPTED&&!LegendaryHunts.variant(c.definition().id()))enqueue(p,c);
   }});
   net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.DISCONNECT.register((handler,s)->{LAST_CHUNK.remove(handler.player.getUuid());var q=QUEUES.get(s);if(q!=null)q.cancel(handler.player.getUuid());BARS.values().forEach(b->b.removePlayer(handler.player));});
   ServerEntityEvents.ENTITY_LOAD.register((e,w)->{GraveDevourer.loaded(e,w);com.witchersbestiary.contracts.procedural.ProceduralHunts.loaded(e,w);if(e instanceof DrownerEntity d&&d.huntContract!=null){var store=ContractState.get(w.getServer());var c=store.find(d.huntContract);if(c!=null&&c.hunt!=null&&d.getUuid().equals(c.hunt.target)&&c.hunt.status==SwampHunt.Status.RESERVED){c.hunt.status=SwampHunt.Status.ACTIVE;store.markDirty();}}});

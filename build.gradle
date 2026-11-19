@@ -369,7 +369,7 @@ loom {
    vmArg '-Dfabric-api.gametest'
    if(project.hasProperty('testBatchPrefix')) vmArg "-Dwitchersbestiary.testBatchPrefix=${project.property('testBatchPrefix')}"
    vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/gametest-results.xml"
-   runDir(project.hasProperty('stage22bBop') ? 'build/stage22b-bop-test' : 'build/gametest')
+   runDir(providers.gradleProperty('gameTestRunDir').getOrElse(project.hasProperty('stage22bBop') ? 'build/stage22b-bop-test' : 'build/gametest'))
   }
   stage19Review {
    client()

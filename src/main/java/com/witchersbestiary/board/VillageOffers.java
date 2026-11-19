@@ -9,13 +9,21 @@ import java.util.*;
 /** Lazy village rotation, driven by monotonic world age rather than daylight time. */
 public final class VillageOffers extends PersistentState {
     public static final long INTERVAL = 72000;
-    public record Offer(UUID id, String definition) {}
+    public record Offer(UUID id, String definition, NbtCompound bonus) {
+        public Offer { if (bonus != null) bonus = bonus.copy(); }
+        public Offer(UUID id, String definition) { this(id, definition, null); }
+        @Override public NbtCompound bonus() { return bonus == null ? null : bonus.copy(); }
+    }
     public record Generation(UUID id, long created, List<Offer> offers) {
         public Generation { offers = List.copyOf(offers); }
     }
     public static final Type<VillageOffers> TYPE = new Type<>(VillageOffers::new, VillageOffers::read, null);
     private final Map<String, Generation> villages = new HashMap<>();
     private NbtCompound future;
+    private RegistryWrapper.WrapperLookup registries;
+
+    public VillageOffers() {}
+    public VillageOffers(RegistryWrapper.WrapperLookup registries) { this.registries = registries; }
     public static String identity(net.minecraft.server.world.ServerWorld world, net.minecraft.util.math.BlockPos pos) {
         var chunk=world.getChunkManager().getWorldChunk(pos.getX()>>4,pos.getZ()>>4);
         if(chunk!=null){var candidates=new TreeMap<String,Long>();for(var ref:chunk.getStructureReferences().entrySet()){
@@ -50,7 +58,9 @@ public final class VillageOffers extends PersistentState {
     }
 
     public static VillageOffers get(MinecraftServer server) {
-        return server.getOverworld().getPersistentStateManager().getOrCreate(TYPE, "witchersbestiary_village_offers");
+        var state = server.getOverworld().getPersistentStateManager().getOrCreate(TYPE, "witchersbestiary_village_offers");
+        if (state.registries == null) state.registries = server.getRegistryManager();
+        return state;
     }
     public Generation current(String village, long age, List<String> eligible) {
         return current(village,age,eligible,villages.get(village),Set.of());
@@ -61,14 +71,19 @@ public final class VillageOffers extends PersistentState {
         if (old != null && (age < old.created() || age - old.created() < INTERVAL)) return old;
         var pool = new ArrayList<>(new LinkedHashSet<>(eligible));
         boolean legends=legendaryKey(village);
-        boolean vampireCycle=legends && pool.size()>2 && Math.floorMod(age/INTERVAL+village.hashCode(),3)==0;
-        int slots = legends ? (vampireCycle?3:2) : 5;
-        if (pool.size() < slots) throw new IllegalStateException("Five eligible species required");
-        if (slots == 5) pool = diverse(pool, previous, village, age, preferred);
-        else if (old != null && old.offers().getFirst().definition().equals(pool.getFirst()))
-            Collections.swap(pool,0,1);
-        var offers = new ArrayList<Offer>(5);
-        for (int i = 0; i < slots; i++) offers.add(new Offer(UUID.randomUUID(), pool.get(i)));
+        int slots = legends ? Math.min(3, pool.size()) : 5;
+        if (slots == 0 || pool.size() < slots) throw new IllegalStateException("offers_unavailable");
+        if (legends) Collections.shuffle(pool, new Random(((long) village.hashCode() << 32) ^ age));
+        else pool = diverse(pool, previous, village, age, preferred);
+        var offers = new ArrayList<Offer>(slots);
+        for (int i = 0; i < slots; i++) {
+            var id = UUID.randomUUID();
+            var key = pool.get(i);
+            var definition = com.witchersbestiary.contracts.Contracts.DEFINITIONS.find(net.minecraft.util.Identifier.of(key));
+            var bonus = registries == null || definition == null ? null
+                    : com.witchersbestiary.contracts.ContractBonus.roll(definition, id.getMostSignificantBits(), registries);
+            offers.add(new Offer(id, key, bonus));
+        }
         var next = new Generation(UUID.randomUUID(), age, offers);
         if(!village.contains("/personal/"))villages.keySet().removeIf(k->k.startsWith(village+"/personal/"));
         villages.put(village, next); markDirty(); return next;
@@ -123,12 +138,12 @@ public final class VillageOffers extends PersistentState {
             var entry = new NbtCompound(); entry.putString("Village", key);
             entry.putUuid("Generation", generation.id()); entry.putLong("Created", generation.created());
             var offers = new NbtList();
-            generation.offers().forEach(offer -> { var o = new NbtCompound(); o.putUuid("Id", offer.id()); o.putString("Definition", offer.definition()); offers.add(o); });
+            generation.offers().forEach(offer -> { var o = new NbtCompound(); o.putUuid("Id", offer.id()); o.putString("Definition", offer.definition()); if (offer.bonus != null) o.put("Bonus", offer.bonus()); offers.add(o); });
             entry.put("Offers", offers); entries.add(entry);
         }); n.put("Villages", entries); return n;
     }
     public static VillageOffers read(NbtCompound n, RegistryWrapper.WrapperLookup lookup) {
-        var state = new VillageOffers();
+        var state = new VillageOffers(lookup);
         if (n.getInt("Schema") != 1) { state.future = n.copy(); return state; }
         try {
         var entries = n.getList("Villages", NbtElement.COMPOUND_TYPE);
@@ -136,8 +151,8 @@ public final class VillageOffers extends PersistentState {
             var entry = entries.getCompound(i);
             var offers = new ArrayList<Offer>(); var ids = new HashSet<UUID>();
             var list = entry.getList("Offers", NbtElement.COMPOUND_TYPE);
-            for (int j = 0; j < list.size(); j++) { var o = list.getCompound(j); if (!o.containsUuid("Id") || !ids.add(o.getUuid("Id"))) throw new IllegalStateException("Invalid saved offer UUID"); offers.add(new Offer(o.getUuid("Id"), o.getString("Definition"))); }
-            if ((legendaryKey(entry.getString("Village")) ? offers.size()!=2 && offers.size()!=3 : offers.size()!=5) || !entry.containsUuid("Generation")) throw new IllegalStateException("Invalid saved offer generation");
+            for (int j = 0; j < list.size(); j++) { var o = list.getCompound(j); if (!o.containsUuid("Id") || !ids.add(o.getUuid("Id"))) throw new IllegalStateException("Invalid saved offer UUID"); offers.add(new Offer(o.getUuid("Id"), o.getString("Definition"), o.contains("Bonus", NbtElement.COMPOUND_TYPE) ? o.getCompound("Bonus") : null)); }
+            if ((legendaryKey(entry.getString("Village")) ? offers.isEmpty() || offers.size()>3 : offers.size()!=5) || !entry.containsUuid("Generation")) throw new IllegalStateException("Invalid saved offer generation");
             state.villages.put(entry.getString("Village"), new Generation(entry.getUuid("Generation"), entry.getLong("Created"), offers));
         } }catch(RuntimeException invalid){state.villages.clear();state.future=n.copy();}
         return state;

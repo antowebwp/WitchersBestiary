@@ -18,12 +18,17 @@ public final class ProceduralHunts {
  private static final Set<Identifier> IDS=ContractSpecies.ENTITIES.keySet().stream().map(ProceduralHunts::id).collect(java.util.stream.Collectors.toUnmodifiableSet());
  private static final Identifier FRENZY=Identifier.of("witchersbestiary:procedural_frenzy");
  public static Identifier id(String species){return Identifier.of("witchersbestiary:procedural_"+species);}
- public static boolean isDefinition(Identifier id){return IDS.contains(id);}
+ public static boolean regular(Identifier id){return IDS.contains(id);}
+ public static boolean isDefinition(Identifier id){return regular(id)||LegendaryHunts.variant(id);}
+ public static ProceduralProfile profile(ContractDefinition definition,long seed){
+  var species=ContractSpecies.species(definition.target().getPath());
+  return LegendaryHunts.variant(definition.id())?ProceduralProfile.legendary(seed,species):ProceduralProfile.generate(seed,species);
+ }
  public static ProceduralCombat combat(Entity e){return e instanceof DrownerEntity d?d.procedural:e instanceof GhoulEntity g?g.procedural:e instanceof FogletEntity f?f.procedural:e instanceof ContractTargetAccess a?a.witcher$combat():null;}
  public static UUID binding(Entity e){return e instanceof DrownerEntity d?d.huntContract:e instanceof GhoulEntity g?g.huntContract:e instanceof FogletEntity f?f.huntContract:e instanceof ContractTargetAccess a?a.witcher$contract():null;}
  public static void bind(MobEntity e,ContractInstance c){var data=new ProceduralCombat(c.procedural);if(e instanceof DrownerEntity d){d.huntContract=c.id();d.procedural=data;d.setBaby(false);}else if(e instanceof GhoulEntity g){g.huntContract=c.id();g.procedural=data;}else if(e instanceof FogletEntity f){f.huntContract=c.id();f.procedural=data;}else {((ContractTargetAccess)e).witcher$bind(c.id(),data);if(e instanceof WerewolfEntity wolf)wolf.prepareContractForm();}}
- public static ContractDefinition snapshot(ContractDefinition d,ProceduralProfile p){int ordinal=p.tier().ordinal();int minimum = switch (p.tier()) { case COMMON -> 35; case RARE -> 80; case EPIC -> 170; };
-  int maximum = switch (p.tier()) { case COMMON -> 75; case RARE -> 160; case EPIC -> 300; };
+ public static ContractDefinition snapshot(ContractDefinition d,ProceduralProfile p){int ordinal=p.tier().ordinal();int minimum = switch (p.tier()) { case COMMON -> 35; case RARE -> 80; case EPIC -> 170; case LEGENDARY -> 240; };
+  int maximum = switch (p.tier()) { case COMMON -> 75; case RARE -> 160; case EPIC -> 300; case LEGENDARY -> 360; };
   int crowns = minimum + Math.floorMod(p.seed(), maximum - minimum + 1);
   return new ContractDefinition(d.id(),d.name(),d.description(),d.target(),1,ordinal+1,new ContractDefinition.Reward((ordinal+1)*30,List.of(new ContractDefinition.ItemReward(Identifier.of("witchersbestiary:witcher_crown"),crowns))),d.minimumLevel(),d.dimension(),d.durationMillis());}
  public static boolean safe(ServerWorld w,ContractInstance c,BlockPos at){
@@ -57,7 +62,7 @@ public final class ProceduralHunts {
   if(!e.isAlive()){cleanup(e,w);return;}
   var c=ContractState.get(w.getServer()).find(binding(e));
   if(c==null||c.procedural==null||!c.procedural.equals(state.profile)||c.hunt==null||!e.getUuid().equals(c.hunt.target)||c.status()!=ContractInstance.Status.ACCEPTED){cleanup(e,w);e.discard();return;}
-  if(e.age%10==0)SwampLord.updateBar(e,state.displayName,switch(state.profile.tier()){case COMMON->BossBar.Color.WHITE;case RARE->BossBar.Color.BLUE;case EPIC->BossBar.Color.PURPLE;});
+  if(e.age%10==0)SwampLord.updateBar(e,state.displayName,switch(state.profile.tier()){case COMMON->BossBar.Color.WHITE;case RARE->BossBar.Color.BLUE;case EPIC->BossBar.Color.PURPLE;case LEGENDARY->BossBar.Color.RED;});
   if(state.poison>0)state.poison--;
   if(e instanceof GhoulEntity g)GraveDevourer.combatTick(g,w,state.profile.has(ContractAbility.FRENZY));
   if(e instanceof DrownerEntity d){

@@ -33,12 +33,12 @@ public final class VillageOfferTests implements FabricGameTest {
    var server=c.getWorld().getServer();
    long now=server.getOverworld().getTime();
    var ledger=com.witchersbestiary.board.VillageOffers.get(server);
-   var legends=java.util.List.of("witchersbestiary:swamp_lord","witchersbestiary:grave_devourer");
+   var legends=com.witchersbestiary.contracts.Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.LegendaryHunts::offered).map(Object::toString).sorted().toList();
    boolean restored=com.witchersbestiary.contracts.ContractState.get(server).all().stream()
     .filter(contract->contract.village!=null&&contract.offer!=null&&contract.status()==com.witchersbestiary.contracts.ContractInstance.Status.ACCEPTED)
     .anyMatch(contract->{
      var generation=ledger.current(contract.village+"/legends",now,legends);
-     return generation.created()>now&&generation.offers().getFirst().definition().equals(legends.getLast())&&ledger.live(contract.offer);
+     return generation.created()>now&&generation.offers().size()==3&&generation.offers().stream().allMatch(offer->legends.contains(offer.definition()))&&ledger.live(contract.offer);
     });
    c.assertTrue(restored,"Dedicated GameTest JVM restored the rotated legends and active regular contract from disk");
    c.complete();
@@ -51,7 +51,7 @@ public final class VillageOfferTests implements FabricGameTest {
   p.teleport(w,root.getX(),root.getY(),root.getZ()-2,0,0);q.teleport(w,root.getX(),root.getY(),root.getZ()-2,0,0);
   var h=new com.witchersbestiary.board.BoardScreenHandler(701,p.getInventory(),root);var peer=new com.witchersbestiary.board.BoardScreenHandler(702,q.getInventory(),root);p.currentScreenHandler=h;q.currentScreenHandler=peer;
   c.assertTrue(h.view(p,"").getAsJsonArray("offers").equals(peer.view(q,"").getAsJsonArray("offers")),"Shared base snapshot");
-  h.onButtonClick(p,65);var special=h.view(p,"").getAsJsonArray("offers");c.assertTrue(special.size()==2&&special.get(0).getAsJsonObject().get("rarity").getAsString().equals("LEGENDARY"),"Separate legendary category");h.onButtonClick(p,65);c.assertTrue(h.view(p,"").getAsJsonArray("offers").size()==5,"Five regular slots retained");
+  h.onButtonClick(p,65);var special=h.view(p,"").getAsJsonArray("offers");c.assertTrue(special.size()==3&&special.get(0).getAsJsonObject().get("rarity").getAsString().equals("LEGENDARY"),"Separate legendary category");h.onButtonClick(p,65);c.assertTrue(h.view(p,"").getAsJsonArray("offers").size()==5,"Five regular slots retained");
   h.onButtonClick(p,0);var state=com.witchersbestiary.contracts.ContractState.get(w.getServer());c.addInstantFinalTask(()->{c.assertTrue(!state.ownedBy(p.getUuid()).isEmpty(),"Async acceptance ready");var accepted=state.ownedBy(p.getUuid()).getFirst();
   c.assertTrue(accepted.offer!=null&&accepted.village!=null&&accepted.generation!=null,"Persisted source identity");
   c.assertTrue(peer.view(q,"").getAsJsonArray("offers").get(0).getAsJsonObject().get("state").getAsString().equals("AVAILABLE"),"Peer remains available");
@@ -60,12 +60,12 @@ public final class VillageOfferTests implements FabricGameTest {
   h.onButtonClick(p,65);
   var rotation= com.witchersbestiary.board.VillageOffers.get(w.getServer());
   String key=h.view(p,"").get("village").getAsString()+"/legends";
-  var legends=java.util.List.of("witchersbestiary:swamp_lord","witchersbestiary:grave_devourer");
+  var legends=com.witchersbestiary.contracts.Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.LegendaryHunts::offered).map(Object::toString).sorted().toList();
   long now=w.getServer().getOverworld().getTime();
   var first=rotation.current(key,now,legends);
   var next=rotation.current(key,now+com.witchersbestiary.board.VillageOffers.INTERVAL,legends);
   var restored=com.witchersbestiary.board.VillageOffers.read(rotation.writeNbt(new net.minecraft.nbt.NbtCompound(),w.getRegistryManager()),w.getRegistryManager());
-  c.assertTrue(!first.id().equals(next.id())&&first.offers().getFirst().definition().equals(next.offers().getLast().definition())&&restored.current(key,now,legends).equals(next),"Legend rotation, unique generation and save/reload");
+  c.assertTrue(!first.id().equals(next.id())&&next.offers().stream().map(VillageOffers.Offer::definition).distinct().count()==3&&restored.current(key,now,legends).equals(next),"Legend rotation, unique generation and save/reload");
   h.onButtonClick(p,65);h.onButtonClick(p,65);
   c.assertTrue(h.view(p,"").getAsJsonArray("offers").get(0).getAsJsonObject().get("id").getAsString().equals(next.offers().getFirst().definition()),"GUI uses rotated server generation");
   h.onButtonClick(p,65);

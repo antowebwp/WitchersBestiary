@@ -3,6 +3,9 @@ package com.witchersbestiary.board;
 import com.google.gson.*;
 import com.witchersbestiary.contracts.*;
 import com.witchersbestiary.contracts.hunt.VampireHunt;
+import com.witchersbestiary.contracts.hunt.SwampLord;
+import com.witchersbestiary.contracts.procedural.LegendaryHunts;
+import com.witchersbestiary.contracts.procedural.ProceduralHunts;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.*;
 import net.minecraft.item.ItemStack;
@@ -25,10 +28,8 @@ public final class BoardScreenHandler extends ScreenHandler {
     private boolean legendary;
     private VillageOffers.Generation generation;
     private final Map<Integer,UUID> archived=new HashMap<>();
-    private final Map<Integer,String> failures=new HashMap<>();
-    private static final List<String> LEGENDS = List.of("witchersbestiary:swamp_lord", "witchersbestiary:grave_devourer", "witchersbestiary:higher_vampire");
     private String rotationKey() { return legendary ? village + "/legends" : village; }
-    private List<String> eligible(){return legendary ? LEGENDS : Contracts.DEFINITIONS.all().keySet().stream().filter(com.witchersbestiary.contracts.procedural.ProceduralHunts::isDefinition).map(Object::toString).sorted().toList();}
+    private List<String> eligible(){return Contracts.DEFINITIONS.all().keySet().stream().filter(legendary ? LegendaryHunts::offered : ProceduralHunts::regular).map(Object::toString).sorted().toList();}
     private Set<String> preferred(ServerPlayerEntity player) {
         if (legendary) return Set.of();
         var biome = player.getServerWorld().getBiome(root);
@@ -47,10 +48,9 @@ public final class BoardScreenHandler extends ScreenHandler {
     private void reloadOffers(ServerPlayerEntity p) {
         generation=current(p);
         archived.clear();
-        failures.clear();
         var list=new ArrayList<>(generation.offers().stream().map(o->Identifier.of(o.definition())).toList());
         for(var c:ContractState.get(p.getServer()).ownedBy(owner)){
-            if(LEGENDS.contains(c.definition().id().toString()) != legendary) continue;
+            if(LegendaryHunts.onLegendsTab(c.definition().id()) != legendary) continue;
             if(list.size()>=30)break;
             if((c.status()==ContractInstance.Status.ACCEPTED||c.status()==ContractInstance.Status.COMPLETED)&&generation.offers().stream().noneMatch(o->o.id().equals(c.offer) || legendary && o.definition().equals(c.definition().id().toString()))){archived.put(list.size(),c.id());list.add(c.definition().id());}
         }
@@ -96,14 +96,18 @@ public final class BoardScreenHandler extends ScreenHandler {
             var existing=instance(server,index);
             if(button<32){
                 if(existing!=null){
-                    if(!com.witchersbestiary.contracts.hunt.SwampLord.pendingPlacement(existing))
+                    if(!SwampLord.pendingPlacement(existing) && !SwampLord.relocatable(existing))
                         throw new IllegalStateException("already");
-                    com.witchersbestiary.contracts.hunt.SwampLord.survey(server,existing);
+                    SwampLord.survey(server,existing,root);
                     send(server,"placement_pending");
                     return true;
                 }
+                if(server.getServerWorld().getDifficulty()==net.minecraft.world.Difficulty.PEACEFUL)
+                    throw new IllegalStateException("peaceful");
                 var offer=generation.offers().get(index);
                 var accepted=Contracts.assignPrepared(server,id,offer.id().getMostSignificantBits(),root);
+                boolean vampireRepeat = VampireHunt.ID.equals(id) && accepted.hunt == null;
+                if (!vampireRepeat) accepted.setBonus(offer.bonus());
                 accepted.village=village;
                 accepted.offer=generation.offers().get(index).id();
                 accepted.generation=generation.id();
@@ -117,29 +121,54 @@ public final class BoardScreenHandler extends ScreenHandler {
                 }
             }
             else {if(existing==null)throw new IllegalStateException("unavailable");Contracts.claim(server,existing.id());}
-        }catch(IllegalArgumentException|IllegalStateException e){status=button<32&&instance(server,index)!=null?"already":e.getMessage()!=null&&e.getMessage().startsWith("No safe loaded hunt area")?"no_safe_route":switch(String.valueOf(e.getMessage())){
-            case "vampire_active", "vampire_phylactery", "inventory_full" -> e.getMessage();
-            default -> "rejected";
-        };if(status.equals("no_safe_route"))failures.put(index,status);}
+        }catch(IllegalArgumentException|IllegalStateException e){
+            status=switch(String.valueOf(e.getMessage())){
+                case "vampire_active", "vampire_phylactery", "inventory_full", "reward_unavailable",
+                     "requirements", "contract_limit", "hunt_active", "survey_busy", "wrong_dimension",
+                     "peaceful", "already", "unavailable" -> e.getMessage();
+                default -> "rejected";
+            };
+            if(button>=32 && status.equals("inventory_full"))status="reward_inventory_full";
+        }
         send(server,status);return true;
     }
     public JsonObject view(ServerPlayerEntity player,String message){
         var j=new JsonObject();j.addProperty("message",message);j.addProperty("preparing",com.witchersbestiary.contracts.hunt.HuntTerrain.pending(owner));j.addProperty("village",village);j.addProperty("refresh_days",Math.max(0,(generation.created()+VillageOffers.INTERVAL-player.getServer().getOverworld().getTime()+23999)/24000));var array=new JsonArray();
         for(int rowIndex=0;rowIndex<offers.size();rowIndex++){var id=offers.get(rowIndex);var live=Contracts.DEFINITIONS.find(id);if(live==null)continue;
-            var current=instance(player,rowIndex);var definition=current==null?live:current.definition();if(!legendary&&current==null&&rowIndex<5){var o=generation.offers().get(rowIndex);var profile=com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(o.id().getMostSignificantBits(),com.witchersbestiary.contracts.procedural.ContractSpecies.species(live.target().getPath()));definition=com.witchersbestiary.contracts.procedural.ProceduralHunts.snapshot(live,profile);}
-            if(current==null && VampireHunt.ID.equals(id)
-                    && VampireHunt.claimedOriginal(player,ContractState.get(player.getServer()))!=null)
-                definition=VampireHunt.repeat(definition);
-            if(current==null)definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
+            var current=instance(player,rowIndex);
+            var offer=rowIndex<generation.offers().size()?generation.offers().get(rowIndex):null;
+            var definition=current==null?live:current.definition();
+            var profile=current==null && offer!=null && ProceduralHunts.isDefinition(id)
+                    ?ProceduralHunts.profile(live,offer.id().getMostSignificantBits())
+                    :current==null?null:current.procedural;
+            if(current==null && profile!=null) definition=ProceduralHunts.snapshot(live,profile);
+            boolean repeat=current==null && VampireHunt.ID.equals(id)
+                    && VampireHunt.claimedOriginal(player,ContractState.get(player.getServer()))!=null;
+            if(repeat) definition=VampireHunt.repeat(definition);
+            if(current==null) definition=com.witchersbestiary.economy.CrownRewards.fresh(definition);
             var row=definition.toJson();
-            if(!legendary&&current==null&&rowIndex<5){var o=generation.offers().get(rowIndex);var profile=com.witchersbestiary.contracts.procedural.ProceduralProfile.generate(o.id().getMostSignificantBits(),com.witchersbestiary.contracts.procedural.ContractSpecies.species(live.target().getPath()));row.addProperty("rarity",profile.tier().name());}
-            if(current!=null&&current.procedural!=null){row.addProperty("generated_name",current.procedural.nameKey());row.addProperty("generated_epithet",current.procedural.epithetKey());row.addProperty("rarity",current.procedural.tier().name());}else if(LEGENDS.contains(id.toString()))row.addProperty("rarity","LEGENDARY");
+            if(VampireHunt.ID.equals(id))row.addProperty("name","hunt.witchersbestiary.legendary.higher_vampire");
+            if(profile!=null){
+                row.addProperty("rarity",profile.tier().name());
+                if(current!=null && !LegendaryHunts.variant(id)){
+                    row.addProperty("generated_name",profile.nameKey());
+                    row.addProperty("generated_epithet",profile.epithetKey());
+                }
+            }else if(LegendaryHunts.onLegendsTab(id))row.addProperty("rarity","LEGENDARY");
+            var encodedBonus=current!=null?current.bonus():offer==null||repeat?null:offer.bonus();
+            if(encodedBonus!=null){
+                var lookup=player.getRegistryManager();
+                net.minecraft.item.ItemStack.fromNbt(lookup,encodedBonus).ifPresent(stack->
+                        ItemStack.CODEC.encodeStart(lookup.getOps(com.mojang.serialization.JsonOps.INSTANCE),stack)
+                                .result().ifPresent(value->row.add("bonus",value)));
+            }
             if(current!=null&&current.hunt!=null){row.addProperty("hunt_status",current.hunt.status.name().toLowerCase(java.util.Locale.ROOT));row.addProperty("hunt_dimension",current.hunt.dimension);var i=current.investigation;var destination=i!=null?(i.stage==com.witchersbestiary.contracts.tracking.ContractInvestigation.Stage.TRACKING&&i.next()!=null?i.next().position:i.lair):current.hunt.position;if(destination!=null)row.addProperty("hunt_area",(Math.floorDiv(destination.getX(),16)*16+8)+", "+(Math.floorDiv(destination.getZ(),16)*16+8));}
             if(current!=null&&current.investigation!=null){var investigation=current.investigation;row.addProperty("investigation_stage",investigation.stage.name().toLowerCase(java.util.Locale.ROOT));row.addProperty("clues",investigation.current);row.addProperty("clue_total",investigation.clues.size());if(investigation.current>0)row.addProperty("last_finding",com.witchersbestiary.contracts.tracking.Investigations.description(current,investigation.clues.get(investigation.current-1)));}
-            if(current!=null&&com.witchersbestiary.contracts.hunt.SwampLord.pendingPlacement(current))
+            if(current!=null&&SwampLord.pendingPlacement(current)&&current.hunt.status==com.witchersbestiary.contracts.hunt.SwampHunt.Status.WAITING)row.addProperty("survey_waiting",true);
+            if(current!=null&&SwampLord.relocatable(current))row.addProperty("relocate_lair",true);
+            if(current!=null&&(SwampLord.pendingPlacement(current)||SwampLord.relocatable(current)))
                 row.addProperty("placement_pending",true);
             if(current!=null)row.addProperty("instance",current.id().toString());
-            if(current==null&&failures.containsKey(rowIndex))row.addProperty("unavailable_reason",failures.get(rowIndex));
             if(current!=null&&current.status()==ContractInstance.Status.ACCEPTED&&current.hunt!=null&&current.hunt.status==com.witchersbestiary.contracts.hunt.SwampHunt.Status.WAITING)row.addProperty("recovery_unavailable",true);
             row.addProperty("button",rowIndex);row.addProperty("state",current==null?"AVAILABLE":current.status().name());row.addProperty("progress",current==null?0:current.progress());array.add(row);
         }j.add("offers",array);return j;
